@@ -21,7 +21,7 @@
 #ifndef NDN_CRYPTO_H
 #define NDN_CRYPTO_H
 
-#include <ndn-cpp/c/common.h>
+#include "../../c/common.h"
 
 #ifdef __cplusplus
 extern "C" {

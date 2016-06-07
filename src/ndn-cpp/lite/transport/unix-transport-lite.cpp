@@ -20,11 +20,11 @@
  */
 
 // Only compile if we have Unix socket support.
-#include <ndn-cpp/ndn-cpp-config.h>
+#include "../../ndn-cpp-config.h"
 #if NDN_CPP_HAVE_UNISTD_H
 
 #include "../../c/transport/unix-transport.h"
-#include <ndn-cpp/lite/transport/unix-transport-lite.hpp>
+#include "../../lite/transport/unix-transport-lite.hpp"
 
 namespace ndn {
 

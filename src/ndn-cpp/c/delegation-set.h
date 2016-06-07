@@ -21,7 +21,7 @@
 #ifndef NDN_DELEGATION_SET_H
 #define NDN_DELEGATION_SET_H
 
-#include <ndn-cpp/c/delegation-set-types.h>
+#include "../c/delegation-set-types.h"
 #include "name.h"
 
 #ifdef __cplusplus

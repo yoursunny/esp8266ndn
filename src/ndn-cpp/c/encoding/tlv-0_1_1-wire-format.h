@@ -21,8 +21,8 @@
 #ifndef NDN_TLV_0_1_1_WIRE_FORMAT_H
 #define NDN_TLV_0_1_1_WIRE_FORMAT_H
 
-#include <ndn-cpp/c/common.h>
-#include <ndn-cpp/c/errors.h>
+#include "../../c/common.h"
+#include "../../c/errors.h"
 
 struct ndn_Interest;
 struct ndn_Data;

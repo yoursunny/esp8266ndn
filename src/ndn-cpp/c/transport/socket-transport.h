@@ -21,9 +21,9 @@
 #ifndef NDN_SOCKETTRANSPORT_H
 #define NDN_SOCKETTRANSPORT_H
 
-#include <ndn-cpp/c/common.h>
-#include <ndn-cpp/c/errors.h>
-#include <ndn-cpp/c/transport/transport-types.h>
+#include "../../c/common.h"
+#include "../../c/errors.h"
+#include "../../c/transport/transport-types.h"
 #include "../encoding/element-reader.h"
 
 #ifdef __cplusplus

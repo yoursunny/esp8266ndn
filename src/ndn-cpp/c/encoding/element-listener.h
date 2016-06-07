@@ -21,8 +21,8 @@
 #ifndef NDN_ELEMENT_LISTENER_H
 #define NDN_ELEMENT_LISTENER_H
 
-#include <ndn-cpp/c/common.h>
-#include <ndn-cpp/c/encoding/element-reader-types.h>
+#include "../../c/common.h"
+#include "../../c/encoding/element-reader-types.h"
 
 #ifdef __cplusplus
 extern "C" {

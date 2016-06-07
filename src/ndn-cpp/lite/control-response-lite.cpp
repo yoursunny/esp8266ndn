@@ -20,7 +20,7 @@
  */
 
 #include "../c/control-response.h"
-#include <ndn-cpp/lite/control-response-lite.hpp>
+#include "../lite/control-response-lite.hpp"
 
 namespace ndn {
 

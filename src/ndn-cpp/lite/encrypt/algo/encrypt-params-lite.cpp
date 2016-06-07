@@ -21,7 +21,7 @@
  */
 
 #include "../../../c/encrypt/algo/encrypt-params.h"
-#include <ndn-cpp/lite/encrypt/algo/encrypt-params-lite.hpp>
+#include "../../../lite/encrypt/algo/encrypt-params-lite.hpp"
 
 namespace ndn {
 

@@ -23,7 +23,7 @@
 #define NDN_NETWORK_NACK_H
 
 #include "lp/lp-packet.h"
-#include <ndn-cpp/c/network-nack-types.h>
+#include "../c/network-nack-types.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -20,7 +20,7 @@
  */
 
 #include "../../c/util/dynamic-uint8-array.h"
-#include <ndn-cpp/lite/util/dynamic-uint8-array-lite.hpp>
+#include "../../lite/util/dynamic-uint8-array-lite.hpp"
 
 namespace ndn {
 

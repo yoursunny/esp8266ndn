@@ -22,7 +22,7 @@
 #ifndef NDN_ENCRYPTED_CONTENT_H
 #define NDN_ENCRYPTED_CONTENT_H
 
-#include <ndn-cpp/c/encrypt/encrypted-content-types.h>
+#include "../../c/encrypt/encrypted-content-types.h"
 #include "../key-locator.h"
 
 #ifdef __cplusplus

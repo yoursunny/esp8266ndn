@@ -27,7 +27,7 @@
 #define NDN_FORWARDING_FLAGS_IMPL_H
 
 // Normally, this include would have been called forwarding-flags-types.h .
-#include <ndn-cpp/c/forwarding-flags.h>
+#include "../c/forwarding-flags.h"
 
 #ifdef __cplusplus
 extern "C" {

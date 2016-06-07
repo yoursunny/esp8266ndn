@@ -20,7 +20,7 @@
  */
 
 #include "../c/forwarding-flags-impl.h"
-#include <ndn-cpp/lite/forwarding-flags-lite.hpp>
+#include "../lite/forwarding-flags-lite.hpp"
 
 namespace ndn {
 

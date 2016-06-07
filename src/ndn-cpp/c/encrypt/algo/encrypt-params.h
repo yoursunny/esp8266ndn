@@ -22,7 +22,7 @@
 #ifndef NDN_ENCRYPT_PARAMS_H
 #define NDN_ENCRYPT_PARAMS_H
 
-#include <ndn-cpp/c/encrypt/algo/encrypt-params-types.h>
+#include "../../../c/encrypt/algo/encrypt-params-types.h"
 #include "../../util/blob.h"
 
 #ifdef __cplusplus

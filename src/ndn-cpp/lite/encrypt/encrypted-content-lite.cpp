@@ -20,7 +20,7 @@
  */
 
 #include "../../c/encrypt/encrypted-content.h"
-#include <ndn-cpp/lite/encrypt/encrypted-content-lite.hpp>
+#include "../../lite/encrypt/encrypted-content-lite.hpp"
 
 namespace ndn {
 

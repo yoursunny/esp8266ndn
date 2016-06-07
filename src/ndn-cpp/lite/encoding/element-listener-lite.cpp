@@ -20,7 +20,7 @@
  */
 
 #include "../../c/encoding/element-listener.h"
-#include <ndn-cpp/lite/encoding/element-listener-lite.hpp>
+#include "../../lite/encoding/element-listener-lite.hpp"
 
 namespace ndn {
 

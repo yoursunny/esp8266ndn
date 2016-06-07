@@ -28,7 +28,7 @@
 #define NDN_INCOMING_FACE_ID_H
 
 #include "lp-packet.h"
-#include <ndn-cpp/c/lp/incoming-face-id-types.h>
+#include "../../c/lp/incoming-face-id-types.h"
 
 #ifdef __cplusplus
 extern "C" {

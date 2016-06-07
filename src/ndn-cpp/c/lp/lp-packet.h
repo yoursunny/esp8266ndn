@@ -23,8 +23,8 @@
 #define NDN_LP_PACKET_H
 
 #include "../util/blob.h"
-#include <ndn-cpp/c/errors.h>
-#include <ndn-cpp/c/lp/lp-packet-types.h>
+#include "../../c/errors.h"
+#include "../../c/lp/lp-packet-types.h"
 
 #ifdef __cplusplus
 extern "C" {

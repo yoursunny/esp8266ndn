@@ -24,7 +24,7 @@
 #include "element-listener.h"
 #include "tlv/tlv-structure-decoder.h"
 #include "../util/dynamic-uint8-array.h"
-#include <ndn-cpp/c/encoding/element-reader-types.h>
+#include "../../c/encoding/element-reader-types.h"
 
 #ifdef __cplusplus
 extern "C" {

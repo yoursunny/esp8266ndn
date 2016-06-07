@@ -20,7 +20,7 @@
  */
 
 #include "../c/name.h"
-#include <ndn-cpp/lite/name-lite.hpp>
+#include "../lite/name-lite.hpp"
 
 namespace ndn {
 

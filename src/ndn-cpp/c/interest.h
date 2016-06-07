@@ -21,7 +21,7 @@
 #ifndef NDN_INTEREST_H
 #define NDN_INTEREST_H
 
-#include <ndn-cpp/c/interest-types.h>
+#include "../c/interest-types.h"
 #include "name.h"
 #include "key-locator.h"
 

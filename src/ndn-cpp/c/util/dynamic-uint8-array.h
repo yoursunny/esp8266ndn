@@ -21,9 +21,9 @@
 #ifndef NDN_DYNAMIC_UINT8_ARRAY_H
 #define NDN_DYNAMIC_UINT8_ARRAY_H
 
-#include <ndn-cpp/c/errors.h>
+#include "../../c/errors.h"
 #include "ndn_memory.h"
-#include <ndn-cpp/c/util/dynamic-uint8-array-types.h>
+#include "../../c/util/dynamic-uint8-array-types.h"
 
 #ifdef __cplusplus
 extern "C" {

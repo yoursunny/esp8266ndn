@@ -20,7 +20,7 @@
  */
 
 #include "../c/interest.h"
-#include <ndn-cpp/lite/interest-lite.hpp>
+#include "../lite/interest-lite.hpp"
 
 namespace ndn {
 

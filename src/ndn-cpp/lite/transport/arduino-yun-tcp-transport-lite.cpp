@@ -22,7 +22,7 @@
 #ifdef ARDUINO
 
 #include "../../c/encoding/element-reader.h"
-#include <ndn-cpp/lite/transport/arduino-yun-tcp-transport-lite.hpp>
+#include "../../lite/transport/arduino-yun-tcp-transport-lite.hpp"
 
 namespace ndn {
 

@@ -21,8 +21,8 @@
 #ifndef NDN_TIME_H
 #define NDN_TIME_H
 
-#include <ndn-cpp/c/common.h>
-#include <ndn-cpp/c/errors.h>
+#include "../../c/common.h"
+#include "../../c/errors.h"
 
 #ifdef  __cplusplus
 extern "C" {

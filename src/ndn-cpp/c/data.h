@@ -22,7 +22,7 @@
 #define NDN_DATA_H
 
 #include <math.h>
-#include <ndn-cpp/c/data-types.h>
+#include "../c/data-types.h"
 #include "name.h"
 #include "key-locator.h"
 

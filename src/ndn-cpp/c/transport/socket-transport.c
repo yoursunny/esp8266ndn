@@ -19,7 +19,7 @@
  */
 
 // Only compile if we have Unix socket support.
-#include <ndn-cpp/ndn-cpp-config.h>
+#include "../../ndn-cpp-config.h"
 #if NDN_CPP_HAVE_UNISTD_H
 
 #include <stdio.h>

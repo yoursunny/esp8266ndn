@@ -20,7 +20,7 @@
  */
 
 #include "../c/delegation-set.h"
-#include <ndn-cpp/lite/delegation-set-lite.hpp>
+#include "../lite/delegation-set-lite.hpp"
 
 namespace ndn {
 

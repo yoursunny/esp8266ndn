@@ -23,7 +23,7 @@
 #define NDN_TLV_ENCODER_H
 
 #include <math.h>
-#include <ndn-cpp/c/errors.h>
+#include "../../../c/errors.h"
 #include "../../util/dynamic-uint8-array.h"
 #include "../../util/blob.h"
 #include "tlv.h"

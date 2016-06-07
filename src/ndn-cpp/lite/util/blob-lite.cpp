@@ -20,7 +20,7 @@
  */
 
 #include "../../c/util/blob.h"
-#include <ndn-cpp/lite/util/blob-lite.hpp>
+#include "../../lite/util/blob-lite.hpp"
 
 namespace ndn {
 
