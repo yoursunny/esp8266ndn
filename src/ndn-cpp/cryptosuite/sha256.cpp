@@ -19,8 +19,6 @@
 #ifdef ARDUINO
 
 #include <string.h>
-#include <avr/io.h>
-#include <avr/pgmspace.h>
 #include "sha256.h"
 
 #if 1

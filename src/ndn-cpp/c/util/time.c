@@ -18,7 +18,6 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-#include "../../ndn-cpp-config.h"
 #if NDN_CPP_HAVE_TIME_H
 #include <time.h>
 #endif
