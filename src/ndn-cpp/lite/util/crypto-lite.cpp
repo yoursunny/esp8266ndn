@@ -24,7 +24,18 @@
 #ifdef ARDUINO
 // Put the ARDUINO implementations in this C++ file, not in crypto.c.
 
-#include "../../contrib/cryptosuite/sha256.h"
+#include <Arduino.h>
+
+void ndn_generateRandomBytes(uint8_t *buffer, size_t bufferLength)
+{
+  // Assume the application has already initialized it, e.g.:
+  // randomSeed(analogRead(0));
+  size_t i;
+  for (i = 0; i < bufferLength; ++i)
+    buffer[i] = random(0, 256);
+}
+
+#include "../../cryptosuite/sha256.h"
 
 void
 ndn_digestSha256(const uint8_t *data, size_t dataLength, uint8_t *digest)
