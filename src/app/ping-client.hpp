@@ -13,7 +13,9 @@ public:
   /** \brief constructor
    *  \param face a face to communication with router
    *  \param interest a prepare Interest for probe packets;
-   *         typically its name should end with 'ping', and it should have MustBeFresh selector
+   *         typically its name should end with 'ping', and it should have MustBeFresh selector;
+   *         the name may contain an initial sequence number,
+   *         otherwise it must have space to add a sequence number
    *  \param pingInterval interval between probes, in millis
    *  \param pingTimeout probe timeout, in millis; default is InterestLifetime;
    *         must be less than \p pingInterval
