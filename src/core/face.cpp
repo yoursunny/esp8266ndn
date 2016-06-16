@@ -43,7 +43,10 @@ Face::setHmacKey(const uint8_t* key, size_t keySize)
 void
 Face::loop()
 {
-  uint8_t inBuf[NDNFACE_INBUF_SIZE];
+  uint8_t* inBuf = reinterpret_cast<uint8_t*>(malloc(NDNFACE_INBUF_SIZE));
+  if (inBuf == nullptr) {
+    FACE_DBG(F("cannot allocate inBuf"));
+  }
   uint64_t endpointId;
 
   int packetLimit = NDNFACE_RECEIVE_MAX;
@@ -52,6 +55,7 @@ Face::loop()
     this->processPacket(inBuf, pktSize, endpointId);
     yield();
   }
+  free(inBuf);
 }
 
 void
@@ -122,7 +126,10 @@ Face::sendPacket(const uint8_t* pkt, size_t len, uint64_t endpointId)
 void
 Face::sendInterest(InterestLite& interest, uint64_t endpointId)
 {
-  uint8_t outBuf[NDNFACE_OUTBUF_SIZE];
+  uint8_t* outBuf = reinterpret_cast<uint8_t*>(malloc(NDNFACE_OUTBUF_SIZE));
+  if (outBuf == nullptr) {
+    FACE_DBG(F("cannot allocate outBuf"));
+  }
   DynamicUInt8ArrayLite output(outBuf, NDNFACE_OUTBUF_SIZE, nullptr);
   size_t signedBegin, signedEnd, len;
   ndn_Error error = Tlv0_1_1WireFormatLite::encodeInterest(interest, &signedBegin, &signedEnd, output, &len);
@@ -132,6 +139,7 @@ Face::sendInterest(InterestLite& interest, uint64_t endpointId)
   }
 
   this->sendPacket(outBuf, len, endpointId);
+  free(outBuf);
 }
 
 void
@@ -146,7 +154,11 @@ Face::sendData(DataLite& data, uint64_t endpointId)
   signature.getKeyLocator().setType(ndn_KeyLocatorType_KEY_LOCATOR_DIGEST);
   signature.getKeyLocator().setKeyData(BlobLite(m_hmacKeyDigest, sizeof(m_hmacKeyDigest)));
 
-  uint8_t outBuf[NDNFACE_OUTBUF_SIZE];
+  uint8_t* outBuf = reinterpret_cast<uint8_t*>(malloc(NDNFACE_OUTBUF_SIZE));
+  if (outBuf == nullptr) {
+    FACE_DBG(F("cannot allocate outBuf"));
+    return;
+  }
   DynamicUInt8ArrayLite output(outBuf, NDNFACE_OUTBUF_SIZE, nullptr);
   size_t signedBegin, signedEnd, len;
   ndn_Error error = Tlv0_1_1WireFormatLite::encodeData(data, &signedBegin, &signedEnd, output, &len);
@@ -165,6 +177,7 @@ Face::sendData(DataLite& data, uint64_t endpointId)
   }
 
   this->sendPacket(outBuf, len, endpointId);
+  free(outBuf);
 }
 
 } // namespace ndn
