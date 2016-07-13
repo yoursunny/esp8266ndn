@@ -2,7 +2,7 @@
 #define ESP8266NDN_URI_HPP
 
 #include "../ndn-cpp/lite/name-lite.hpp"
-#include <Arduino.h>
+#include <Printable.h>
 
 namespace ndn {
 

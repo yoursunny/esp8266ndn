@@ -1,4 +1,5 @@
 #include "uri.hpp"
+#include <Print.h>
 
 namespace ndn {
 
@@ -25,7 +26,7 @@ static size_t
 my_strspn(const char* s1, const char* s2)
 {
   size_t ret = 0;
-  while (*s1 && strchr(s2,*s1++)) {
+  while (*s1 && strchr(s2, *s1++)) {
     ret++;
   }
   return ret;
