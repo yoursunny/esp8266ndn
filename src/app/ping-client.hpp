@@ -12,7 +12,7 @@ class PingClient
 public:
   /** \brief constructor
    *  \param face a face to communication with router
-   *  \param interest a prepare Interest for probe packets;
+   *  \param interest a prepared Interest for probe packets;
    *         typically its name should end with 'ping', and it should have MustBeFresh selector;
    *         the name may contain an initial sequence number,
    *         otherwise it must have space to add a sequence number
@@ -28,7 +28,8 @@ public:
   loop();
 
   /** \brief process incoming Data
-   *  \retval Data is accepted by this client
+   *  \retval true Data is accepted by this client
+   *  \retval false Data should be passed to the next consumer
    */
   bool
   processData(const DataLite& data);
