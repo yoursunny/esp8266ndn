@@ -10,5 +10,6 @@
 #include "core/uri.hpp"
 
 #include "app/ping-client.hpp"
+#include "app/ping-server.hpp"
 
 #endif // ESP8266NDN_H
