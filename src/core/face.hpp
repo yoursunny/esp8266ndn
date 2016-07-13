@@ -21,7 +21,7 @@ typedef void (*DataCallback)(void* arg, const DataLite& data, uint64_t endpointI
 /** \brief max NameComponent count when parsing Name of incoming Interest/Data
  */
 #define NDNFACE_NAMECOMPS_MAX 24
-/** \brief max NameComponent count when parsing Exclude of incoming Interest
+/** \brief max ExcludeEntry count when parsing Exclude of incoming Interest
  */
 #define NDNFACE_EXCLUDE_MAX 4
 /** \brief max NameComponent count when parsing KeyLocator of incoming Interest/Data
