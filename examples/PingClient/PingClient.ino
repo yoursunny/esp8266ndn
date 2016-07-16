@@ -51,7 +51,8 @@ ndnpingEvent(void* arg, ndn::PingClient::Event evt, uint64_t seq)
   }
 }
 
-void setup()
+void
+setup()
 {
   Serial.begin(115200);
   Serial.println();
@@ -83,7 +84,8 @@ void setup()
   g_client2.onEvent(&ndnpingEvent, reinterpret_cast<void*>(LED2));
 }
 
-void loop()
+void
+loop()
 {
   g_face.loop();
   g_client0.loop();

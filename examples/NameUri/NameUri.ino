@@ -1,7 +1,8 @@
 #include <esp8266ndn.h>
 #include <Streaming.h>
 
-void demo(char* uri)
+void
+demo(char* uri)
 {
   ndn_NameComponent comps[4];
   ndn::NameLite name(comps, 4);
@@ -20,7 +21,8 @@ void demo(char* uri)
   Serial << endl;
 }
 
-void setup()
+void
+setup()
 {
   Serial.begin(115200);
   Serial.println();
@@ -42,6 +44,7 @@ void setup()
   demo(uri6);
 }
 
-void loop()
+void
+loop()
 {
 }
