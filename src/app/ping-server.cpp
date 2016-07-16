@@ -22,6 +22,7 @@ PingServer::processInterest(const InterestLite& interest)
   static ndn_NameComponent nameComps[NDNPINGSERVER_NAMECOMPS_MAX];
   ndn::DataLite data(nameComps, NDNPINGSERVER_NAMECOMPS_MAX, nullptr, 0);
   data.getName().set(interest.getName());
+  data.getMetaInfo().setFreshnessPeriod(0.0);
   PINGSERVER_DBG(F("processing request") << PrintUri(interest.getName()));
 
   uint8_t payload[NDNPINGSERVER_PAYLOAD_MAX];
@@ -32,7 +33,7 @@ PingServer::processInterest(const InterestLite& interest)
     return false;
   }
 
-  data.setContent(ndn::BlobLite(payload, payloadSize));
+  data.setContent(BlobLite(payload, payloadSize));
   m_face.sendData(data);
   return true;
 }
