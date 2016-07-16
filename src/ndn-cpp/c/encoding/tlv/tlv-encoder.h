@@ -349,7 +349,7 @@ static __inline ndn_Error
 ndn_TlvEncoder_writeOptionalNonNegativeIntegerTlvFromDouble(struct ndn_TlvEncoder *self, unsigned int type, double value)
 {
   if (value >= 0.0)
-    return ndn_TlvEncoder_writeNonNegativeIntegerTlv(self, type, (uint64_t)round(value));
+    return ndn_TlvEncoder_writeNonNegativeIntegerTlv(self, type, (uint64_t)round2(value));
   else
     return NDN_ERROR_success;
 }

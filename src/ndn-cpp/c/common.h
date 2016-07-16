@@ -30,9 +30,7 @@
   #define DEPRECATED_IN_NDN_CPP
 #endif
 
-#if !NDN_CPP_HAVE_ROUND
-#define round(x) floor((x) + 0.5)
-#endif
+#define round2(x) floor((x) + 0.5)
 
 #ifdef __cplusplus
 extern "C" {
