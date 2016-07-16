@@ -1,5 +1,5 @@
 #include "face.hpp"
-#include "../ndn-cpp/C/encoding/tlv/tlv.h"
+#include "../ndn-cpp/c/encoding/tlv/tlv.h"
 #include "../ndn-cpp/lite/encoding/tlv-0_1_1-wire-format-lite.hpp"
 #include "logger.hpp"
 
