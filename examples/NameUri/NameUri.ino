@@ -27,13 +27,13 @@ setup()
   Serial.begin(115200);
   Serial.println();
 
-  char uri0[32] = "ndn:/";
-  char uri1[32] = "/";
-  char uri2[32] = "/G";
-  char uri3[32] = "/H/I";
-  char uri4[32] = "/J/...";
-  char uri5[32] = "/.../..../.....";
-  char uri6[32] = "/%00GH%ab%cD%EF";
+  char uri0[] = "ndn:/";
+  char uri1[] = "/";
+  char uri2[] = "/G";
+  char uri3[] = "/H/I";
+  char uri4[] = "/J/...";
+  char uri5[] = "/.../..../.....";
+  char uri6[] = "/%00GH%ab%cD%EF";
 
   demo(uri0);
   demo(uri1);

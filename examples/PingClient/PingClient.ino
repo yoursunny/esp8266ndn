@@ -11,9 +11,9 @@ const uint16_t NDN_ROUTER_PORT = 6363;
 const int LED0 = 15;
 const int LED1 = 12;
 const int LED2 = 13;
-char* PREFIX0 = "/ndn/edu/arizona/ping"; // must be mutable
-char* PREFIX1 = "/ndn/edu/ucla/ping";
-char* PREFIX2 = "/ndn/edu/memphis/ping";
+char PREFIX0[] = "/ndn/edu/arizona/ping"; // must be mutable
+char PREFIX1[] = "/ndn/edu/ucla/ping";
+char PREFIX2[] = "/ndn/edu/memphis/ping";
 
 WiFiUDP g_udp;
 ndn::UnicastUdpTransport g_transport(g_udp);
