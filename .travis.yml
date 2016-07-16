@@ -12,11 +12,9 @@ install:
   - mv arduino-1.6.7 $HOME/arduino_ide
   - export PATH="$HOME/arduino_ide:$PATH"
   - cd $HOME/arduino_ide/hardware
-  - mkdir esp8266com
-  - cd esp8266com
+  - mkdir esp8266com; cd esp8266com
   - git clone --depth=1 https://github.com/esp8266/Arduino.git esp8266
-  - cd esp8266/tools
-  - python get.py
+  - cd esp8266/tools; python get.py
 
 before_script:
   - mkdir -p $HOME/Arduino/libraries
@@ -24,7 +22,14 @@ before_script:
   - unzip Streaming5.zip
   - mv Streaming $HOME/Arduino/libraries/
   - cp -r $TRAVIS_BUILD_DIR $HOME/Arduino/libraries/esp8266ndn
+  - arduino --board esp8266com:esp8266:generic --save-prefs
 
 script:
-  - arduino --board esp8266com:esp8266:generic --save-prefs
-  - for SKETCH in $(find $TRAVIS_BUILD_DIR -name '*.ino'); do echo; echo Building $SKETCH; arduino --verify $SKETCH; done
+  - |
+     for SKETCH in $(find $TRAVIS_BUILD_DIR -name '*.ino'); do
+       echo
+       echo
+       echo -e '\033[0;36m'Building $SKETCH '\033[0m'
+       echo
+       arduino --verify $SKETCH
+     done
