@@ -23,8 +23,8 @@ before_script:
   - wget http://arduiniana.org/Streaming/Streaming5.zip
   - unzip Streaming5.zip
   - mv Streaming $HOME/Arduino/libraries/
+  - cp -r $TRAVIS_BUILD_DIR $HOME/Arduino/libraries/esp8266ndn
 
 script:
-  - cp -r $TRAVIS_BUILD_DIR $HOME/Arduino/libraries/esp8266ndn
   - arduino --board esp8266com:esp8266:generic --save-prefs
-  - for SKETCH in $(find $TRAVIS_BUILD_DIR -name '*.ino'); do arduino --verify $SKETCH; done
+  - for SKETCH in $(find $TRAVIS_BUILD_DIR -name '*.ino'); do echo; echo Building $SKETCH; arduino --verify $SKETCH; done
