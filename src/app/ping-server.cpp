@@ -27,8 +27,14 @@ PingServer::processInterest(const InterestLite& interest)
   uint8_t payload[NDNPINGSERVER_PAYLOAD_MAX];
   size_t payloadSize = 0;
   m_probeCb(m_probeCbArg, interest, payload, &payloadSize);
+  if (payloadSize > NDNPINGSERVER_PAYLOAD_MAX) {
+    PINGSERVER_DBG(F("payload too large ") << payloadSize);
+    return false;
+  }
+
   data.setContent(ndn::BlobLite(payload, payloadSize));
   m_face.sendData(data);
+  return true;
 }
 
 } // namespace ndn
