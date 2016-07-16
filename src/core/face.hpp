@@ -60,6 +60,12 @@ public:
   onData(DataCallback cb, void* cbarg);
 
   /** \brief set HMAC signing key
+   *
+   *  To generate a random HMAC key in Python:
+   *  \code{.py}
+   *  import random
+   *  print ',\n'.join([ ', '.join([ '{0:#04x}'.format(random.randint(0,255)) for i in range(16) ]) for j in range(4) ])
+   *  \endcode
    */
   void
   setHmacKey(const uint8_t* key, size_t keySize);
