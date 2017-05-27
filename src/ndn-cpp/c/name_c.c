@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2016 Regents of the University of California.
+ * Copyright (C) 2013-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -100,6 +100,7 @@ ndn_NameComponent_setFromNumber
 
   if ((error = ndn_TlvEncoder_writeNonNegativeInteger(&encoder, number)))
     return error;
+  // This sets the type to ndn_NameComponentType_GENERIC.
   ndn_NameComponent_initialize(self, buffer, encoder.offset);
 
   return NDN_ERROR_success;
@@ -122,14 +123,41 @@ ndn_NameComponent_setFromNumberWithMarker
     return error;
   if ((error = ndn_TlvEncoder_writeNonNegativeInteger(&encoder, number)))
     return error;
+  // This sets the type to ndn_NameComponentType_GENERIC.
   ndn_NameComponent_initialize(self, buffer, encoder.offset);
 
   return NDN_ERROR_success;
 }
 
+ndn_Error
+ndn_NameComponent_setImplicitSha256Digest
+  (struct ndn_NameComponent *self, const uint8_t* digest, size_t digestLength)
+{
+  if (digestLength != ndn_SHA256_DIGEST_SIZE)
+    return NDN_ERROR_Incorrect_digest_size;
+
+  ndn_NameComponent_initialize(self, digest, digestLength);
+  self->type = ndn_NameComponentType_IMPLICIT_SHA256_DIGEST;
+  return NDN_ERROR_success;
+}
+
+int ndn_NameComponent_equals
+  (const struct ndn_NameComponent *self, const struct ndn_NameComponent *other)
+{
+  return self->value.length == other->value.length &&
+         ndn_memcmp(self->value.value, other->value.value,
+                    self->value.length) == 0 &&
+         self->type == other->type;
+}
+
 int ndn_NameComponent_compare
   (const struct ndn_NameComponent *self, const struct ndn_NameComponent *other)
 {
+  if (self->type < other->type)
+    return -1;
+  if (self->type > other->type)
+    return 1;
+
   if (self->value.length < other->value.length)
     return -1;
   if (self->value.length > other->value.length)
@@ -151,9 +179,7 @@ int ndn_Name_equals(const struct ndn_Name *self, const struct ndn_Name *name)
     struct ndn_NameComponent *selfComponent = self->components + i;
     struct ndn_NameComponent *nameComponent = name->components + i;
 
-    if (selfComponent->value.length != nameComponent->value.length ||
-        ndn_memcmp(selfComponent->value.value, nameComponent->value.value,
-                   selfComponent->value.length) != 0)
+    if (!ndn_NameComponent_equals(selfComponent, nameComponent))
       return 0;
   }
 
@@ -188,6 +214,33 @@ ndn_Error ndn_Name_appendComponent(struct ndn_Name *self, const uint8_t *value, 
       return NDN_ERROR_attempt_to_add_a_component_past_the_maximum_number_of_components_allowed_in_the_name;
   ndn_NameComponent_initialize(self->components + self->nComponents, value, valueLength);
   ++self->nComponents;
+
+  return NDN_ERROR_success;
+}
+
+ndn_Error ndn_Name_appendNameComponent
+  (struct ndn_Name *self, const struct ndn_NameComponent *component)
+{
+  ndn_Error error;
+  // Use ndn_Name_appendComponent which checks for max name components.
+  if ((error = ndn_Name_appendComponent(self, 0, 0)))
+    return error;
+
+  // Copy the whole component including the type.
+  ndn_NameComponent_setFromNameComponent
+    (&self->components[self->nComponents - 1], component);
+  return NDN_ERROR_success;
+}
+
+ndn_Error ndn_Name_appendName(struct ndn_Name *self, const struct ndn_Name *name)
+{
+  ndn_Error error;
+  size_t i;
+
+  for (i = 0; i < name->nComponents; ++i) {
+    if ((error = ndn_Name_appendNameComponent(self, &name->components[i])))
+      return error;
+  }
 
   return NDN_ERROR_success;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Regents of the University of California.
+ * Copyright (C) 2014-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #include "tlv-control-parameters.h"
 
 /**
- * This private function is called by ndn_TlvEncoder_writeTlv to write the Name
+ * This private function is called by ndn_TlvEncoder_writeNestedTlv to write the Name
  * TLVs in the body of the ControlParameters strategy value.
  * @param context This is the ndn_ControlParameters struct pointer which
  * was passed to writeTlv.
@@ -47,7 +47,7 @@ encodeStrategyValue(const void *context, struct ndn_TlvEncoder *encoder)
 }
 
 /**
- * This private function is called by ndn_TlvEncoder_writeTlv to write the TLVs
+ * This private function is called by ndn_TlvEncoder_writeNestedTlv to write the TLVs
  * in the body of the ControlParameters value.
  * @param context This is the ndn_ControlParameters struct pointer which
  * was passed to writeTlv.

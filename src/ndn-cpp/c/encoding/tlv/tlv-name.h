@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Regents of the University of California.
+ * Copyright (C) 2014-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,6 +30,30 @@ extern "C" {
 #endif
 
 /**
+ * Encode the name component to the encoder as NDN-TLV. This handles different
+ * component types such as ImplicitSha256DigestComponent.
+ * @param component A pointer to the name component to encode.
+ * @param encoder A pointer to the ndn_TlvEncoder struct which receives
+ * the encoding.
+ * @return 0 for success, else an error code.
+ */
+ndn_Error
+ndn_encodeTlvNameComponent
+  (const struct ndn_NameComponent *component, struct ndn_TlvEncoder *encoder);
+
+/**
+ * Decode the next element as a TLV NameComponent into the ndn_NameComponent
+ * struct. This handles different component types such as
+ * ImplicitSha256DigestComponent.
+ * @param component A pointer to the ndn_NameComponent struct.
+ * @param decoder A pointer to the ndn_TlvDecoder struct.
+ * @return 0 for success, else an error code.
+ */
+ndn_Error
+ndn_decodeTlvNameComponent
+  (struct ndn_NameComponent *component, struct ndn_TlvDecoder *decoder);
+
+/**
  * Encode the name as NDN-TLV.
  * @param name A pointer to the name object to encode.
  * @param signedPortionBeginOffset Return the offset in the encoding of the
@@ -51,6 +75,21 @@ ndn_encodeTlvName
   (const struct ndn_Name *name, size_t *signedPortionBeginOffset,
    size_t *signedPortionEndOffset, struct ndn_TlvEncoder *encoder);
 
+/**
+ * Expect the next element to be a TLV Name and decode into the ndn_Name struct.
+ * @param name A pointer to the ndn_Name struct.
+ * @param signedPortionBeginOffset Return the offset in the encoding of the
+ * beginning of the signed portion. The signed portion starts from the first
+ * name component and ends just before the final name component (which is
+ * assumed to be a signature for a signed interest).
+ * @param signedPortionEndOffset Return the offset in the encoding of the end
+ * of the signed portion. The signed portion starts from the first
+ * name component and ends just before the final name component (which is
+ * assumed to be a signature for a signed interest).
+ * @param decoder A pointer to the ndn_TlvDecoder struct.
+ * @return 0 for success, else an error code, including if the next element is
+ * not a Name.
+ */
 ndn_Error
 ndn_decodeTlvName
   (struct ndn_Name *name, size_t *signedPortionBeginOffset,

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Regents of the University of California.
+ * Copyright (C) 2016-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  * @author: From ndn-cxx packet.hpp https://github.com/named-data/ndn-cxx/blob/master/src/lp/packet.hpp
  *
@@ -54,7 +54,7 @@ ndn_LpPacket_initialize
  */
 static __inline void
 ndn_LpPacket_clear(struct ndn_LpPacket *self)
-{ 
+{
   self->nHeaderFields = 0;
   ndn_Blob_initialize(&self->fragmentWireEncoding, 0, 0);
 }

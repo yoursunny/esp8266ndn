@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2016 Regents of the University of California.
+ * Copyright (C) 2015-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,179 +19,179 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-#include "../../c/encoding/tlv-0_1_1-wire-format.h"
-#include "../../lite/encoding/tlv-0_1_1-wire-format-lite.hpp"
+#include "../../c/encoding/tlv-0_2-wire-format.h"
+#include "../../lite/encoding/tlv-0_2-wire-format-lite.hpp"
 
 namespace ndn {
 
 ndn_Error
-Tlv0_1_1WireFormatLite::encodeName
+Tlv0_2WireFormatLite::encodeName
   (const NameLite& name, size_t* signedPortionBeginOffset,
    size_t* signedPortionEndOffset, DynamicUInt8ArrayLite& output,
    size_t* encodingLength)
 {
-  return ndn_Tlv0_1_1WireFormat_encodeName
+  return ndn_Tlv0_2WireFormat_encodeName
     (&name, signedPortionBeginOffset, signedPortionEndOffset,
      &output, encodingLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::decodeName
+Tlv0_2WireFormatLite::decodeName
   (NameLite& name, const uint8_t* input, size_t inputLength,
    size_t* signedPortionBeginOffset, size_t* signedPortionEndOffset)
 {
-  return ndn_Tlv0_1_1WireFormat_decodeName
+  return ndn_Tlv0_2WireFormat_decodeName
     (&name, input, inputLength, signedPortionBeginOffset,
      signedPortionEndOffset);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::encodeInterest
+Tlv0_2WireFormatLite::encodeInterest
   (const InterestLite& interest, size_t* signedPortionBeginOffset,
    size_t* signedPortionEndOffset, DynamicUInt8ArrayLite& output,
    size_t* encodingLength)
 {
-  return ndn_Tlv0_1_1WireFormat_encodeInterest
+  return ndn_Tlv0_2WireFormat_encodeInterest
     (&interest, signedPortionBeginOffset, signedPortionEndOffset,
      &output, encodingLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::decodeInterest
+Tlv0_2WireFormatLite::decodeInterest
   (InterestLite& interest, const uint8_t* input, size_t inputLength,
    size_t* signedPortionBeginOffset, size_t* signedPortionEndOffset)
 {
-  return ndn_Tlv0_1_1WireFormat_decodeInterest
+  return ndn_Tlv0_2WireFormat_decodeInterest
     (&interest, input, inputLength, signedPortionBeginOffset,
      signedPortionEndOffset);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::encodeData
+Tlv0_2WireFormatLite::encodeData
   (const DataLite& data, size_t* signedPortionBeginOffset,
    size_t* signedPortionEndOffset, DynamicUInt8ArrayLite& output,
    size_t* encodingLength)
 {
-  return ndn_Tlv0_1_1WireFormat_encodeData
+  return ndn_Tlv0_2WireFormat_encodeData
     (&data, signedPortionBeginOffset, signedPortionEndOffset, &output,
      encodingLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::decodeData
+Tlv0_2WireFormatLite::decodeData
   (DataLite& data, const uint8_t* input, size_t inputLength,
    size_t* signedPortionBeginOffset, size_t* signedPortionEndOffset)
 {
-  return ndn_Tlv0_1_1WireFormat_decodeData
+  return ndn_Tlv0_2WireFormat_decodeData
     (&data, input, inputLength, signedPortionBeginOffset,
      signedPortionEndOffset);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::encodeControlParameters
+Tlv0_2WireFormatLite::encodeControlParameters
   (const ControlParametersLite& controlParameters,
    DynamicUInt8ArrayLite& output, size_t* encodingLength)
 {
-  return ndn_Tlv0_1_1WireFormat_encodeControlParameters
+  return ndn_Tlv0_2WireFormat_encodeControlParameters
     (&controlParameters, &output, encodingLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::decodeControlParameters
+Tlv0_2WireFormatLite::decodeControlParameters
   (ControlParametersLite& controlParameters, const uint8_t* input,
    size_t inputLength)
 {
-  return ndn_Tlv0_1_1WireFormat_decodeControlParameters
+  return ndn_Tlv0_2WireFormat_decodeControlParameters
     (&controlParameters, input, inputLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::encodeControlResponse
+Tlv0_2WireFormatLite::encodeControlResponse
   (const ControlResponseLite& controlResponse,
    DynamicUInt8ArrayLite& output, size_t* encodingLength)
 {
-  return ndn_Tlv0_1_1WireFormat_encodeControlResponse
+  return ndn_Tlv0_2WireFormat_encodeControlResponse
     (&controlResponse, &output, encodingLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::decodeControlResponse
+Tlv0_2WireFormatLite::decodeControlResponse
   (ControlResponseLite& controlResponse, const uint8_t* input,
    size_t inputLength)
 {
-  return ndn_Tlv0_1_1WireFormat_decodeControlResponse
+  return ndn_Tlv0_2WireFormat_decodeControlResponse
     (&controlResponse, input, inputLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::encodeSignatureInfo
+Tlv0_2WireFormatLite::encodeSignatureInfo
   (const SignatureLite& signature, DynamicUInt8ArrayLite& output,
    size_t* encodingLength)
 {
-  return ndn_Tlv0_1_1WireFormat_encodeSignatureInfo
+  return ndn_Tlv0_2WireFormat_encodeSignatureInfo
     (&signature, &output, encodingLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::encodeSignatureValue
+Tlv0_2WireFormatLite::encodeSignatureValue
   (const SignatureLite& signature, DynamicUInt8ArrayLite& output,
    size_t* encodingLength)
 {
-  return ndn_Tlv0_1_1WireFormat_encodeSignatureValue
+  return ndn_Tlv0_2WireFormat_encodeSignatureValue
     (&signature, &output, encodingLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::decodeSignatureInfoAndValue
+Tlv0_2WireFormatLite::decodeSignatureInfoAndValue
   (SignatureLite& signature, const uint8_t *signatureInfo,
    size_t signatureInfoLength, const uint8_t *signatureValue,
    size_t signatureValueLength)
 {
-  return ndn_Tlv0_1_1WireFormat_decodeSignatureInfoAndValue
+  return ndn_Tlv0_2WireFormat_decodeSignatureInfoAndValue
     (&signature, signatureInfo, signatureInfoLength, signatureValue,
      signatureValueLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::decodeLpPacket
+Tlv0_2WireFormatLite::decodeLpPacket
   (LpPacketLite& lpPacket, const uint8_t* input, size_t inputLength)
 {
-  return ndn_Tlv0_1_1WireFormat_decodeLpPacket(&lpPacket, input, inputLength);
+  return ndn_Tlv0_2WireFormat_decodeLpPacket(&lpPacket, input, inputLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::encodeDelegationSet_Delegation
+Tlv0_2WireFormatLite::encodeDelegationSet_Delegation
   (const DelegationSetLite::Delegation& delegation,
    DynamicUInt8ArrayLite& output, size_t offset, size_t* encodingLength)
 {
-  return ndn_Tlv0_1_1WireFormat_encodeDelegationSet_Delegation
+  return ndn_Tlv0_2WireFormat_encodeDelegationSet_Delegation
     (&delegation, &output, offset, encodingLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::decodeDelegationSet_Delegation
+Tlv0_2WireFormatLite::decodeDelegationSet_Delegation
   (DelegationSetLite::Delegation& delegation, const uint8_t* input,
    size_t inputLength, size_t *encodingLength)
 {
-  return ndn_Tlv0_1_1WireFormat_decodeDelegationSet_Delegation
+  return ndn_Tlv0_2WireFormat_decodeDelegationSet_Delegation
     (&delegation, input, inputLength, encodingLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::encodeEncryptedContent
+Tlv0_2WireFormatLite::encodeEncryptedContent
   (const EncryptedContentLite& encryptedContent,
    DynamicUInt8ArrayLite& output, size_t* encodingLength)
 {
-  return ndn_Tlv0_1_1WireFormat_encodeEncryptedContent
+  return ndn_Tlv0_2WireFormat_encodeEncryptedContent
     (&encryptedContent, &output, encodingLength);
 }
 
 ndn_Error
-Tlv0_1_1WireFormatLite::decodeEncryptedContent
+Tlv0_2WireFormatLite::decodeEncryptedContent
   (EncryptedContentLite& encryptedContent, const uint8_t* input,
    size_t inputLength)
 {
-  return ndn_Tlv0_1_1WireFormat_decodeEncryptedContent
+  return ndn_Tlv0_2WireFormat_decodeEncryptedContent
     (&encryptedContent, input, inputLength);
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2016 Regents of the University of California.
+ * Copyright (C) 2013-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include "../c/data-types.h"
 #include "name.h"
 #include "key-locator.h"
+#include "security/validity-period.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,6 +43,7 @@ static __inline void ndn_Signature_initialize(struct ndn_Signature *self, struct
   ndn_Blob_initialize(&self->signatureInfoEncoding, 0, 0);
   self->genericTypeCode = -1;
   ndn_KeyLocator_initialize(&self->keyLocator, keyNameComponents, maxKeyNameComponents);
+  ndn_ValidityPeriod_initialize(&self->validityPeriod);
 }
 
 /**
@@ -80,6 +82,7 @@ ndn_Signature_setFromSignature
   if ((error = ndn_KeyLocator_setFromKeyLocator
        (&self->keyLocator, &other->keyLocator)))
     return error;
+  self->validityPeriod = other->validityPeriod;
 
   return NDN_ERROR_success;
 }
@@ -92,6 +95,7 @@ static __inline void ndn_MetaInfo_initialize(struct ndn_MetaInfo *self)
 {
   self->timestampMilliseconds = -1;
   self->type = ndn_ContentType_BLOB;
+  self->otherTypeCode = -1;
   self->freshnessPeriod = -1;
   ndn_NameComponent_initialize(&self->finalBlockId, 0, 0);
 }
@@ -101,7 +105,7 @@ static __inline void ndn_MetaInfo_initialize(struct ndn_MetaInfo *self)
  */
 static __inline int ndn_MetaInfo_getFreshnessSeconds(const struct ndn_MetaInfo *self)
 {
-  return self->freshnessPeriod < 0 ? -1 : (int)round2(self->freshnessPeriod / 1000.0);
+  return self->freshnessPeriod < 0 ? -1 : (int)round(self->freshnessPeriod / 1000.0);
 }
 
 /**

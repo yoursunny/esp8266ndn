@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2016 Regents of the University of California.
+ * Copyright (C) 2015-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -69,6 +69,18 @@ NameLite::Component::isSequenceNumber() const
   return ndn_NameComponent_isSequenceNumber(this) != 0;
 }
 
+bool
+NameLite::Component::isGeneric() const
+{
+  return ndn_NameComponent_isGeneric(this) != 0;
+}
+
+bool
+NameLite::Component::isImplicitSha256Digest() const
+{
+  return ndn_NameComponent_isImplicitSha256Digest(this) != 0;
+}
+
 uint64_t
 NameLite::Component::toNumber() const
 {
@@ -125,10 +137,76 @@ NameLite::Component::toSequenceNumber(uint64_t& result) const
   return ndn_NameComponent_toSequenceNumber(this, &result);
 }
 
+bool
+NameLite::Component::equals(const NameLite::Component& other) const
+{
+  return ndn_NameComponent_equals(this, &other);
+}
+
 int
 NameLite::Component::compare(const NameLite::Component& other) const
 {
   return ndn_NameComponent_compare(this, &other);
+}
+
+ndn_Error
+NameLite::Component::setFromNumber
+  (uint64_t number, uint8_t* buffer, size_t bufferLength)
+{
+  return ndn_NameComponent_setFromNumber
+  (this, number, buffer, bufferLength);
+}
+
+ndn_Error
+NameLite::Component::setFromNumberWithMarker
+  (uint64_t number, uint8_t marker, uint8_t* buffer, size_t bufferLength)
+{
+  return ndn_NameComponent_setFromNumberWithMarker
+  (this, number, marker, buffer, bufferLength);
+}
+
+ndn_Error
+NameLite::Component::setSegment
+  (uint64_t segment, uint8_t* buffer, size_t bufferLength)
+{
+  return ndn_NameComponent_setSegment(this, segment, buffer, bufferLength);
+}
+
+ndn_Error
+NameLite::Component::setSegmentOffset
+  (uint64_t segmentOffset, uint8_t* buffer, size_t bufferLength)
+{
+  return ndn_NameComponent_setSegmentOffset
+    (this, segmentOffset, buffer, bufferLength);
+}
+
+ndn_Error
+NameLite::Component::setVersion
+  (uint64_t version, uint8_t* buffer, size_t bufferLength)
+{
+  return ndn_NameComponent_setVersion(this, version, buffer, bufferLength);
+}
+
+ndn_Error
+NameLite::Component::setTimestamp
+  (uint64_t timestamp, uint8_t* buffer, size_t bufferLength)
+{
+  return ndn_NameComponent_setTimestamp(this, timestamp, buffer, bufferLength);
+}
+
+ndn_Error
+NameLite::Component::setSequenceNumber
+  (uint64_t sequenceNumber, uint8_t* buffer, size_t bufferLength)
+{
+  return ndn_NameComponent_setSequenceNumber
+    (this, sequenceNumber, buffer, bufferLength);
+}
+
+ndn_Error
+NameLite::Component::setImplicitSha256Digest
+  (const uint8_t* digest, size_t digestLength)
+{
+  return ndn_NameComponent_setImplicitSha256Digest(this, digest, digestLength);
 }
 
 NameLite::NameLite(ndn_NameComponent* components, size_t maxComponents)
@@ -155,6 +233,18 @@ ndn_Error
 NameLite::append(const uint8_t* value, size_t valueLength)
 {
   return ndn_Name_appendComponent(this, value, valueLength);
+}
+
+ndn_Error
+NameLite::append(const NameLite::Component& component)
+{
+  return ndn_Name_appendNameComponent(this, &component);
+}
+
+ndn_Error
+NameLite::append(const NameLite& name)
+{
+  return ndn_Name_appendName(this, &name);
 }
 
 ndn_Error
@@ -213,6 +303,21 @@ NameLite::appendSequenceNumber
 }
 
 ndn_Error
+NameLite::appendImplicitSha256Digest(const uint8_t* digest, size_t digestLength)
+{
+  return ndn_Name_appendImplicitSha256Digest(this, digest, digestLength);
+}
+
+ndn_Error
 NameLite::set(const NameLite& other) { return ndn_Name_setFromName(this, &other); }
+
+const NameLite::Component*
+NameLite::pop()
+{
+  if (nComponents <= 0)
+    return 0;
+
+  return &get(--nComponents);
+}
 
 }

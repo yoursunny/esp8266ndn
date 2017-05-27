@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Regents of the University of California.
+ * Copyright (C) 2015-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -28,9 +28,18 @@ extern "C" {
 #endif
 
 /**
+ * An ndn_NameComponentType specifies the recognized types of a name component.
+ */
+typedef enum {
+  ndn_NameComponentType_IMPLICIT_SHA256_DIGEST = 1,
+  ndn_NameComponentType_GENERIC = 8
+} ndn_NameComponentType;
+
+/**
  * An ndn_NameComponent holds a pointer to the component value.
  */
 struct ndn_NameComponent {
+  ndn_NameComponentType type;
   struct ndn_Blob value;     /**< A Blob with a pointer to the pre-allocated buffer for the component value */
 };
 

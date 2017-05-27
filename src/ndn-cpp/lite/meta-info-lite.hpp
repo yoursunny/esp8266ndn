@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2016 Regents of the University of California.
+ * Copyright (C) 2015-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,8 +39,22 @@ public:
    */
   MetaInfoLite();
 
+  /**
+   * Get the content type.
+   * @return The content type enum value. If this is ndn_ContentType_OTHER_CODE,
+   * then call getOtherTypeCode() to get the unrecognized content type code.
+   */
   ndn_ContentType
   getType() const { return type; }
+
+  /**
+   * Get the content type code from the packet which is other than a recognized
+   * ContentType enum value. This is only meaningful if getType() is
+   * ndn_ContentType_OTHER_CODE.
+   * @return The type code.
+   */
+  int
+  getOtherTypeCode() const { return otherTypeCode; }
 
   Milliseconds
   getFreshnessPeriod() const { return freshnessPeriod; }
@@ -48,8 +62,24 @@ public:
   const NameLite::Component
   getFinalBlockId() const { return NameLite::Component::downCast(finalBlockId); }
 
+  /**
+   * Set the content type.
+   * @param type The content type enum value. If the packet's content type is
+   * not a recognized ContentType enum value, use ndn_ContentType_OTHER_CODE and
+   * call setOtherTypeCode().
+   */
   void
   setType(ndn_ContentType type) { this->type = type; }
+
+  /**
+   * Set the packet's content type code to use when the content type enum is
+   * ndn_ContentType_OTHER_CODE. If the packet's content type code is a
+   * recognized enum value, just call setType().
+   * @param otherTypeCode The packet's unrecognized content type code, which
+   * must be non-negative.
+   */
+  void
+  setOtherTypeCode(int otherTypeCode) { this->otherTypeCode = otherTypeCode; }
 
   void
   setFreshnessPeriod(Milliseconds freshnessPeriod)

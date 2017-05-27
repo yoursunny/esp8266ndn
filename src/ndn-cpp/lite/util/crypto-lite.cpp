@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2016 Regents of the University of California.
+ * Copyright (C) 2015-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,20 +20,43 @@
  */
 
 #include "../../c/util/crypto.h"
+#include "../../lite/util/crypto-lite.hpp"
+
+namespace ndn {
+
+void
+CryptoLite::digestSha256(const uint8_t *data, size_t dataLength, uint8_t *digest)
+{
+  ndn_digestSha256(data, dataLength, digest);
+}
+
+ndn_Error
+CryptoLite::generateRandomBytes(uint8_t *buffer, size_t bufferLength)
+{
+  return ndn_generateRandomBytes(buffer, bufferLength);
+}
+
+void
+CryptoLite::computeHmacWithSha256
+  (const uint8_t *key, size_t keyLength, const uint8_t *data, size_t dataLength,
+   uint8_t *digest)
+{
+  ndn_computeHmacWithSha256(key, keyLength, data, dataLength, digest);
+}
+
+bool
+CryptoLite::verifyDigestSha256Signature
+  (const uint8_t* signature, size_t signatureLength, const uint8_t *data,
+   size_t dataLength)
+{
+  return ndn_verifyDigestSha256Signature
+    (signature, signatureLength, data, dataLength) != 0;
+}
+
+}
 
 #ifdef ARDUINO
 // Put the ARDUINO implementations in this C++ file, not in crypto.c.
-
-#include <Arduino.h>
-
-void ndn_generateRandomBytes(uint8_t *buffer, size_t bufferLength)
-{
-  // Assume the application has already initialized it, e.g.:
-  // randomSeed(analogRead(0));
-  size_t i;
-  for (i = 0; i < bufferLength; ++i)
-    buffer[i] = random(0, 256);
-}
 
 #include "../../cryptosuite/sha256.h"
 
@@ -59,4 +82,4 @@ ndn_computeHmacWithSha256
   memcpy(digest, Sha256.resultHmac(), ndn_SHA256_DIGEST_SIZE);
 }
 
-#endif
+#endif // ARDUINO

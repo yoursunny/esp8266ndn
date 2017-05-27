@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Regents of the University of California.
+ * Copyright (C) 2015-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 
 #ifndef NDN_DYNAMIC_UINT8_ARRAY_TYPES_H
 #define NDN_DYNAMIC_UINT8_ARRAY_TYPES_H
+
+#include "../common.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2013-2016 Regents of the University of California.
+ * Copyright (C) 2013-2017 Regents of the University of California.
  * Author: Junxiao Shi <shijunxiao@email.arizona.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -46,7 +46,6 @@
 
 #include <WinSock2.h>
 #include <stdint.h>
-#include "../../ndn-cpp-config.h"
 #define htobe16(x) htons(x)
 #define be16toh(x) ntohs(x)
 #define htobe32(x) htonl(x)

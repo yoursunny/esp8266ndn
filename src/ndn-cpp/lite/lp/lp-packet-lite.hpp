@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2016 Regents of the University of California.
+ * Copyright (C) 2016-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  * @author: From ndn-cxx packet.hpp https://github.com/named-data/ndn-cxx/blob/master/src/lp/packet.hpp
  *
@@ -149,7 +149,7 @@ public:
 
 private:
   // Declare friends who can downcast to the private base.
-  friend class Tlv0_1_1WireFormatLite;
+  friend class Tlv0_2WireFormatLite;
   friend class IncomingFaceIdLite;
   friend class NetworkNackLite;
 

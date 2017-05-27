@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2016 Regents of the University of California.
+ * Copyright (C) 2015-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -114,10 +114,10 @@ public:
   copyFromBack(const uint8_t *value, size_t valueLength, size_t offsetFromBack);
 
   /**
-   * Downcast the reference to the ndn_DynamicUInt8ArrayLite struct to a
-   * DynamicUInt8ArrayLiteLite.
-   * @param dynamicArray A reference to the ndn_DynamicUInt8ArrayLite struct.
-   * @return The same reference as DynamicUInt8ArrayLiteLite.
+   * Downcast the reference to the ndn_DynamicUInt8Array struct to a
+   * DynamicUInt8ArrayLite.
+   * @param dynamicArray A reference to the ndn_DynamicUInt8Array struct.
+   * @return The same reference as DynamicUInt8ArrayLite.
    */
   static DynamicUInt8ArrayLite&
   downCast(ndn_DynamicUInt8Array& dynamicArray)
@@ -131,13 +131,28 @@ public:
     return *(DynamicUInt8ArrayLite*)&dynamicArray;
   }
 
+protected:
+  /**
+   * Set the array and length. This is typically called by a derived class's
+   * constructor after setting up storage.
+   * @param array The allocated array buffer.
+   * @param length The length of the allocated array buffer.
+   */
+  void
+  setArrayAndLength(uint8_t *array, size_t length)
+  {
+    this->array = array;
+    this->length = length;
+  }
+
 private:
   // Declare friends who can downcast to the private base.
   friend class TcpTransportLite;
   friend class UdpTransportLite;
   friend class UnixTransportLite;
   friend class ArduinoYunTcpTransportLite;
-  friend class Tlv0_1_1WireFormatLite;
+  friend class Esp8266TcpTransportLite;
+  friend class Tlv0_2WireFormatLite;
 };
 
 }

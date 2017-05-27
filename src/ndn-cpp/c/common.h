@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2016 Regents of the University of California.
+ * Copyright (C) 2013-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,9 @@
   #define DEPRECATED_IN_NDN_CPP
 #endif
 
-#define round2(x) floor((x) + 0.5)
+#if !NDN_CPP_HAVE_ROUND
+#define round(x) floor((x) + 0.5)
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,10 +49,9 @@ typedef double ndn_Milliseconds;
 typedef double ndn_MillisecondsSince1970;
 
 /**
- * Get the current time in milliseconds. (For efficiency, this does not convert
- * to UTC time.)
- * @return The current time in milliseconds since 1/1/1970, including fractions
- * of a millisecond (according to timeval.tv_usec).
+ * Get the current time in milliseconds.
+ * @return The current time in milliseconds since 1/1/1970 UTC, including
+ * fractions of a millisecond (according to timeval.tv_usec).
  */
 ndn_MillisecondsSince1970
 ndn_getNowMilliseconds();
@@ -69,6 +70,12 @@ static const size_t MAX_NDN_PACKET_SIZE = 8800;
  * don't have to include the openssl header everywhere.
  */
 static const size_t ndn_SHA256_DIGEST_SIZE = 32;
+
+/**
+ * The block size in bytes for the AES 128 algorithm. We define this separately
+ * so that we don't have to include the openssl header everywhere.
+ */
+static const size_t ndn_AES_128_BLOCK_SIZE = 16;
 
 #ifdef __cplusplus
 }

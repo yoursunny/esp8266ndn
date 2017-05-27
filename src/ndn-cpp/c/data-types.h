@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2016 Regents of the University of California.
+ * Copyright (C) 2013-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,19 +22,26 @@
 #define NDN_DATA_TYPES_H
 
 #include "key-types.h"
+#include "security/validity-period-types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/** ndn_ContentType defines constants for the MetaInfo "type" field.  Note that the constants for BLOB, LINK and KEY
- * are the same as defined in the NDN-TLV spec.
+/**
+ * ndn_ContentType specifies the content type in a MetaInfo object. If the
+ * content type in the packet is not a recognized enum value, then we use
+ * ndn_ContentType_OTHER_CODE and you can call MetaInfo::getOtherTypeCode(). We
+ * do this to keep the recognized content type values independent of packet
+ * encoding formats. Note that the constants for BLOB, LINK, KEY and NACK are
+ * the same as defined in the NDN-TLV spec.
  */
 typedef enum {
   ndn_ContentType_BLOB = 0,
   ndn_ContentType_LINK = 1,
   ndn_ContentType_KEY =  2,
-  ndn_ContentType_NACK = 3
+  ndn_ContentType_NACK = 3,
+  ndn_ContentType_OTHER_CODE = 0x7fff
 } ndn_ContentType;
 
 /** ndn_SignatureType defines constants for the Signature "type" field.
@@ -63,6 +70,8 @@ struct ndn_Signature {
   int genericTypeCode;                   /**< used with Generic. -1 for not known. */
   struct ndn_KeyLocator keyLocator; /**< used with Sha256WithRsaSignature,
                                      * Sha256WithEcdsaSignature, HmacWithSha256Signature */
+  struct ndn_ValidityPeriod validityPeriod; /**< used with Sha256WithRsaSignature,
+                                     * Sha256WithEcdsaSignature */
 };
 
 /**
@@ -70,7 +79,8 @@ struct ndn_Signature {
  */
 struct ndn_MetaInfo {
   ndn_MillisecondsSince1970 timestampMilliseconds; /**< milliseconds since 1/1/1970. -1 for none */
-  ndn_ContentType type;                  /**< default is ndn_ContentType_DATA. -1 for none */
+  ndn_ContentType type;                  /**< default is ndn_ContentType_BLOB. -1 for none */
+  int otherTypeCode;
   ndn_Milliseconds freshnessPeriod;      /**< -1 for none */
   struct ndn_NameComponent finalBlockId; /**< has a pointer to a pre-allocated buffer.  0 for none */
 };

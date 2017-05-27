@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Regents of the University of California.
+ * Copyright (C) 2015-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,8 +18,8 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-#ifndef NDN_TLV_0_1_1_WIRE_FORMAT_H
-#define NDN_TLV_0_1_1_WIRE_FORMAT_H
+#ifndef NDN_TLV_0_2_WIRE_FORMAT_H
+#define NDN_TLV_0_2_WIRE_FORMAT_H
 
 #include "../../c/common.h"
 #include "../../c/errors.h"
@@ -55,7 +55,7 @@ extern "C" {
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_encodeName
+ndn_Tlv0_2WireFormat_encodeName
   (const struct ndn_Name *name, size_t *signedPortionBeginOffset,
    size_t *signedPortionEndOffset, struct ndn_DynamicUInt8Array *output,
    size_t *encodingLength);
@@ -77,7 +77,7 @@ ndn_Tlv0_1_1WireFormat_encodeName
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_decodeName
+ndn_Tlv0_2WireFormat_decodeName
   (struct ndn_Name *name, const uint8_t *input, size_t inputLength,
    size_t *signedPortionBeginOffset, size_t *signedPortionEndOffset);
 
@@ -99,7 +99,7 @@ ndn_Tlv0_1_1WireFormat_decodeName
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_encodeInterest
+ndn_Tlv0_2WireFormat_encodeInterest
   (const struct ndn_Interest *interest, size_t *signedPortionBeginOffset,
    size_t *signedPortionEndOffset, struct ndn_DynamicUInt8Array *output,
    size_t *encodingLength);
@@ -121,7 +121,7 @@ ndn_Tlv0_1_1WireFormat_encodeInterest
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_decodeInterest
+ndn_Tlv0_2WireFormat_decodeInterest
   (struct ndn_Interest *interest, const uint8_t *input, size_t inputLength,
    size_t *signedPortionBeginOffset, size_t *signedPortionEndOffset);
 
@@ -141,7 +141,7 @@ ndn_Tlv0_1_1WireFormat_decodeInterest
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_encodeData
+ndn_Tlv0_2WireFormat_encodeData
   (const struct ndn_Data *data, size_t *signedPortionBeginOffset,
    size_t *signedPortionEndOffset, struct ndn_DynamicUInt8Array *output,
    size_t *encodingLength);
@@ -160,7 +160,7 @@ ndn_Tlv0_1_1WireFormat_encodeData
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_decodeData
+ndn_Tlv0_2WireFormat_decodeData
   (struct ndn_Data *data, const uint8_t *input, size_t inputLength,
    size_t *signedPortionBeginOffset, size_t *signedPortionEndOffset);
 
@@ -174,7 +174,7 @@ ndn_Tlv0_1_1WireFormat_decodeData
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_encodeControlParameters
+ndn_Tlv0_2WireFormat_encodeControlParameters
   (const struct ndn_ControlParameters *controlParameters,
    struct ndn_DynamicUInt8Array *output, size_t *encodingLength);
 
@@ -188,7 +188,7 @@ ndn_Tlv0_1_1WireFormat_encodeControlParameters
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_decodeControlParameters
+ndn_Tlv0_2WireFormat_decodeControlParameters
   (struct ndn_ControlParameters *controlParameters, const uint8_t *input,
    size_t inputLength);
 
@@ -202,7 +202,7 @@ ndn_Tlv0_1_1WireFormat_decodeControlParameters
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_encodeControlResponse
+ndn_Tlv0_2WireFormat_encodeControlResponse
   (const struct ndn_ControlResponse *controlResponse,
    struct ndn_DynamicUInt8Array *output, size_t *encodingLength);
 
@@ -216,7 +216,7 @@ ndn_Tlv0_1_1WireFormat_encodeControlResponse
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_decodeControlResponse
+ndn_Tlv0_2WireFormat_decodeControlResponse
   (struct ndn_ControlResponse *controlResponse, const uint8_t *input,
    size_t inputLength);
 
@@ -230,7 +230,7 @@ ndn_Tlv0_1_1WireFormat_decodeControlResponse
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_encodeSignatureInfo
+ndn_Tlv0_2WireFormat_encodeSignatureInfo
   (const struct ndn_Signature *signature, struct ndn_DynamicUInt8Array *output,
    size_t *encodingLength);
 
@@ -245,7 +245,7 @@ ndn_Tlv0_1_1WireFormat_encodeSignatureInfo
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_encodeSignatureValue
+ndn_Tlv0_2WireFormat_encodeSignatureValue
   (const struct ndn_Signature *signature, struct ndn_DynamicUInt8Array *output,
    size_t *encodingLength);
 
@@ -260,7 +260,7 @@ ndn_Tlv0_1_1WireFormat_encodeSignatureValue
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_decodeSignatureInfoAndValue
+ndn_Tlv0_2WireFormat_decodeSignatureInfoAndValue
   (struct ndn_Signature *signature, const uint8_t *signatureInfo,
    size_t signatureInfoLength, const uint8_t *signatureValue,
    size_t signatureValueLength);
@@ -273,7 +273,7 @@ ndn_Tlv0_1_1WireFormat_decodeSignatureInfoAndValue
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_decodeLpPacket
+ndn_Tlv0_2WireFormat_decodeLpPacket
   (struct ndn_LpPacket *lpPacket, const uint8_t *input, size_t inputLength);
 
 /**
@@ -289,7 +289,7 @@ ndn_Tlv0_1_1WireFormat_decodeLpPacket
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_encodeDelegationSet_Delegation
+ndn_Tlv0_2WireFormat_encodeDelegationSet_Delegation
   (const struct ndn_DelegationSet_Delegation *delegation,
    struct ndn_DynamicUInt8Array *output, size_t offset, size_t *encodingLength);
 
@@ -305,7 +305,7 @@ ndn_Tlv0_1_1WireFormat_encodeDelegationSet_Delegation
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_decodeDelegationSet_Delegation
+ndn_Tlv0_2WireFormat_decodeDelegationSet_Delegation
   (struct ndn_DelegationSet_Delegation *delegation, const uint8_t *input,
    size_t inputLength, size_t *encodingLength);
 
@@ -320,7 +320,7 @@ ndn_Tlv0_1_1WireFormat_decodeDelegationSet_Delegation
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_encodeEncryptedContent
+ndn_Tlv0_2WireFormat_encodeEncryptedContent
   (const struct ndn_EncryptedContent *encryptedContent,
    struct ndn_DynamicUInt8Array *output, size_t *encodingLength);
 
@@ -334,7 +334,7 @@ ndn_Tlv0_1_1WireFormat_encodeEncryptedContent
  * @return 0 for success, else an error code.
  */
 ndn_Error
-ndn_Tlv0_1_1WireFormat_decodeEncryptedContent
+ndn_Tlv0_2WireFormat_decodeEncryptedContent
   (struct ndn_EncryptedContent *encryptedContent, const uint8_t *input,
    size_t inputLength);
 

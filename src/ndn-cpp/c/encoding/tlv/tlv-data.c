@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Regents of the University of California.
+ * Copyright (C) 2014-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #include "tlv-data.h"
 
 /**
- * This private function is called by ndn_TlvEncoder_writeTlv to write the TLVs in the body of the MetaInfo value.
+ * This private function is called by ndn_TlvEncoder_writeNestedTlv to write the TLVs in the body of the MetaInfo value.
  * @param context This is the ndn_MetaInfo struct pointer which was passed to writeTlv.
  * @param encoder the ndn_TlvEncoder which is calling this.
  * @return 0 for success, else an error code.
@@ -38,13 +38,21 @@ encodeMetaInfoValue(const void *context, struct ndn_TlvEncoder *encoder)
 
   if (!((int)metaInfo->type < 0 || metaInfo->type == ndn_ContentType_BLOB)) {
     // Not the default, so we need to encode the type.
-    if (metaInfo->type == ndn_ContentType_LINK || metaInfo->type == ndn_ContentType_KEY) {
+    if (metaInfo->type == ndn_ContentType_LINK ||
+        metaInfo->type == ndn_ContentType_KEY ||
+        metaInfo->type == ndn_ContentType_NACK) {
       // The ContentType enum is set up with the correct integer for each NDN-TLV ContentType.
       if ((error = ndn_TlvEncoder_writeNonNegativeIntegerTlv
           (encoder, ndn_Tlv_ContentType, metaInfo->type)))
         return error;
     }
+    else if (metaInfo->type == ndn_ContentType_OTHER_CODE) {
+      if ((error = ndn_TlvEncoder_writeNonNegativeIntegerTlv
+          (encoder, ndn_Tlv_ContentType, metaInfo->otherTypeCode)))
+        return error;
+    }
     else
+      // We don't expect this to happen.
       return NDN_ERROR_unrecognized_ndn_ContentType;
   }
 
@@ -56,10 +64,9 @@ encodeMetaInfoValue(const void *context, struct ndn_TlvEncoder *encoder)
     // The FinalBlockId has an inner NameComponent.
     if ((error = ndn_TlvEncoder_writeTypeAndLength
          (encoder, ndn_Tlv_FinalBlockId, ndn_TlvEncoder_sizeOfBlobTlv
-            (ndn_Tlv_NameComponent, &metaInfo->finalBlockId.value))))
+            (metaInfo->finalBlockId.type, &metaInfo->finalBlockId.value))))
       return error;
-    if ((error = ndn_TlvEncoder_writeBlobTlv
-         (encoder, ndn_Tlv_NameComponent, &metaInfo->finalBlockId.value)))
+    if ((error = ndn_encodeTlvNameComponent(&metaInfo->finalBlockId, encoder)))
       return error;
   }
 
@@ -76,7 +83,7 @@ struct DataValueContext {
 };
 
 /**
- * This private function is called by ndn_TlvEncoder_writeTlv to write the TLVs in the body of the Data value.
+ * This private function is called by ndn_TlvEncoder_writeNestedTlv to write the TLVs in the body of the Data value.
  * @param context This is the DataValueContext struct pointer which was passed to writeTlv.
  * @param encoder the ndn_TlvEncoder which is calling this.
  * @return 0 for success, else an error code.
@@ -133,13 +140,23 @@ decodeMetaInfo(struct ndn_MetaInfo *metaInfo, struct ndn_TlvDecoder *decoder)
   if ((error = ndn_TlvDecoder_readNestedTlvsStart(decoder, ndn_Tlv_MetaInfo, &endOffset)))
     return error;
 
-  // The ContentType enum is set up with the correct integer for each NDN-TLV ContentType.
+  int type;
   if ((error = ndn_TlvDecoder_readOptionalNonNegativeIntegerTlv
-       (decoder, ndn_Tlv_ContentType, endOffset, (int *)&metaInfo->type)))
+       (decoder, ndn_Tlv_ContentType, endOffset, &type)))
     return error;
-  if ((int)metaInfo->type < 0)
-    // Set to the actual value for the default.
+  if (type < 0 || type == ndn_ContentType_BLOB)
+    // Default to BLOB if the value is omitted.
     metaInfo->type = ndn_ContentType_BLOB;
+  else if (type == ndn_ContentType_LINK ||
+           type == ndn_ContentType_KEY ||
+           type == ndn_ContentType_NACK)
+    // The ContentType enum is set up with the correct integer for each NDN-TLV ContentType.
+    metaInfo->type = type;
+  else {
+    // Unrecognized content type.
+    metaInfo->type = ndn_ContentType_OTHER_CODE;
+    metaInfo->otherTypeCode = type;
+  }
 
   if ((error = ndn_TlvDecoder_readOptionalNonNegativeIntegerTlvAsDouble
        (decoder, ndn_Tlv_FreshnessPeriod, endOffset, &metaInfo->freshnessPeriod)))
@@ -153,8 +170,7 @@ decodeMetaInfo(struct ndn_MetaInfo *metaInfo, struct ndn_TlvDecoder *decoder)
     if ((error = ndn_TlvDecoder_readNestedTlvsStart
          (decoder, ndn_Tlv_FinalBlockId, &finalBlockIdEndOffset)))
       return error;
-    if ((error = ndn_TlvDecoder_readBlobTlv
-         (decoder, ndn_Tlv_NameComponent, &metaInfo->finalBlockId.value)))
+    if ((error = ndn_decodeTlvNameComponent(&metaInfo->finalBlockId, decoder)))
       return error;
     if ((error = ndn_TlvDecoder_finishNestedTlvs(decoder, finalBlockIdEndOffset)))
       return error;

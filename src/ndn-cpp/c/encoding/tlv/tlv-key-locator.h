@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Regents of the University of California.
+ * Copyright (C) 2014-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ extern "C" {
 #endif
 
 /**
- * This private function is called by ndn_TlvEncoder_writeTlv to write the TLVs in the body of the KeyLocator value.
+ * This private function is called by ndn_TlvEncoder_writeNestedTlv to write the TLVs in the body of the KeyLocator value.
  * @param context This is the ndn_KeyLocator struct pointer which was passed to writeTlv.
  * @param encoder the ndn_TlvEncoder which is calling this.
  * @return 0 for success, else an error code.

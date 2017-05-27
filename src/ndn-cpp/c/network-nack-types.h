@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Regents of the University of California.
+ * Copyright (C) 2016-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  * @author: From ndn-cxx nack.hpp https://github.com/named-data/ndn-cxx/blob/master/src/lp/nack.hpp
  *
@@ -35,10 +35,10 @@ extern "C" {
  */
 typedef enum {
   ndn_NetworkNackReason_NONE =        0,
-  ndn_NetworkNackReason_OTHER_CODE =  1,
   ndn_NetworkNackReason_CONGESTION = 50,
   ndn_NetworkNackReason_DUPLICATE = 100,
-  ndn_NetworkNackReason_NO_ROUTE =  150
+  ndn_NetworkNackReason_NO_ROUTE =  150,
+  ndn_NetworkNackReason_OTHER_CODE = 0x7fff
 } ndn_NetworkNackReason;
 
 /**

@@ -1,6 +1,6 @@
 /**
  * Define error codes and ndn_getErrorString to convert to a string.
- * Copyright (C) 2013-2016 Regents of the University of California.
+ * Copyright (C) 2013-2017 Regents of the University of California.
  * @author, Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -73,7 +73,17 @@ typedef enum {
   NDN_ERROR_ElementReader_ElementListener_is_not_specified,
   NDN_ERROR_ElementReader_The_incoming_packet_exceeds_the_maximum_limit_getMaxNdnPacketSize,
   NDN_ERROR_Interest_has_a_selected_delegation_but_no_link_object,
-  NDN_ERROR_The_Generic_signature_encoding_is_not_a_valid_NDN_TLV_SignatureInfo
+  NDN_ERROR_The_Generic_signature_encoding_is_not_a_valid_NDN_TLV_SignatureInfo,
+  NDN_ERROR_Error_encoding_key,
+  NDN_ERROR_Error_decoding_key,
+  NDN_ERROR_Error_in_sign_operation,
+  NDN_ERROR_Unsupported_algorithm_type,
+  NDN_ERROR_Error_in_encrypt_operation,
+  NDN_ERROR_Error_in_decrypt_operation,
+  NDN_ERROR_Error_in_generate_operation,
+  NDN_ERROR_Incorrect_key_size,
+  NDN_ERROR_Incorrect_initial_vector_size,
+  NDN_ERROR_Incorrect_digest_size
 } ndn_Error;
 
 /**

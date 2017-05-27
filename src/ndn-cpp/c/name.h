@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2016 Regents of the University of California.
+ * Copyright (C) 2013-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,13 +30,15 @@ extern "C" {
 #endif
 
 /**
- *
+ * Initialize the ndn_NameComponent struct with the given value and type
+ * ndn_NameComponentType_GENERIC.
  * @param self pointer to the ndn_NameComponent struct
  * @param value the pre-allocated buffer for the component value
  * @param valueLength the number of bytes in value
  */
 static __inline void ndn_NameComponent_initialize(struct ndn_NameComponent *self, const uint8_t *value, size_t valueLength)
 {
+  self->type = ndn_NameComponentType_GENERIC;
   ndn_Blob_initialize(&self->value, value, valueLength);
 }
 
@@ -50,7 +52,8 @@ static __inline void ndn_NameComponent_initialize(struct ndn_NameComponent *self
 static __inline int
 ndn_NameComponent_isSegment(const struct ndn_NameComponent *self)
 {
-  return self->value.length >= 1 && self->value.value[0] == 0x00 ? 1 : 0;
+  return (self->value.length >= 1 && self->value.value[0] == 0x00 &&
+          self->type == ndn_NameComponentType_GENERIC) ? 1 : 0;
 }
 
 /**
@@ -63,7 +66,8 @@ ndn_NameComponent_isSegment(const struct ndn_NameComponent *self)
 static __inline int
 ndn_NameComponent_isSegmentOffset(const struct ndn_NameComponent *self)
 {
-  return self->value.length >= 1 && self->value.value[0] == 0xFB ? 1 : 0;
+  return (self->value.length >= 1 && self->value.value[0] == 0xFB &&
+          self->type == ndn_NameComponentType_GENERIC) ? 1 : 0;
 }
 
 /**
@@ -76,7 +80,8 @@ ndn_NameComponent_isSegmentOffset(const struct ndn_NameComponent *self)
 static __inline int
 ndn_NameComponent_isVersion(const struct ndn_NameComponent *self)
 {
-  return self->value.length >= 1 && self->value.value[0] == 0xFD ? 1 : 0;
+  return (self->value.length >= 1 && self->value.value[0] == 0xFD &&
+          self->type == ndn_NameComponentType_GENERIC) ? 1 : 0;
 }
 
 /**
@@ -89,7 +94,8 @@ ndn_NameComponent_isVersion(const struct ndn_NameComponent *self)
 static __inline int
 ndn_NameComponent_isTimestamp(const struct ndn_NameComponent *self)
 {
-  return self->value.length >= 1 && self->value.value[0] == 0xFC ? 1 : 0;
+  return (self->value.length >= 1 && self->value.value[0] == 0xFC &&
+          self->type == ndn_NameComponentType_GENERIC) ? 1 : 0;
 }
 
 /**
@@ -102,7 +108,30 @@ ndn_NameComponent_isTimestamp(const struct ndn_NameComponent *self)
 static __inline int
 ndn_NameComponent_isSequenceNumber(const struct ndn_NameComponent *self)
 {
-  return self->value.length >= 1 && self->value.value[0] == 0xFE ? 1 : 0;
+  return (self->value.length >= 1 && self->value.value[0] == 0xFE &&
+          self->type == ndn_NameComponentType_GENERIC) ? 1 : 0;
+}
+
+/**
+ * Check if this component is a generic component.
+ * @param self A pointer to the ndn_NameComponent struct.
+ * @return 1 if this is a generic component, else 0.
+ */
+static __inline int
+ndn_NameComponent_isGeneric(const struct ndn_NameComponent *self)
+{
+  return self->type == ndn_NameComponentType_GENERIC ? 1 : 0;
+}
+
+/**
+ * Check if this component is an ImplicitSha256Digest component.
+ * @param self A pointer to the ndn_NameComponent struct.
+ * @return 1 if this is an ImplicitSha256Digest component, else 0.
+ */
+static __inline int
+ndn_NameComponent_isImplicitSha256Digest(const struct ndn_NameComponent *self)
+{
+  return self->type == ndn_NameComponentType_IMPLICIT_SHA256_DIGEST ? 1 : 0;
 }
 
 /**
@@ -230,6 +259,15 @@ ndn_NameComponent_hasPrefix
    size_t prefixLength);
 
 /**
+ * Check if this is the same component as other.
+ * @param self A pointer to this ndn_NameComponent struct.
+ * @param other A pointer to the other name component to check.
+ * @return 1 if the components are equal, 0 if not.
+ */
+int ndn_NameComponent_equals
+  (const struct ndn_NameComponent *self, const struct ndn_NameComponent *other);
+
+/**
  * Compare this component to the other component using NDN component ordering.
  * A component is less if it is shorter, otherwise if equal length do a byte
  * comparison.
@@ -255,6 +293,7 @@ ndn_NameComponent_setFromNameComponent
 /**
  * Set this name component to have a value which is the nonNegativeInteger
  * encoding of the number.
+ * Also set the type to ndn_NameComponentType_GENERIC.
  * @param self A pointer to this ndn_NameComponent struct.
  * @param number The number to be encoded.
  * @param buffer The allocated buffer to hold the name component value. This
@@ -272,6 +311,7 @@ ndn_NameComponent_setFromNumber
 /**
  * Set this name component to have a value which is the marker appended with the
  * nonNegativeInteger encoding of the number.
+ * Also set the type to ndn_NameComponentType_GENERIC.
  * @param self A pointer to this ndn_NameComponent struct.
  * @param number The number to be encoded.
  * @param marker The marker to use as the first byte of the component.
@@ -400,6 +440,19 @@ ndn_NameComponent_setSequenceNumber
 }
 
 /**
+ * Set this name component to have type ImplicitSha256DigestComponent with the
+ * given digest value, so that ndn_NameComponent_isImplicitSha256Digest is 1.
+ * @param self A pointer to this ndn_NameComponent struct.
+ * @param digest The pre-allocated buffer for the SHA-256 digest value.
+ * @param digestLength The length of digest, which must be ndn_SHA256_DIGEST_SIZE.
+ * @return 0 for success, or an error code if digestLength is not
+ * ndn_SHA256_DIGEST_SIZE.
+ */
+ndn_Error
+ndn_NameComponent_setImplicitSha256Digest
+  (struct ndn_NameComponent *self, const uint8_t* digest, size_t digestLength);
+
+/**
  * Initialize an ndn_Name struct with the components array.
  * @param self pointer to the ndn_Name struct
  * @param components the pre-allocated array of ndn_NameComponent
@@ -438,7 +491,7 @@ int ndn_Name_equals(const struct ndn_Name *self, const struct ndn_Name *name);
 int ndn_Name_match(const struct ndn_Name *self, const struct ndn_Name *name);
 
 /**
- * Append a component to this name with the bytes in the given array.
+ * Append a GENERIC component to this name with the bytes in the given array.
  * @param self pointer to the ndn_Name struct.
  * @param value The bytes of the component.  This does not copy the bytes.
  * @param valueLength The number of bytes in value.
@@ -447,7 +500,29 @@ int ndn_Name_match(const struct ndn_Name *self, const struct ndn_Name *name);
 ndn_Error ndn_Name_appendComponent(struct ndn_Name *self, const uint8_t* value, size_t valueLength);
 
 /**
- * Append a component to this name with the bytes in the given blob.
+ * Append a component to this name with the bytes in the given component's value
+ * and the component's type.
+ * @param self pointer to the ndn_Name struct.
+ * @param component A Component with the bytes of the component value. This
+ * does not copy the bytes.
+ * @return 0 for success, or an error code if there is no more room in the
+ * components array.
+ */
+ndn_Error ndn_Name_appendNameComponent
+  (struct ndn_Name *self, const struct ndn_NameComponent *component);
+
+/**
+ * Append all of the components of the given name to this name, including each
+ * component's type.
+ * @param self A pointer to the ndn_Name struct.
+ * @param name A pointer to the ndn_Name struct with the components to copy.
+ * @return 0 for success, or an error code if there is no more room in the
+ * components array.
+ */
+ndn_Error ndn_Name_appendName(struct ndn_Name *self, const struct ndn_Name *name);
+
+/**
+ * Append aGENERIC component to this name with the bytes in the given blob.
  * @param self pointer to the ndn_Name struct.
  * @param value An ndn_Blob with the bytes of the component.  This does not copy the bytes.
  * @return 0 for success, or an error code if there is no more room in the components array (nComponents is already maxComponents).
@@ -455,6 +530,27 @@ ndn_Error ndn_Name_appendComponent(struct ndn_Name *self, const uint8_t* value, 
 static __inline ndn_Error ndn_Name_appendBlob(struct ndn_Name *self, struct ndn_Blob *value)
 {
   return ndn_Name_appendComponent(self, value->value, value->length);
+}
+
+/**
+ * Append a component of type ImplicitSha256DigestComponent to this name with
+ * the given digest value, so that ndn_NameComponent_isImplicitSha256Digest is 1.
+ * @param self pointer to the ndn_Name struct.
+ * @param digest The pre-allocated buffer for the SHA-256 digest value.
+ * @param digestLength The length of digest, which must be ndn_SHA256_DIGEST_SIZE.
+ * @return 0 for success, or an error code if digestLength is not
+ * ndn_SHA256_DIGEST_SIZE, or if there is no more room in the components array
+ * (nComponents is already maxComponents).
+ */
+static __inline ndn_Error ndn_Name_appendImplicitSha256Digest
+  (struct ndn_Name *self, const uint8_t* digest, size_t digestLength)
+{
+  ndn_Error error;
+  // Add an empty component.
+  if ((error = ndn_Name_appendComponent(self, 0, 0)))
+    return error;
+  return ndn_NameComponent_setImplicitSha256Digest
+    (&self->components[self->nComponents - 1], digest, digestLength);
 }
 
 /**

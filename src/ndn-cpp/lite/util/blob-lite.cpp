@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2016 Regents of the University of California.
+ * Copyright (C) 2015-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,6 +32,12 @@ BlobLite::BlobLite()
 BlobLite::BlobLite(const uint8_t* buf, size_t size)
 {
   ndn_Blob_initialize(this, buf, size);
+}
+
+bool
+BlobLite::equals(const BlobLite& other) const
+{
+  return ndn_Blob_equals(this, &other) != 0;
 }
 
 

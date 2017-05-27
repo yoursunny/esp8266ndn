@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2016 Regents of the University of California.
+ * Copyright (C) 2015-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -110,8 +110,8 @@ public:
   appendAny();
 
   /**
-   * Append a new entry of type ndn_Exclude_COMPONENT with the given component
-   * value.
+   * Append a new entry of type ndn_Exclude_COMPONENT with the given GENERIC
+   * component value.
    * @param component The bytes of the component.  This does not copy the bytes.
    * @param componentLength The number of bytes in component.
    * @return 0 for success, or an error code if there is no more room in the
@@ -129,11 +129,7 @@ public:
    * entries array (nEntries is already maxEntries).
    */
   ndn_Error
-  appendComponent(const NameLite::Component& component)
-  {
-    return appendComponent
-      (component.getValue().buf(), component.getValue().size());
-  }
+  appendComponent(const NameLite::Component& component);
 
   /**
    * Clear all the entries.

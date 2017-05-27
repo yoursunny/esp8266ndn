@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Regents of the University of California.
+ * Copyright (C) 2014-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  * Derived from tlv.hpp by Alexander Afanasyev <alexander.afanasyev@ucla.edu>
  *
@@ -199,6 +199,7 @@ ndn_TlvEncoder_writeNonNegativeInteger(struct ndn_TlvEncoder *self, uint64_t val
 
 /**
  * Return the number of bytes to encode the type, length and blob value.
+ * @param type the type of the TLV.
  * @param value A Blob with the array of bytes for the value.
  * @return The number of bytes to encode the TLV.
  */
@@ -278,7 +279,7 @@ ndn_TlvEncoder_writeBlobTlv
 
 /**
  * If value or valueLen is 0 then do nothing, otherwise call
- * ndn_TlvEncoder_writeOptionalBlobTlv.
+ * ndn_TlvEncoder_writeBlobTlv.
  * @param self A pointer to the ndn_TlvEncoder struct.
  * @param type the type of the TLV.
  * @param value A Blob with the array of bytes for the value.
@@ -349,7 +350,7 @@ static __inline ndn_Error
 ndn_TlvEncoder_writeOptionalNonNegativeIntegerTlvFromDouble(struct ndn_TlvEncoder *self, unsigned int type, double value)
 {
   if (value >= 0.0)
-    return ndn_TlvEncoder_writeNonNegativeIntegerTlv(self, type, (uint64_t)round2(value));
+    return ndn_TlvEncoder_writeNonNegativeIntegerTlv(self, type, (uint64_t)round(value));
   else
     return NDN_ERROR_success;
 }

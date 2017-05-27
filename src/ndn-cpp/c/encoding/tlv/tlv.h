@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Regents of the University of California.
+ * Copyright (C) 2014-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  * Derived from tlv.hpp by Alexander Afanasyev <alexander.afanasyev@ucla.edu>
  *
@@ -30,6 +30,7 @@ enum {
   ndn_Tlv_Interest =         5,
   ndn_Tlv_Data =             6,
   ndn_Tlv_Name =             7,
+  ndn_Tlv_ImplicitSha256DigestComponent = 1,
   ndn_Tlv_NameComponent =    8,
   ndn_Tlv_Selectors =        9,
   ndn_Tlv_Nonce =            10,
@@ -112,6 +113,30 @@ enum {
   ndn_Tlv_Encrypt_EncryptionAlgorithm = 131,
   ndn_Tlv_Encrypt_EncryptedPayload =    132,
   ndn_Tlv_Encrypt_InitialVector =       133
+};
+
+// For RepetitiveInterval.
+enum {
+  ndn_Tlv_Encrypt_StartDate =          134,
+  ndn_Tlv_Encrypt_EndDate =            135,
+  ndn_Tlv_Encrypt_IntervalStartHour =  136,
+  ndn_Tlv_Encrypt_IntervalEndHour =    137,
+  ndn_Tlv_Encrypt_NRepeats =           138,
+  ndn_Tlv_Encrypt_RepeatUnit =         139,
+  ndn_Tlv_Encrypt_RepetitiveInterval = 140
+};
+
+// For Schedule.
+enum {
+  ndn_Tlv_Encrypt_WhiteIntervalList = 141,
+  ndn_Tlv_Encrypt_BlackIntervalList = 142,
+  ndn_Tlv_Encrypt_Schedule =          143
+};
+
+enum {
+  ndn_Tlv_ValidityPeriod_ValidityPeriod = 253,
+  ndn_Tlv_ValidityPeriod_NotBefore =      254,
+  ndn_Tlv_ValidityPeriod_NotAfter =       255
 };
 
 #ifdef __cplusplus

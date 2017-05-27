@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Regents of the University of California.
+ * Copyright (C) 2014-2017 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,39 @@
 #include "tlv-name.h"
 
 ndn_Error
+ndn_encodeTlvNameComponent
+  (const struct ndn_NameComponent *component, struct ndn_TlvEncoder *encoder)
+{
+  unsigned int type = ndn_NameComponent_isImplicitSha256Digest(component) ?
+    ndn_Tlv_ImplicitSha256DigestComponent : ndn_Tlv_NameComponent;
+  return ndn_TlvEncoder_writeBlobTlv(encoder, type, &component->value);
+}
+
+ndn_Error
+ndn_decodeTlvNameComponent
+  (struct ndn_NameComponent *component, struct ndn_TlvDecoder *decoder)
+{
+  ndn_Error error;
+  uint64_t type;
+  size_t saveOffset;
+
+  saveOffset = decoder->offset;
+  if ((error = ndn_TlvDecoder_readVarNumber(decoder, &type)))
+    return error;
+  // Restore the position.
+  ndn_TlvDecoder_seek(decoder, saveOffset);
+
+  if ((error = ndn_TlvDecoder_readBlobTlv(decoder, type, &component->value)))
+    return error;
+  if (type == ndn_Tlv_ImplicitSha256DigestComponent)
+    component->type = ndn_NameComponentType_IMPLICIT_SHA256_DIGEST;
+  else
+    component->type = ndn_NameComponentType_GENERIC;
+
+  return NDN_ERROR_success;
+}
+
+ndn_Error
 ndn_encodeTlvName
   (const struct ndn_Name *name, size_t *signedPortionBeginOffset,
    size_t *signedPortionEndOffset, struct ndn_TlvEncoder *encoder)
@@ -30,7 +63,8 @@ ndn_encodeTlvName
   ndn_Error error;
 
   for (i = 0; i < name->nComponents; ++i)
-    nameValueLength += ndn_TlvEncoder_sizeOfBlobTlv(ndn_Tlv_NameComponent, &name->components[i].value);
+    nameValueLength += ndn_TlvEncoder_sizeOfBlobTlv
+      (name->components[i].type, &name->components[i].value);
 
   if ((error = ndn_TlvEncoder_writeTypeAndLength(encoder, ndn_Tlv_Name, nameValueLength)))
     return error;
@@ -46,8 +80,7 @@ ndn_encodeTlvName
         // We will begin the final component.
         *signedPortionEndOffset = encoder->offset;
 
-      if ((error = ndn_TlvEncoder_writeBlobTlv
-           (encoder, ndn_Tlv_NameComponent, &name->components[i].value)))
+      if ((error = ndn_encodeTlvNameComponent(&name->components[i], encoder)))
         return error;
     }
   }
@@ -72,13 +105,13 @@ ndn_decodeTlvName
 
   name->nComponents = 0;
   while (decoder->offset < endOffset) {
-    struct ndn_Blob component;
-
     *signedPortionEndOffset = decoder->offset;
 
-    if ((error = ndn_TlvDecoder_readBlobTlv(decoder, ndn_Tlv_NameComponent, &component)))
+    // First append an empty component, then decode into it.
+    if ((error = ndn_Name_appendComponent(name, 0, 0)))
       return error;
-    if ((error = ndn_Name_appendBlob(name, &component)))
+    if ((error = ndn_decodeTlvNameComponent
+         (&name->components[name->nComponents - 1], decoder)))
       return error;
   }
 
