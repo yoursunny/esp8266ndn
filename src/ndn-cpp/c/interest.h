@@ -134,6 +134,7 @@ static __inline void ndn_Interest_initialize
   self->interestLifetimeMilliseconds = -1.0;
   ndn_Blob_initialize(&self->nonce, 0, 0);
   ndn_KeyLocator_initialize(&self->keyLocator, keyNameComponents, maxKeyNameComponents);
+  ndn_Blob_initialize(&self->forwardingHintWireEncoding, 0, 0);
   ndn_Blob_initialize(&self->linkWireEncoding, 0, 0);
   self->selectedDelegationIndex = -1;
 }
@@ -191,6 +192,7 @@ ndn_Interest_setFromInterest
   if ((error = ndn_KeyLocator_setFromKeyLocator
        (&self->keyLocator, &other->keyLocator)))
     return error;
+  ndn_Blob_setFromBlob(&self->forwardingHintWireEncoding, &other->forwardingHintWireEncoding);
   ndn_Blob_setFromBlob(&self->linkWireEncoding, &other->linkWireEncoding);
   self->selectedDelegationIndex = other->selectedDelegationIndex;
 

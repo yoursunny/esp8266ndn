@@ -170,4 +170,15 @@ ndn_EcPrivateKey_signWithSha256
   return NDN_ERROR_success;
 }
 
+ndn_Error
+ndn_EcPrivateKey_getCurveId(const struct ndn_EcPrivateKey *self, int *curveId)
+{
+  const EC_GROUP *group = EC_KEY_get0_group(self->privateKey);
+  if (!group)
+    return NDN_ERROR_Error_decoding_key;
+
+  *curveId = EC_GROUP_get_curve_name(group);
+  return NDN_ERROR_success;
+}
+
 #endif // NDN_CPP_HAVE_LIBCRYPTO

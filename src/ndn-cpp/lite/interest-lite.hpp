@@ -101,6 +101,17 @@ public:
   const BlobLite&
   getNonce() const { return BlobLite::downCast(nonce); }
 
+  /**
+   * Get the forwarding hint, encoded as a sequence of delegations without the
+   * outer TLV type and length (which has already been removed).
+   * @return The forwarding hint encoding.
+   */
+  const BlobLite&
+  getForwardingHintWireEncoding() const
+  {
+    return BlobLite::downCast(forwardingHintWireEncoding);
+  }
+
   const BlobLite&
   getLinkWireEncoding() const { return BlobLite::downCast(linkWireEncoding); }
 
@@ -188,6 +199,21 @@ public:
   setNonce(const BlobLite& nonce)
   {
     BlobLite::downCast(this->nonce) = nonce;
+    return *this;
+  }
+
+  /**
+   * Set the forwarding hint, encoded as a sequence of delegations without the
+   * outer TLV type and length (which will be added later).
+   * @param nonce The encoding value. This does not copy the bytes of the
+   * encoding.
+   * @return This InterestLite so that you can chain calls to update values.
+   */
+  InterestLite&
+  setForwardingHintWireEncoding(const BlobLite& forwardingHintWireEncoding)
+  {
+    BlobLite::downCast(this->forwardingHintWireEncoding) =
+      forwardingHintWireEncoding;
     return *this;
   }
 

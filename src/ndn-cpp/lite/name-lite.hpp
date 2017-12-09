@@ -33,7 +33,7 @@ class ExcludeLite;
 /**
  * A NameLite holds an array of NameLite::Component.
  */
-class NameLite : private ndn_Name {
+class NameLite : public ndn_Name {
 public:
   /**
    * A NameLite::Component holds a pointer to the component value.
@@ -393,8 +393,8 @@ public:
     downCast(const ndn_NameComponent& component) { return *(Component*)&component; }
 
   private:
-    friend NameLite;
-    friend ExcludeLite;
+    friend class NameLite;
+    friend class ExcludeLite;
   };
 
   /**

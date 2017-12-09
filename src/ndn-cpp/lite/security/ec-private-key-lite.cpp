@@ -22,6 +22,8 @@
 #include "../../c/security/ec-private-key.h"
 #include "../../lite/security/ec-private-key-lite.hpp"
 
+#if NDN_CPP_HAVE_LIBCRYPTO
+
 namespace ndn {
 
 EcPrivateKeyLite::EcPrivateKeyLite()
@@ -79,4 +81,12 @@ EcPrivateKeyLite::signWithSha256
     (this, data, dataLength, signature, &signatureLength);
 }
 
+ndn_Error
+EcPrivateKeyLite::getCurveId(int& curveId) const
+{
+  return ndn_EcPrivateKey_getCurveId(this, &curveId);
 }
+
+}
+
+#endif // NDN_CPP_HAVE_LIBCRYPTO

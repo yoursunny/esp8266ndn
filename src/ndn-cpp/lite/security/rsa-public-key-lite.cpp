@@ -22,6 +22,8 @@
 #include "../../c/security/rsa-public-key.h"
 #include "../../lite/security/rsa-public-key-lite.hpp"
 
+#if NDN_CPP_HAVE_LIBCRYPTO
+
 namespace ndn {
 
 RsaPublicKeyLite::RsaPublicKeyLite()
@@ -82,3 +84,5 @@ RsaPublicKeyLite::encrypt
 }
 
 }
+
+#endif // NDN_CPP_HAVE_LIBCRYPTO

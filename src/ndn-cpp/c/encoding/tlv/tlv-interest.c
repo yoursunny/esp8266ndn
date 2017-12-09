@@ -158,6 +158,19 @@ encodeInterestValue(const void *context, struct ndn_TlvEncoder *encoder)
       (encoder, ndn_Tlv_InterestLifetime, interest->interestLifetimeMilliseconds)))
     return error;
 
+  if (interest->forwardingHintWireEncoding.value &&
+      interest->forwardingHintWireEncoding.length > 0) {
+    if (interest->selectedDelegationIndex >= 0)
+      return NDN_ERROR_An_Interest_may_not_have_a_selected_delegation_when_encoding_a_forwarding_hint;
+    if (interest->linkWireEncoding.value)
+      return NDN_ERROR_An_Interest_may_not_have_a_link_object_when_encoding_a_forwarding_hint;
+
+    // Add the encoded sequence of delegations as is.
+    if ((error = ndn_TlvEncoder_writeBlobTlv
+         (encoder, ndn_Tlv_ForwardingHint, &interest->forwardingHintWireEncoding)))
+      return error;
+  }
+
   if (interest->linkWireEncoding.value) {
     // Encode the entire link as is.
     if ((error = ndn_TlvEncoder_writeArray
@@ -318,6 +331,12 @@ ndn_decodeTlvInterest
 
   if ((error = ndn_TlvDecoder_readOptionalNonNegativeIntegerTlvAsDouble
        (decoder, ndn_Tlv_InterestLifetime, endOffset, &interest->interestLifetimeMilliseconds)))
+    return error;
+
+  // Get the encoded sequence of delegations as is.
+  if ((error = ndn_TlvDecoder_readOptionalBlobTlv
+       (decoder, ndn_Tlv_ForwardingHint, endOffset,
+        &interest->forwardingHintWireEncoding)))
     return error;
 
   if ((error = ndn_TlvDecoder_peekType(decoder, ndn_Tlv_Data, endOffset, &gotExpectedType)))

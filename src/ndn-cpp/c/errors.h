@@ -83,7 +83,9 @@ typedef enum {
   NDN_ERROR_Error_in_generate_operation,
   NDN_ERROR_Incorrect_key_size,
   NDN_ERROR_Incorrect_initial_vector_size,
-  NDN_ERROR_Incorrect_digest_size
+  NDN_ERROR_Incorrect_digest_size,
+  NDN_ERROR_An_Interest_may_not_have_a_selected_delegation_when_encoding_a_forwarding_hint,
+  NDN_ERROR_An_Interest_may_not_have_a_link_object_when_encoding_a_forwarding_hint
 } ndn_Error;
 
 /**

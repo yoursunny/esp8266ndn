@@ -108,6 +108,7 @@ ndn_getEcKeyInfo(int i) { return EC_KEY_INFO + i; }
 #include "time.h"
 // Use the openssl code in contrib.
 #include "../../../contrib/openssl/sha.h"
+#include "ndn_memory.h"
 
 void
 ndn_digestSha256(const uint8_t *data, size_t dataLength, uint8_t *digest)
@@ -134,6 +135,18 @@ ndn_generateRandomBytes(uint8_t *buffer, size_t bufferLength)
     buffer[i] = (uint8_t)rand();
 
   return NDN_ERROR_success;
+}
+
+int
+ndn_verifyDigestSha256Signature
+  (const uint8_t *signature, size_t signatureLength, const uint8_t *data,
+   size_t dataLength)
+{
+  uint8_t dataDigest[ndn_SHA256_DIGEST_SIZE];
+  ndn_digestSha256(data, dataLength, dataDigest);
+
+  return signatureLength == ndn_SHA256_DIGEST_SIZE && ndn_memcmp
+    (signature, dataDigest, ndn_SHA256_DIGEST_SIZE) == 0;
 }
 
 size_t

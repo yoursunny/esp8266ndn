@@ -32,10 +32,8 @@ namespace ndn {
  * An EcPrivateKeyLite holds a decoded or generated EC private key for use in
  * crypto operations.
  */
-class EcPrivateKeyLite : private ndn_EcPrivateKey {
+class EcPrivateKeyLite : public ndn_EcPrivateKey {
 public:
-   struct ec_key_st* debugGetPrivateKey() { return this->privateKey; }
-
   /**
    * Create an EcPrivateKeyLite with a null value.
    */
@@ -173,6 +171,15 @@ public:
   {
     return signWithSha256(data.buf(), data.size(), signature, signatureLength);
   }
+
+  /**
+   * Get the OpenSSL curve ID.
+   * @param curveId Set curveId to the OpenSSL curve ID such as NID_secp384r1.
+   * @return 0 for success, else NDN_ERROR_Error_decoding_key if can't get the
+   * curve ID.
+   */
+  ndn_Error
+  getCurveId(int& curveId) const;
 
   /**
    * Downcast the reference to the ndn_EcPrivateKey struct to a EcPrivateKeyLite.

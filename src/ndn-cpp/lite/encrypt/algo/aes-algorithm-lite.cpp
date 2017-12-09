@@ -22,6 +22,8 @@
 #include "../../../c/encrypt/algo/aes-algorithm.h"
 #include "../../../lite/encrypt/algo/aes-algorithm-lite.hpp"
 
+#if NDN_CPP_HAVE_LIBCRYPTO
+
 namespace ndn {
 
 ndn_Error
@@ -67,3 +69,5 @@ AesAlgorithmLite::encrypt128Ecb
 }
 
 }
+
+#endif // NDN_CPP_HAVE_LIBCRYPTO

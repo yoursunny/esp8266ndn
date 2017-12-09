@@ -36,6 +36,8 @@ CryptoLite::generateRandomBytes(uint8_t *buffer, size_t bufferLength)
   return ndn_generateRandomBytes(buffer, bufferLength);
 }
 
+#if NDN_CPP_HAVE_LIBCRYPTO
+
 void
 CryptoLite::computeHmacWithSha256
   (const uint8_t *key, size_t keyLength, const uint8_t *data, size_t dataLength,
@@ -43,6 +45,8 @@ CryptoLite::computeHmacWithSha256
 {
   ndn_computeHmacWithSha256(key, keyLength, data, dataLength, digest);
 }
+
+#endif
 
 bool
 CryptoLite::verifyDigestSha256Signature
