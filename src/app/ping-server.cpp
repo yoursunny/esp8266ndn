@@ -23,7 +23,7 @@ PingServer::processInterest(const InterestLite& interest)
   ndn::DataLite data(nameComps, NDNPINGSERVER_NAMECOMPS_MAX, nullptr, 0);
   data.getName().set(interest.getName());
   data.getMetaInfo().setFreshnessPeriod(0.0);
-  PINGSERVER_DBG(F("processing request") << PrintUri(interest.getName()));
+  PINGSERVER_DBG(F("processing request ") << PrintUri(interest.getName()));
 
   uint8_t payload[NDNPINGSERVER_PAYLOAD_MAX];
   size_t payloadSize = 0;
