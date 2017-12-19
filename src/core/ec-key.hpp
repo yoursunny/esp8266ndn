@@ -6,6 +6,8 @@
 
 namespace ndn {
 
+#define NDNECKEY_MAXSIGLEN 72
+
 /** \brief Holds an EC private key and/or public key.
  */
 class EcKey
@@ -14,14 +16,23 @@ public:
   EcKey(const uint8_t* pvtKey, const uint8_t* pubKey);
 
   /** \brief Sign input using SignatureSha256WithEcdsa.
+   *  \param input signed portion
+   *  \param inputLen input length
+   *  \param[out] sig signature bits
+   *  \return SignatureValue total length
+   *  \retval 0 error
    */
-  bool
-  sign(const uint8_t* input, size_t len, uint8_t* signature, size_t* sigLen) const;
+  int
+  sign(const uint8_t* input, size_t inputLen, uint8_t* sig) const;
 
   /** \brief Verify signature on input using SignatureSha256WithEcdsa.
+   *  \param input signed portion
+   *  \param inputLen input length
+   *  \param sig signature bits
+   *  \param sigLen SignatureValue total length
    */
   bool
-  verify(const uint8_t* input, size_t len, const uint8_t* signature, size_t sigLen) const;
+  verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const;
 
 private:
   const uint8_t* m_pvtKey;
