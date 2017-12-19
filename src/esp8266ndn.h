@@ -3,6 +3,7 @@
 
 #include "ndn-cpp/ndn-cpp-all.hpp"
 
+#include "core/ec-key.hpp"
 #include "core/face.hpp"
 #include "core/logger.hpp"
 #include "core/transport.hpp"
