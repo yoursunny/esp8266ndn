@@ -14,6 +14,7 @@ public:
    *  \param bits uncompressed points in standard format without leading 0x04 prefix;
    *              caller must retain memory of these bits
    */
+  explicit
   EcPublicKey(const uint8_t bits[64]);
 
   bool

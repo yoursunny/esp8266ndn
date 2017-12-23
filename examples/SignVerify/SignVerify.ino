@@ -1,8 +1,13 @@
 #include <esp8266ndn.h>
 
-#define USE_KEY_HMAC 1
-#define USE_KEY_EC   2
-#define USE_KEY USE_KEY_HMAC
+#define USE_KEY_DIGEST 0
+#define USE_KEY_HMAC   1
+#define USE_KEY_EC     2
+#define USE_KEY        USE_KEY_EC
+
+#if USE_KEY == USE_KEY_DIGEST
+ndn::DigestKey g_pvtkey, g_pubkey;
+#endif
 
 #if USE_KEY == USE_KEY_HMAC
 const uint8_t HMACKEY[] {

@@ -10,6 +10,7 @@
 #include "core/unicast-udp-transport.hpp"
 #include "core/uri.hpp"
 
+#include "security/digest-key.hpp"
 #include "security/ec-private-key.hpp"
 #include "security/ec-public-key.hpp"
 #include "security/hmac-key.hpp"
