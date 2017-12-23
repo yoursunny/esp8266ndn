@@ -5,6 +5,7 @@
 
 #include "core/face.hpp"
 #include "core/logger.hpp"
+#include "core/loopback-transport.hpp"
 #include "core/transport.hpp"
 #include "core/unicast-udp-transport.hpp"
 #include "core/uri.hpp"

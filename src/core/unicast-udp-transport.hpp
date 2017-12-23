@@ -6,7 +6,7 @@
 
 namespace ndn {
 
-/** \brief a Transport that communicates over UDP tunnel to a single remote NDN routerIp
+/** \brief a transport that communicates over UDP tunnel to a remote router
  */
 class UnicastUdpTransport : public Transport
 {
@@ -20,11 +20,11 @@ public:
   void
   end();
 
-  virtual size_t
-  receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId) override;
+  size_t
+  receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId) final;
 
-  virtual void
-  send(const uint8_t* pkt, size_t len, uint64_t endpointId) override;
+  void
+  send(const uint8_t* pkt, size_t len, uint64_t endpointId) final;
 
 private:
   UDP& m_udp;
