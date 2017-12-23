@@ -86,4 +86,10 @@ EcPrivateKey::sign(const uint8_t* input, size_t inputLen, uint8_t* sig) const
   return encodeSignatureBits(sig);
 }
 
+ndn_Error
+EcPrivateKey::setSignatureInfo(SignatureLite& signature) const
+{
+  return NDN_ERROR_Unimplemented_operation;
+}
+
 } // namespace ndn

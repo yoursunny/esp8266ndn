@@ -27,14 +27,11 @@ public:
   int
   sign(const uint8_t* input, size_t inputLen, uint8_t* sig) const final;
 
+  ndn_Error
+  setSignatureInfo(SignatureLite& signature) const final;
+
   bool
   verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const final;
-
-  const uint8_t*
-  getKeyDigest() const
-  {
-    return m_keyDigest;
-  }
 
 private:
   const uint8_t* m_secret;

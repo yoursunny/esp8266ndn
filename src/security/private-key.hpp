@@ -1,8 +1,7 @@
 #ifndef ESP8266NDN_PRIVATE_KEY_HPP
 #define ESP8266NDN_PRIVATE_KEY_HPP
 
-#include <cinttypes>
-#include <cstddef>
+#include "../ndn-cpp/lite/signature-lite.hpp"
 
 namespace ndn {
 
@@ -28,6 +27,12 @@ public:
    */
   virtual int
   sign(const uint8_t* input, size_t inputLen, uint8_t* sig) const = 0;
+
+  /** \brief Provide SignatureType and KeyLocator.
+   *  \param signature receiving SignatureInfo element
+   */
+  virtual ndn_Error
+  setSignatureInfo(SignatureLite& signature) const = 0;
 };
 
 } // namespace ndn

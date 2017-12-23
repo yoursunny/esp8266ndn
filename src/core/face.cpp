@@ -149,10 +149,7 @@ Face::sendData(DataLite& data, uint64_t endpointId)
     FACE_DBG(F("cannot sign Data: HMAC key is unset"));
     return;
   }
-  SignatureLite& signature = data.getSignature();
-  signature.setType(ndn_SignatureType_DigestSha256Signature);
-  signature.getKeyLocator().setType(ndn_KeyLocatorType_KEY_LOCATOR_DIGEST);
-  signature.getKeyLocator().setKeyData(BlobLite(m_hmacKey->getKeyDigest(), ndn_SHA256_DIGEST_SIZE));
+  m_hmacKey->setSignatureInfo(data.getSignature());
 
   uint8_t* outBuf = reinterpret_cast<uint8_t*>(malloc(NDNFACE_OUTBUF_SIZE));
   if (outBuf == nullptr) {
@@ -164,6 +161,7 @@ Face::sendData(DataLite& data, uint64_t endpointId)
   ndn_Error error = Tlv0_2WireFormatLite::encodeData(data, &signedBegin, &signedEnd, output, &len);
   if (error) {
     FACE_DBG(F("send Data encoding error: ") << _DEC(error));
+    free(outBuf);
     return;
   }
 
@@ -173,6 +171,7 @@ Face::sendData(DataLite& data, uint64_t endpointId)
   error = Tlv0_2WireFormatLite::encodeData(data, &signedBegin, &signedEnd, output, &len);
   if (error) {
     FACE_DBG(F("send Data encoding error: ") << _DEC(error));
+    free(outBuf);
     return;
   }
 

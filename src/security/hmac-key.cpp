@@ -17,6 +17,16 @@ HmacKey::sign(const uint8_t* input, size_t inputLen, uint8_t* sig) const
   return ndn_SHA256_DIGEST_SIZE;
 }
 
+ndn_Error
+HmacKey::setSignatureInfo(SignatureLite& signature) const
+{
+  signature.setType(ndn_SignatureType_HmacWithSha256Signature);
+  KeyLocatorLite& kl = signature.getKeyLocator();
+  kl.setType(ndn_KeyLocatorType_KEY_LOCATOR_DIGEST);
+  kl.setKeyData(BlobLite(m_keyDigest, ndn_SHA256_DIGEST_SIZE));
+  return NDN_ERROR_success;
+}
+
 bool
 HmacKey::verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const
 {

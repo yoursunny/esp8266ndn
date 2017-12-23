@@ -25,6 +25,9 @@ public:
   int
   sign(const uint8_t* input, size_t inputLen, uint8_t* sig) const final;
 
+  ndn_Error
+  setSignatureInfo(SignatureLite& signature) const final;
+
 public:
   static constexpr size_t MAX_SIG_LENGTH = 72;
 
