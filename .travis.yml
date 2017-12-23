@@ -7,19 +7,16 @@ install:
   - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16
   - sleep 3
   - export DISPLAY=:1.0
-  - wget http://downloads.arduino.cc/arduino-1.6.7-linux64.tar.xz
-  - tar xf arduino-1.6.7-linux64.tar.xz
-  - mv arduino-1.6.7 $HOME/arduino_ide
+  - curl -L http://downloads.arduino.cc/arduino-1.6.13-linux64.tar.xz | tar xJ; mv arduino-1.6.13 $HOME/arduino_ide
   - export PATH="$HOME/arduino_ide:$PATH"
   - cd $HOME/arduino_ide/hardware
   - mkdir esp8266com; cd esp8266com
-  - git clone --depth=1 https://github.com/esp8266/Arduino.git esp8266
+  - curl -L https://github.com/esp8266/Arduino/archive/2.4.0-rc2.tar.gz | tar xz; mv Arduino-2.4.0-rc2 esp8266
   - cd esp8266/tools; python get.py
 
 before_script:
   - mkdir -p $HOME/Arduino/libraries
-  - wget http://arduiniana.org/Streaming/Streaming5.zip
-  - unzip Streaming5.zip
+  - wget http://arduiniana.org/Streaming/Streaming5.zip; unzip Streaming5.zip
   - mv Streaming $HOME/Arduino/libraries/
   - cp -r $TRAVIS_BUILD_DIR $HOME/Arduino/libraries/esp8266ndn
   - arduino --board esp8266com:esp8266:generic --save-prefs
