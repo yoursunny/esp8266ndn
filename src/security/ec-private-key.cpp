@@ -1,17 +1,15 @@
 #include "ec-private-key.hpp"
-#include "micro-ecc/uECC.h"
 #include "detail/asn1.hpp"
-#include "sha256.hpp"
-#include <Arduino.h>
+#include "micro-ecc/uECC.h"
+#include "../ndn-cpp/c/util/crypto.h"
+#include <cstring>
 
 namespace ndn {
 
 static int
 rng(uint8_t* dest, unsigned size)
 {
-  for (uint8_t* end = dest + size; dest != end; ++dest) {
-    *dest = static_cast<uint8_t>(random(256));
-  }
+  ndn_generateRandomBytes(dest, size);
   return 1;
 }
 
@@ -77,11 +75,9 @@ encodeSignatureBits(uint8_t* sig)
 int
 EcPrivateKey::sign(const uint8_t* input, size_t inputLen, uint8_t* sig) const
 {
-  if (m_pvtKey == nullptr) {
-    return 0;
-  }
+  uint8_t hash[ndn_SHA256_DIGEST_SIZE];
+  ndn_digestSha256(input, inputLen, hash);
 
-  const uint8_t* hash = computeSha256Hash(input, inputLen);
   int res = uECC_sign(m_pvtKey, hash, sig + 8);
   if (res == 0) {
     return 0;

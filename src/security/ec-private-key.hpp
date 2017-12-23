@@ -5,7 +5,7 @@
 
 namespace ndn {
 
-/** \brief Holds an EC private key, curve secp256r1.
+/** \brief Holds an EC private key (curve secp256r1) for SignatureSha256WithEcdsa signature type.
  */
 class EcPrivateKey : public PrivateKey
 {

@@ -13,7 +13,6 @@
 #include "security/ec-public-key.hpp"
 #include "security/private-key.hpp"
 #include "security/public-key.hpp"
-#include "security/sha256.hpp"
 
 #include "app/ping-client.hpp"
 #include "app/ping-server.hpp"

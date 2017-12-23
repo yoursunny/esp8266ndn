@@ -1,7 +1,8 @@
 #include "ec-public-key.hpp"
-#include "micro-ecc/uECC.h"
 #include "detail/asn1.hpp"
-#include "sha256.hpp"
+#include "micro-ecc/uECC.h"
+#include "../ndn-cpp/c/util/crypto.h"
+#include <cstring>
 
 namespace ndn {
 
@@ -58,7 +59,9 @@ EcPublicKey::verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, s
     return false;
   }
 
-  const uint8_t* hash = computeSha256Hash(input, inputLen);
+  uint8_t hash[ndn_SHA256_DIGEST_SIZE];
+  ndn_digestSha256(input, inputLen, hash);
+
   return uECC_verify(m_pubKey, hash, rawSig);
 }
 
