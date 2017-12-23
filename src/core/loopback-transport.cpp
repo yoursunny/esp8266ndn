@@ -46,7 +46,7 @@ LoopbackTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
     return;
   }
 
-  m_other->m_len = min(len, LOOPBACKTRANSPORT_PKTSIZE);
+  m_other->m_len = min(len, static_cast<size_t>(LOOPBACKTRANSPORT_PKTSIZE));
   memcpy(m_other->m_pkt, pkt, m_other->m_len);
   m_other->m_endpointId = endpointId;
 }
