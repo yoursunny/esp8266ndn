@@ -9,6 +9,7 @@
 namespace ndn {
 
 class PrivateKey;
+class PublicKey;
 
 /** \brief Interest handler
  */
@@ -85,6 +86,13 @@ public:
   void
   loop();
 
+  /** \brief verify the signature on current Data against given public key
+   *
+   *  This function is only available within onData callback.
+   */
+  bool
+  verifyData(const PublicKey& pubkey) const;
+
   /** \brief send a packet directly through underlying transport
    */
   void
@@ -125,6 +133,11 @@ private:
 
   const PrivateKey* m_signingKey;
   bool m_ownsSigningKey;
+
+  uint8_t* m_inBuf;
+  DataLite* m_thisData;
+  size_t m_signedBegin;
+  size_t m_signedEnd;
 };
 
 } // namespace ndn

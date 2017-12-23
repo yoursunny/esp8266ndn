@@ -12,6 +12,7 @@
 
 #include "security/ec-private-key.hpp"
 #include "security/ec-public-key.hpp"
+#include "security/hmac-key.hpp"
 #include "security/private-key.hpp"
 #include "security/public-key.hpp"
 

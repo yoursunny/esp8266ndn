@@ -17,6 +17,8 @@ Face::Face(Transport& transport)
   , m_dataCbArg(nullptr)
   , m_signingKey(nullptr)
   , m_ownsSigningKey(false)
+  , m_inBuf(nullptr)
+  , m_thisData(nullptr)
 {
 }
 
@@ -60,19 +62,19 @@ Face::setHmacKey(const uint8_t* key, size_t keySize)
 void
 Face::loop()
 {
-  uint8_t* inBuf = reinterpret_cast<uint8_t*>(malloc(NDNFACE_INBUF_SIZE));
-  if (inBuf == nullptr) {
+  m_inBuf = reinterpret_cast<uint8_t*>(malloc(NDNFACE_INBUF_SIZE));
+  if (m_inBuf == nullptr) {
     FACE_DBG(F("cannot allocate inBuf"));
   }
   uint64_t endpointId;
 
   int packetLimit = NDNFACE_RECEIVE_MAX;
   size_t pktSize;
-  while (--packetLimit >= 0 && (pktSize = m_transport.receive(inBuf, NDNFACE_INBUF_SIZE, &endpointId)) > 0) {
-    this->processPacket(inBuf, pktSize, endpointId);
+  while (--packetLimit >= 0 && (pktSize = m_transport.receive(m_inBuf, NDNFACE_INBUF_SIZE, &endpointId)) > 0) {
+    this->processPacket(m_inBuf, pktSize, endpointId);
     yield();
   }
-  free(inBuf);
+  free(m_inBuf);
 }
 
 void
@@ -124,14 +126,31 @@ Face::processData(const uint8_t* pkt, size_t len, uint64_t endpointId)
   ndn_NameComponent nameComps[NDNFACE_NAMECOMPS_MAX];
   ndn_NameComponent keyNameComps[NDNFACE_KEYNAMECOMPS_MAX];
   DataLite data(nameComps, NDNFACE_NAMECOMPS_MAX, keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
-  size_t signedBegin, signedEnd;
-  ndn_Error error = Tlv0_2WireFormatLite::decodeData(data, pkt, len, &signedBegin, &signedEnd);
+  m_thisData = &data;
+  ndn_Error error = Tlv0_2WireFormatLite::decodeData(data, pkt, len, &m_signedBegin, &m_signedEnd);
   if (error) {
     FACE_DBG(F("received Data decoding error: ") << _DEC(error));
     return;
   }
 
   m_dataCb(m_dataCbArg, data, endpointId);
+  m_thisData = nullptr;
+}
+
+bool
+Face::verifyData(const PublicKey& pubkey) const
+{
+  if (m_thisData == nullptr) {
+    return false;
+  }
+
+  const ndn::BlobLite& signatureBits = m_thisData->getSignature().getSignature();
+  if (signatureBits.isNull()) {
+    return false;
+  }
+
+  return pubkey.verify(m_inBuf + m_signedBegin, m_signedEnd - m_signedBegin,
+                       signatureBits.buf(), signatureBits.size());
 }
 
 void
