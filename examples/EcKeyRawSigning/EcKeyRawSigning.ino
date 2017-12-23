@@ -84,14 +84,15 @@ void actSign() {
   size_t inputLen = sizeof(THE_INPUT);
   uint8_t sig[ndn::EcPrivateKey::MAX_SIG_LENGTH];
 
-  ndn::EcPrivateKey key(pvtkey);
+  ndn::NameLite keyName(nullptr, 0);
+  ndn::EcPrivateKey key(pvtkey, keyName);
   unsigned long t0 = micros();
   int res = key.sign(input, inputLen, sig);
   unsigned long t1 = micros();
-  Serial.print("duration=");
+  Serial.print(F("duration="));
   Serial.println(t1 - t0);
   if (res == 0) {
-    Serial.println("FAIL");
+    Serial.println(F("FAIL"));
     return;
   }
   printHex(sig, res);
@@ -109,7 +110,7 @@ void actVerify() {
   unsigned long t0 = micros();
   bool res = key.verify(input, inputLen, sig, sigLen);
   unsigned long t1 = micros();
-  Serial.print("duration=");
+  Serial.print(F("duration="));
   Serial.println(t1 - t0);
   Serial.println(res ? F("res=OK") : F("res=BAD"));
 }
