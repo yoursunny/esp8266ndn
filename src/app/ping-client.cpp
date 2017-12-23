@@ -1,12 +1,12 @@
 #include "ping-client.hpp"
 #include "../core/logger.hpp"
+#include "../ndn-cpp/c/util/crypto.h"
 
 #define PINGCLIENT_DBG(...) DBG(PingClient, __VA_ARGS__)
 
 namespace ndn {
 
-static inline
-int
+static inline int
 determineTimeout(int pingTimeout, const InterestLite& interest)
 {
   if (pingTimeout > 0) {

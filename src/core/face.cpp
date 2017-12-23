@@ -15,10 +15,17 @@ Face::Face(Transport& transport)
   , m_interestCbArg(nullptr)
   , m_dataCb(nullptr)
   , m_dataCbArg(nullptr)
+  , m_signingKey(nullptr)
+  , m_ownsSigningKey(false)
 {
 }
 
-Face::~Face() = default;
+Face::~Face()
+{
+  if (m_ownsSigningKey) {
+    delete m_signingKey;
+  }
+}
 
 void
 Face::onInterest(InterestCallback cb, void* cbarg)
@@ -35,9 +42,19 @@ Face::onData(DataCallback cb, void* cbarg)
 }
 
 void
+Face::setSigningKey(const PrivateKey& pvtkey)
+{
+  if (m_ownsSigningKey) {
+    delete m_signingKey;
+  }
+  m_signingKey = &pvtkey;
+}
+
+void
 Face::setHmacKey(const uint8_t* key, size_t keySize)
 {
-  m_hmacKey.reset(new HmacKey(key, keySize));
+  auto hmacKey = new HmacKey(key, keySize);
+  this->setSigningKey(*hmacKey);
 }
 
 void
@@ -145,32 +162,41 @@ Face::sendInterest(InterestLite& interest, uint64_t endpointId)
 void
 Face::sendData(DataLite& data, uint64_t endpointId)
 {
-  if (m_hmacKey == nullptr) {
-    FACE_DBG(F("cannot sign Data: HMAC key is unset"));
+  if (m_signingKey == nullptr) {
+    FACE_DBG(F("cannot sign Data: signing key is unset"));
     return;
   }
-  m_hmacKey->setSignatureInfo(data.getSignature());
+  ndn_Error error = m_signingKey->setSignatureInfo(data.getSignature());
+  if (error) {
+    FACE_DBG(F("setSignatureInfo error: ") << _DEC(error));
+    return;
+  }
 
-  uint8_t* outBuf = reinterpret_cast<uint8_t*>(malloc(NDNFACE_OUTBUF_SIZE));
+  uint8_t* outBuf = reinterpret_cast<uint8_t*>(malloc(NDNFACE_OUTBUF_SIZE + m_signingKey->getMaxSigLength()));
   if (outBuf == nullptr) {
     FACE_DBG(F("cannot allocate outBuf"));
     return;
   }
   DynamicUInt8ArrayLite output(outBuf, NDNFACE_OUTBUF_SIZE, nullptr);
   size_t signedBegin, signedEnd, len;
-  ndn_Error error = Tlv0_2WireFormatLite::encodeData(data, &signedBegin, &signedEnd, output, &len);
+  error = Tlv0_2WireFormatLite::encodeData(data, &signedBegin, &signedEnd, output, &len);
   if (error) {
-    FACE_DBG(F("send Data encoding error: ") << _DEC(error));
+    FACE_DBG(F("send Data encoding-1 error: ") << _DEC(error));
     free(outBuf);
     return;
   }
 
-  uint8_t signatureValue[ndn_SHA256_DIGEST_SIZE];
-  m_hmacKey->sign(outBuf + signedBegin, signedEnd - signedBegin, signatureValue);
-  data.getSignature().setSignature(BlobLite(signatureValue, ndn_SHA256_DIGEST_SIZE));
+  uint8_t* signatureBits = outBuf + NDNFACE_OUTBUF_SIZE;
+  int sigLen = m_signingKey->sign(outBuf + signedBegin, signedEnd - signedBegin, signatureBits);
+  if (sigLen == 0) {
+    FACE_DBG(F("signing error"));
+    free(outBuf);
+    return;
+  }
+  data.getSignature().setSignature(BlobLite(signatureBits, sigLen));
   error = Tlv0_2WireFormatLite::encodeData(data, &signedBegin, &signedEnd, output, &len);
   if (error) {
-    FACE_DBG(F("send Data encoding error: ") << _DEC(error));
+    FACE_DBG(F("send Data encoding-2 error: ") << _DEC(error));
     free(outBuf);
     return;
   }

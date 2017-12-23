@@ -5,12 +5,10 @@
 
 #include "../ndn-cpp/lite/interest-lite.hpp"
 #include "../ndn-cpp/lite/data-lite.hpp"
-#include "../ndn-cpp/c/util/crypto.h"
-#include <memory>
 
 namespace ndn {
 
-class HmacKey;
+class PrivateKey;
 
 /** \brief Interest handler
  */
@@ -65,7 +63,13 @@ public:
   void
   onData(DataCallback cb, void* cbarg);
 
+  /** \brief set signing key
+   */
+  void
+  setSigningKey(const PrivateKey& pvtkey);
+
   /** \brief set HMAC signing key
+   *  \deprecated use setSigningKey
    *
    *  To generate a random HMAC key in Python:
    *  \code{.py}
@@ -74,7 +78,7 @@ public:
    *  \endcode
    */
   void
-  setHmacKey(const uint8_t* key, size_t keySize);
+  setHmacKey(const uint8_t* key, size_t keySize) __attribute__((deprecated));
 
   /** \brief loop the underlying transport
    */
@@ -119,7 +123,8 @@ private:
   DataCallback m_dataCb;
   void* m_dataCbArg;
 
-  std::unique_ptr<HmacKey> m_hmacKey;
+  const PrivateKey* m_signingKey;
+  bool m_ownsSigningKey;
 };
 
 } // namespace ndn
