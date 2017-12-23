@@ -11,10 +11,10 @@ class EcPrivateKey : public PrivateKey
 {
 public:
   /** \brief Construct EC private key from key bits.
-   *  \param bits uncompressed points in standard format;
-   *              caller must retain memory of these bits
+   *  \param bits uncompressed points in standard format; caller must retain memory of these bits
+   *  \param keyName certificate name; caller must retain memory of the NameLite
    */
-  EcPrivateKey(const uint8_t bits[32]);
+  EcPrivateKey(const uint8_t bits[32], const NameLite& keyName);
 
   size_t
   getMaxSigLength() const final
@@ -33,6 +33,7 @@ public:
 
 private:
   const uint8_t* m_pvtKey;
+  const NameLite& m_keyName;
 };
 
 } // namespace ndn

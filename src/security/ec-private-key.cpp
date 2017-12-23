@@ -13,8 +13,9 @@ rng(uint8_t* dest, unsigned size)
   return 1;
 }
 
-EcPrivateKey::EcPrivateKey(const uint8_t bits[32])
+EcPrivateKey::EcPrivateKey(const uint8_t bits[32], const NameLite& keyName)
   : m_pvtKey(bits)
+  , m_keyName(keyName)
 {
   uECC_set_rng(&rng);
 }
@@ -89,7 +90,10 @@ EcPrivateKey::sign(const uint8_t* input, size_t inputLen, uint8_t* sig) const
 ndn_Error
 EcPrivateKey::setSignatureInfo(SignatureLite& signature) const
 {
-  return NDN_ERROR_Unimplemented_operation;
+  signature.setType(ndn_SignatureType_Sha256WithEcdsaSignature);
+  KeyLocatorLite& kl = signature.getKeyLocator();
+  kl.setType(ndn_KeyLocatorType_KEYNAME);
+  return kl.setKeyName(m_keyName);
 }
 
 } // namespace ndn

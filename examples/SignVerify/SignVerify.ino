@@ -10,8 +10,8 @@ const uint8_t HMACKEY[] {
   0x8B, 0x43, 0x31, 0xD5, 0xF7, 0x8E, 0x6A, 0xFF, 0x47, 0xA4, 0x96, 0x0E, 0xC5, 0x35, 0x88, 0xDA,
   0x6A, 0x23, 0x45, 0xC3, 0x35, 0x03, 0x30, 0xB3, 0x6D, 0x2A, 0x99, 0x52, 0xE3, 0xF8, 0xA3, 0xB7,
 };
-ndn::HmacKey pvtkey(HMACKEY, sizeof(HMACKEY));
-ndn::HmacKey& pubkey = pvtkey;
+ndn::HmacKey g_pvtkey(HMACKEY, sizeof(HMACKEY));
+ndn::HmacKey& g_pubkey = g_pvtkey;
 #endif
 
 #if USE_KEY == USE_KEY_EC
@@ -25,8 +25,10 @@ const uint8_t PUBKEY[] {
   0x12, 0x98, 0x16, 0xB6, 0x29, 0x30, 0xD5, 0x8D, 0x29, 0xA3, 0xE9, 0x94, 0xF1, 0x68, 0x35, 0x6E,
   0xC8, 0xE6, 0xEA, 0xE3, 0x7B, 0x45, 0x36, 0xB1, 0x6D, 0xA1, 0xA7, 0x19, 0x38, 0xC1, 0x0F, 0x92,
 };
-ndn::EcPrivateKey pvtkey(PVTKEY);
-ndn::EcPublicKey pubkey(PUBKEY);
+ndn_NameComponent g_ecKeyNameComps[4];
+ndn::NameLite g_ecKeyName(g_ecKeyNameComps, 4);
+ndn::EcPrivateKey g_pvtkey(PVTKEY, g_ecKeyName);
+ndn::EcPublicKey g_pubkey(PUBKEY);
 #endif
 
 ndn::LoopbackTransport g_transport1, g_transport2;
@@ -39,7 +41,8 @@ processInterest1(void*, const ndn::InterestLite& interest, uint64_t)
   Serial << F("1-Interest ") << ndn::PrintUri(interest.getName()) << endl;
 
   ndn_NameComponent nameComps[4];
-  ndn::DataLite data(nameComps, 4, nullptr, 0);
+  ndn_NameComponent keyNameComps[4];
+  ndn::DataLite data(nameComps, 4, keyNameComps, 4);
   data.getName().set(interest.getName());
 
   Serial << F("1-Data ") << ndn::PrintUri(data.getName()) << endl;
@@ -66,7 +69,7 @@ sendInterest2()
 void
 processData2(void*, const ndn::DataLite& data, uint64_t)
 {
-  bool res = g_face2.verifyData(pubkey);
+  bool res = g_face2.verifyData(g_pubkey);
   Serial << F("2-Data ") << ndn::PrintUri(data.getName()) << F(" verified=") << static_cast<int>(res) << endl;
 
   sendInterest2();
@@ -80,7 +83,11 @@ setup()
 
   g_transport1.begin(g_transport2);
 
-  g_face1.setSigningKey(pvtkey);
+#if USE_KEY == USE_KEY_EC
+  g_ecKeyName.append("my-key");
+#endif
+
+  g_face1.setSigningKey(g_pvtkey);
   g_face1.onInterest(&processInterest1, nullptr);
   g_face2.onData(&processData2, nullptr);
 
