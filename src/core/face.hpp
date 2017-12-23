@@ -1,12 +1,16 @@
 #ifndef ESP8266NDN_FACE_HPP
 #define ESP8266NDN_FACE_HPP
 
+#include "transport.hpp"
+
 #include "../ndn-cpp/lite/interest-lite.hpp"
 #include "../ndn-cpp/lite/data-lite.hpp"
 #include "../ndn-cpp/c/util/crypto.h"
-#include "transport.hpp"
+#include <memory>
 
 namespace ndn {
+
+class HmacKey;
 
 /** \brief Interest handler
  */
@@ -44,6 +48,8 @@ class Face
 {
 public:
   Face(Transport& transport);
+
+  ~Face();
 
   /** \brief set incoming Interest handler
    *
@@ -113,9 +119,7 @@ private:
   DataCallback m_dataCb;
   void* m_dataCbArg;
 
-  const uint8_t* m_hmacKey;
-  size_t m_hmacKeySize;
-  uint8_t m_hmacKeyDigest[ndn_SHA256_DIGEST_SIZE];
+  std::unique_ptr<HmacKey> m_hmacKey;
 };
 
 } // namespace ndn
