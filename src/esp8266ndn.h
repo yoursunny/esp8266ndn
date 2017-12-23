@@ -3,12 +3,17 @@
 
 #include "ndn-cpp/ndn-cpp-all.hpp"
 
-#include "core/ec-key.hpp"
 #include "core/face.hpp"
 #include "core/logger.hpp"
 #include "core/transport.hpp"
 #include "core/unicast-udp-transport.hpp"
 #include "core/uri.hpp"
+
+#include "security/ec-private-key.hpp"
+#include "security/ec-public-key.hpp"
+#include "security/private-key.hpp"
+#include "security/public-key.hpp"
+#include "security/sha256.hpp"
 
 #include "app/ping-client.hpp"
 #include "app/ping-server.hpp"

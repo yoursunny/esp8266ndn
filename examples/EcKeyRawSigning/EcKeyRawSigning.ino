@@ -82,9 +82,9 @@ void actSign() {
   //size_t inputLen = promptHex(F("input="), input, sizeof(input), 0);
   const uint8_t* input = THE_INPUT;
   size_t inputLen = sizeof(THE_INPUT);
-  uint8_t sig[NDNECKEY_MAXSIGLEN];
+  uint8_t sig[ndn::EcPrivateKey::MAX_SIG_LENGTH];
 
-  ndn::EcKey key(pvtkey, nullptr);
+  ndn::EcPrivateKey key(pvtkey);
   unsigned long t0 = micros();
   int res = key.sign(input, inputLen, sig);
   unsigned long t1 = micros();
@@ -102,10 +102,10 @@ void actVerify() {
   //size_t inputLen = promptHex(F("input="), input, sizeof(input), 0);
   const uint8_t* input = THE_INPUT;
   size_t inputLen = sizeof(THE_INPUT);
-  uint8_t sig[NDNECKEY_MAXSIGLEN];
+  uint8_t sig[ndn::EcPrivateKey::MAX_SIG_LENGTH];
   size_t sigLen = promptHex(F("sig="), sig, sizeof(sig), 0);
 
-  ndn::EcKey key(nullptr, pubkey);
+  ndn::EcPublicKey key(pubkey);
   unsigned long t0 = micros();
   bool res = key.verify(input, inputLen, sig, sigLen);
   unsigned long t1 = micros();
