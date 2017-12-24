@@ -48,29 +48,29 @@ UnicastUdpTransport::receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId)
   return static_cast<size_t>(len);
 }
 
-void
+ndn_Error
 UnicastUdpTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 {
   if (m_routerIp == INADDR_NONE) {
     UUDPTRANSPORT_DBG(F("cannot send without begin()"));
-    return;
+    return NDN_ERROR_SocketTransport_socket_is_not_open;
   }
 
   if (endpointId != 0) {
     UUDPTRANSPORT_DBG(F("cannot send to non-zero endpointId"));
-    return;
+    return NDN_ERROR_SocketTransport_error_in_getaddrinfo;
   }
 
   int res = m_udp.beginPacket(m_routerIp, m_routerPort);
   if (res != 1) {
     UUDPTRANSPORT_DBG(F("Udp::beginPacket error"));
-    return;
+    return NDN_ERROR_SocketTransport_cannot_connect_to_socket;
   }
   m_udp.write(pkt, len);
   res = m_udp.endPacket();
   if (res != 1) {
     UUDPTRANSPORT_DBG(F("Udp::endPacket error"));
-    return;
+    return NDN_ERROR_SocketTransport_error_in_send;
   }
 }
 

@@ -1,6 +1,7 @@
 #ifndef ESP8266NDN_TRANSPORT_HPP
 #define ESP8266NDN_TRANSPORT_HPP
 
+#include "../ndn-cpp/c/errors.h"
 #include <cinttypes>
 #include <cstddef>
 
@@ -25,7 +26,7 @@ public:
    *  \param len packet size
    *  \param endpointId indicates the remote endpoint
    */
-  virtual void
+  virtual ndn_Error
   send(const uint8_t* pkt, size_t len, uint64_t endpointId) = 0;
 };
 

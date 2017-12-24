@@ -107,12 +107,12 @@ public:
 
   /** \brief send a packet directly through underlying transport
    */
-  void
+  ndn_Error
   sendPacket(const uint8_t* pkt, size_t len, uint64_t endpointId = 0);
 
   /** \brief send an Interest
    */
-  void
+  ndn_Error
   sendInterest(InterestLite& interest, uint64_t endpointId = 0);
 
   /** \brief send a signed Interest
@@ -120,7 +120,7 @@ public:
    *                  will become signed
    *  \pre signing key is set
    */
-  void
+  ndn_Error
   sendSignedInterest(InterestLite& interest, uint64_t endpointId = 0);
 
   /** \brief send a Data
@@ -128,7 +128,7 @@ public:
    *
    *  The Data will be signed by the HMAC key before sent out.
    */
-  void
+  ndn_Error
   sendData(DataLite& data, uint64_t endpointId = 0);
 
 private:
@@ -141,7 +141,7 @@ private:
   void
   processData(size_t len, uint64_t endpointId);
 
-  void
+  ndn_Error
   sendInterestImpl(InterestLite& interest, uint64_t endpointId, bool needSigning);
 
 private:

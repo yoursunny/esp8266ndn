@@ -33,22 +33,23 @@ LoopbackTransport::receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId)
   return len;
 }
 
-void
+ndn_Error
 LoopbackTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 {
   if (m_other == nullptr) {
     LOOPBACKTRANSPORT_DBG("cannot send without begin()");
-    return;
+    return NDN_ERROR_SocketTransport_socket_is_not_open;
   }
 
   if (m_other->m_len > 0) {
     LOOPBACKTRANSPORT_DBG("receiver is congested");
-    return;
+    return NDN_ERROR_SocketTransport_error_in_send;
   }
 
   m_other->m_len = min(len, static_cast<size_t>(LOOPBACKTRANSPORT_PKTSIZE));
   memcpy(m_other->m_pkt, pkt, m_other->m_len);
   m_other->m_endpointId = endpointId;
+  return NDN_ERROR_success;
 }
 
 } // namespace ndn
