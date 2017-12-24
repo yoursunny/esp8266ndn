@@ -1,4 +1,5 @@
 #include "hmac-key.hpp"
+#include "detail/crypto-memory.hpp"
 #include "../ndn-cpp/lite/util/crypto-lite.hpp"
 #include <cstring>
 
@@ -37,7 +38,7 @@ HmacKey::verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_
 
   uint8_t newSig[ndn_SHA256_DIGEST_SIZE];
   CryptoLite::computeHmacWithSha256(m_secret, m_secretLen, input, inputLen, newSig);
-  return std::memcmp(sig, newSig, ndn_SHA256_DIGEST_SIZE) == 0;
+  return compareDigest(sig, newSig, ndn_SHA256_DIGEST_SIZE);
 }
 
 } // namespace ndn
