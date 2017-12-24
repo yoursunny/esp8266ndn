@@ -3,8 +3,9 @@
 
 #include "transport.hpp"
 
-#include "../ndn-cpp/lite/interest-lite.hpp"
 #include "../ndn-cpp/lite/data-lite.hpp"
+#include "../ndn-cpp/lite/interest-lite.hpp"
+#include "../ndn-cpp/lite/util/dynamic-uint8-array-lite.hpp"
 
 namespace ndn {
 
@@ -115,13 +116,13 @@ private:
   /** \brief process an incoming packet
    */
   void
-  processPacket(const uint8_t* pkt, size_t len, uint64_t endpointId);
+  processPacket(size_t len, uint64_t endpointId);
 
   void
-  processInterest(const uint8_t* pkt, size_t len, uint64_t endpointId);
+  processInterest(size_t len, uint64_t endpointId);
 
   void
-  processData(const uint8_t* pkt, size_t len, uint64_t endpointId);
+  processData(size_t len, uint64_t endpointId);
 
 private:
   Transport& m_transport;
@@ -131,10 +132,14 @@ private:
   DataCallback m_dataCb;
   void* m_dataCbArg;
 
+  uint8_t m_inBuf[NDNFACE_INBUF_SIZE];
+  uint8_t m_outBuf[NDNFACE_OUTBUF_SIZE];
+  DynamicUInt8ArrayLite m_outArr;
+  uint8_t* m_sigBuf;
+
   const PrivateKey* m_signingKey;
   bool m_ownsSigningKey;
 
-  uint8_t* m_inBuf;
   DataLite* m_thisData;
   size_t m_signedBegin;
   size_t m_signedEnd;
