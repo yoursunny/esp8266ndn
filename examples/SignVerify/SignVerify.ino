@@ -43,7 +43,8 @@ ndn::Face g_face1(g_transport1), g_face2(g_transport2);
 void
 processInterest1(void*, const ndn::InterestLite& interest, uint64_t)
 {
-  Serial << F("1-Interest ") << ndn::PrintUri(interest.getName()) << endl;
+  bool verified = g_face1.verifyInterest(g_pubkey);
+  Serial << F("1-Interest ") << ndn::PrintUri(interest.getName()) << F(" verified=") << static_cast<int>(verified) << endl;
 
   ndn_NameComponent nameComps[4];
   ndn_NameComponent keyNameComps[4];
@@ -67,15 +68,15 @@ sendInterest2()
   name.appendTimestamp(millis(), timestampBuf, 9);
 
   Serial << F("2-Interest ") << ndn::PrintUri(interest.getName()) << endl;
-  g_face2.sendInterest(interest);
+  g_face2.sendSignedInterest(interest);
 }
 
 // process Data on face2
 void
 processData2(void*, const ndn::DataLite& data, uint64_t)
 {
-  bool res = g_face2.verifyData(g_pubkey);
-  Serial << F("2-Data ") << ndn::PrintUri(data.getName()) << F(" verified=") << static_cast<int>(res) << endl;
+  bool verified = g_face2.verifyData(g_pubkey);
+  Serial << F("2-Data ") << ndn::PrintUri(data.getName()) << F(" verified=") << static_cast<int>(verified) << endl;
 
   sendInterest2();
 }
@@ -93,6 +94,7 @@ setup()
 #endif
 
   g_face1.setSigningKey(g_pvtkey);
+  g_face2.setSigningKey(g_pvtkey);
   g_face1.onInterest(&processInterest1, nullptr);
   g_face2.onData(&processData2, nullptr);
 

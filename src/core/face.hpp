@@ -29,11 +29,15 @@ typedef void (*DataCallback)(void* arg, const DataLite& data, uint64_t endpointI
  */
 #define NDNFACE_EXCLUDE_MAX 4
 /** \brief max NameComponent count when parsing KeyLocator of incoming Interest/Data
+ *         or preparing outgoing signed Interest
  */
 #define NDNFACE_KEYNAMECOMPS_MAX 12
 /** \brief max packets to receive and process on each loop
  */
 #define NDNFACE_RECEIVE_MAX 4
+/** \brief buffer size for preparing outgoing signed Interest SignatureInfo, in octets
+ */
+#define NDNFACE_SIGINFOBUF_SIZE 128
 /** \brief outgoing buffer size, in octets
  */
 #define NDNFACE_OUTBUF_SIZE 1500
@@ -87,6 +91,13 @@ public:
   void
   loop();
 
+  /** \brief verify the signature on current Interest against given public key
+   *
+   *  This function is only available within onInterest callback.
+   */
+  bool
+  verifyInterest(const PublicKey& pubkey) const;
+
   /** \brief verify the signature on current Data against given public key
    *
    *  This function is only available within onData callback.
@@ -104,8 +115,16 @@ public:
   void
   sendInterest(InterestLite& interest, uint64_t endpointId = 0);
 
+  /** \brief send a signed Interest
+   *  \param interest the unsigned Interest; must have 2 available name components
+   *                  will become signed
+   *  \pre signing key is set
+   */
+  void
+  sendSignedInterest(InterestLite& interest, uint64_t endpointId = 0);
+
   /** \brief send a Data
-   *  \pre HMAC signing key is set
+   *  \pre signing key is set
    *
    *  The Data will be signed by the HMAC key before sent out.
    */
@@ -113,8 +132,6 @@ public:
   sendData(DataLite& data, uint64_t endpointId = 0);
 
 private:
-  /** \brief process an incoming packet
-   */
   void
   processPacket(size_t len, uint64_t endpointId);
 
@@ -123,6 +140,9 @@ private:
 
   void
   processData(size_t len, uint64_t endpointId);
+
+  void
+  sendInterestImpl(InterestLite& interest, uint64_t endpointId, bool needSigning);
 
 private:
   Transport& m_transport;
@@ -135,11 +155,14 @@ private:
   uint8_t m_inBuf[NDNFACE_INBUF_SIZE];
   uint8_t m_outBuf[NDNFACE_OUTBUF_SIZE];
   DynamicUInt8ArrayLite m_outArr;
+  uint8_t m_sigInfoBuf[NDNFACE_SIGINFOBUF_SIZE];
+  DynamicUInt8ArrayLite m_sigInfoArr;
   uint8_t* m_sigBuf;
 
   const PrivateKey* m_signingKey;
   bool m_ownsSigningKey;
 
+  InterestLite* m_thisInterest;
   DataLite* m_thisData;
   size_t m_signedBegin;
   size_t m_signedEnd;

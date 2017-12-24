@@ -16,6 +16,7 @@ Face::Face(Transport& transport)
   , m_dataCb(nullptr)
   , m_dataCbArg(nullptr)
   , m_outArr(m_outBuf, NDNFACE_OUTBUF_SIZE, nullptr)
+  , m_sigInfoArr(m_sigInfoBuf, NDNFACE_SIGINFOBUF_SIZE, nullptr)
   , m_sigBuf(nullptr)
   , m_signingKey(nullptr)
   , m_ownsSigningKey(false)
@@ -113,6 +114,7 @@ Face::processInterest(size_t len, uint64_t endpointId)
   ndn_ExcludeEntry excludeEntries[NDNFACE_EXCLUDE_MAX];
   ndn_NameComponent keyNameComps[NDNFACE_KEYNAMECOMPS_MAX];
   InterestLite interest(nameComps, NDNFACE_NAMECOMPS_MAX, excludeEntries, NDNFACE_EXCLUDE_MAX, keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
+  m_thisInterest = &interest;
   ndn_Error error = Tlv0_2WireFormatLite::decodeInterest(interest, m_inBuf, len, &m_signedBegin, &m_signedEnd);
   if (error) {
     FACE_DBG(F("received Interest decoding error: ") << _DEC(error));
@@ -120,6 +122,28 @@ Face::processInterest(size_t len, uint64_t endpointId)
   }
 
   m_interestCb(m_interestCbArg, interest, endpointId);
+  m_thisInterest = nullptr;
+}
+
+bool
+Face::verifyInterest(const PublicKey& pubkey) const
+{
+  if (m_thisInterest == nullptr) {
+    return false;
+  }
+
+  NameLite& name = m_thisInterest->getName();
+  if (name.size() < 2) {
+    return false;
+  }
+
+  const ndn::BlobLite& signatureBits = name.get(-1).getValue();
+  if (signatureBits.isNull()) {
+    return false;
+  }
+
+  return pubkey.verify(m_inBuf + m_signedBegin, m_signedEnd - m_signedBegin,
+                       signatureBits.buf(), signatureBits.size());
 }
 
 void
@@ -169,11 +193,66 @@ Face::sendPacket(const uint8_t* pkt, size_t len, uint64_t endpointId)
 void
 Face::sendInterest(InterestLite& interest, uint64_t endpointId)
 {
+  this->sendInterestImpl(interest, endpointId, false);
+}
+
+void
+Face::sendSignedInterest(InterestLite& interest, uint64_t endpointId)
+{
+  if (m_signingKey == nullptr) {
+    FACE_DBG(F("cannot sign Interest: signing key is unset"));
+    return;
+  }
+
+  ndn_NameComponent keyNameComps[NDNFACE_KEYNAMECOMPS_MAX];
+  SignatureLite signature(keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
+  ndn_Error error = m_signingKey->setSignatureInfo(signature);
+  if (error) {
+    FACE_DBG(F("setSignatureInfo error: ") << _DEC(error));
+    return;
+  }
+
+  size_t len;
+  error = Tlv0_2WireFormatLite::encodeSignatureInfo(signature, m_sigInfoArr, &len);
+  if (error) {
+    FACE_DBG(F("SignatureInfo encoding error: ") << _DEC(error));
+    return;
+  }
+
+  interest.getName().append(m_sigInfoBuf, len);
+  error = interest.getName().append(nullptr, 0);
+  if (error) {
+    FACE_DBG(F("Signature appending error: ") << _DEC(error));
+    return;
+  }
+
+  this->sendInterestImpl(interest, endpointId, true);
+}
+
+void
+Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, bool needSigning)
+{
   size_t len;
   ndn_Error error = Tlv0_2WireFormatLite::encodeInterest(interest, &m_signedBegin, &m_signedEnd, m_outArr, &len);
   if (error) {
-    FACE_DBG(F("send Interest encoding error: ") << _DEC(error));
+    FACE_DBG(F("send Interest encoding-1 error: ") << _DEC(error));
     return;
+  }
+
+  if (needSigning) {
+    int sigLen = m_signingKey->sign(m_outBuf + m_signedBegin, m_signedEnd - m_signedBegin, m_sigBuf);
+    if (sigLen == 0) {
+      FACE_DBG(F("signing error"));
+      return;
+    }
+    NameLite& name = interest.getName();
+    name.pop();
+    name.append(m_sigBuf, sigLen);
+    error = Tlv0_2WireFormatLite::encodeInterest(interest, &m_signedBegin, &m_signedEnd, m_outArr, &len);
+    if (error) {
+      FACE_DBG(F("send Interest encoding-2 error: ") << _DEC(error));
+      return;
+    }
   }
 
   this->sendPacket(m_outBuf, len, endpointId);
