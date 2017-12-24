@@ -26,6 +26,10 @@ find -type f -exec sed -i -e 's/\s*$//' '{}' '+'
 # delete transport
 find -name '*transport*' -delete
 
+# delete RSA and EC keys
+find -name 'ec-*-key*' -delete
+find -name 'rsa-*-key*' -delete
+
 # delete ndn-cpp-config include
 for F in $(grep -lr '#include .*ndn-cpp-config.h' c lite); do
   sed -i '/#include .*ndn-cpp-config.h/ d' $F
@@ -44,7 +48,7 @@ for F in $(grep -lr '<ndn-cpp/' c lite); do
 done | bash
 
 # make round(x) macro consistent with Arduino.h
-sed -i '/#define round/ c #define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))' c/common.h
+sed -i '/#define round/ c\#define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))' c/common.h
 
 # fix ndn_generateRandomBytes
 sed -i -e '1 i\#include <Arduino.h>' c/util/crypto.c
