@@ -1,4 +1,5 @@
 #include "digest-key.hpp"
+#include "../ndn-cpp/lite/util/crypto-lite.hpp"
 #include <cstring>
 
 namespace ndn {
@@ -6,7 +7,7 @@ namespace ndn {
 int
 DigestKey::sign(const uint8_t* input, size_t inputLen, uint8_t* sig) const
 {
-  ndn_digestSha256(input, inputLen, sig);
+  CryptoLite::digestSha256(input, inputLen, sig);
   return ndn_SHA256_DIGEST_SIZE;
 }
 
@@ -25,7 +26,7 @@ DigestKey::verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, siz
   }
 
   uint8_t newSig[ndn_SHA256_DIGEST_SIZE];
-  ndn_digestSha256(input, inputLen, newSig);
+  CryptoLite::digestSha256(input, inputLen, newSig);
   return std::memcmp(sig, newSig, ndn_SHA256_DIGEST_SIZE) == 0;
 }
 

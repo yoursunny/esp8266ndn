@@ -50,6 +50,9 @@ done | bash
 # make round(x) macro consistent with Arduino.h
 sed -i '/#define round/ c\#define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))' c/common.h
 
+# enable CryptoLite::computeHmacWithSha256
+sed -i '/#if NDN_CPP_HAVE_LIBCRYPTO/ c\#if 1' lite/util/crypto-lite.cpp
+
 # fix ndn_generateRandomBytes
 sed -i -e '1 i\#include <Arduino.h>' c/util/crypto.c
 mv c/util/crypto.c c/util/crypto.cpp # esp8266/Arduino.h defines random() for C++ only

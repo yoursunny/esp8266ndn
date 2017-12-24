@@ -1,7 +1,7 @@
 #include "ec-public-key.hpp"
 #include "detail/asn1.hpp"
 #include "micro-ecc/uECC.h"
-#include "../ndn-cpp/c/util/crypto.h"
+#include "../ndn-cpp/lite/util/crypto-lite.hpp"
 #include <cstring>
 
 namespace ndn {
@@ -60,7 +60,7 @@ EcPublicKey::verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, s
   }
 
   uint8_t hash[ndn_SHA256_DIGEST_SIZE];
-  ndn_digestSha256(input, inputLen, hash);
+  CryptoLite::digestSha256(input, inputLen, hash);
 
   return uECC_verify(m_pubKey, hash, rawSig);
 }

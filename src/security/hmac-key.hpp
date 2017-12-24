@@ -3,7 +3,6 @@
 
 #include "private-key.hpp"
 #include "public-key.hpp"
-#include "../ndn-cpp/c/util/crypto.h"
 
 namespace ndn {
 
