@@ -1,5 +1,4 @@
 #include <esp8266ndn.h>
-#include <Streaming.h>
 
 void
 demo(char* uri)
@@ -7,18 +6,29 @@ demo(char* uri)
   ndn_NameComponent comps[4];
   ndn::NameLite name(comps, 4);
 
-  Serial << "Input URI is " << uri << endl;
+  Serial.print("Input URI is ");
+  Serial.println(uri);
+
   if (ndn::parseNameFromUri(name, uri)) {
-    Serial << "Name has " << name.size() << " components." << endl;
+    Serial.print("Name has ");
+    Serial.print(name.size(), DEC);
+    Serial.println(" components.");
+
     for (int i = 0; i < name.size(); ++i) {
-      Serial << "Component " << i << " has " << name.get(i).getValue().size() << " octets." << endl;
+      Serial.print("Component ");
+      Serial.print(i, DEC);
+      Serial.print(" has ");
+      Serial.print(name.get(i).getValue().size(), DEC);
+      Serial.println(" octets.");
     }
-    Serial << "Printed URI is " << ndn::PrintUri(name) << endl;
+
+    Serial.print("Printed URI is ");
+    Serial.println(ndn::PrintUri(name));
   }
   else {
-    Serial << "parseNameFromUri fails." << endl;
+    Serial.println("parseNameFromUri fails.");
   }
-  Serial << endl;
+  Serial.println();
 }
 
 void

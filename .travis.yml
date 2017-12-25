@@ -16,8 +16,6 @@ install:
 
 before_script:
   - mkdir -p $HOME/Arduino/libraries
-  - wget http://arduiniana.org/Streaming/Streaming5.zip; unzip Streaming5.zip
-  - mv Streaming $HOME/Arduino/libraries/
   - cp -r $TRAVIS_BUILD_DIR $HOME/Arduino/libraries/esp8266ndn
   - arduino --board esp8266com:esp8266:generic --save-prefs
 

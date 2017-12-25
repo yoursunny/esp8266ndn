@@ -3,7 +3,6 @@
 
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-#include <Streaming.h>
 #include <esp8266ndn.h>
 
 const char* WIFI_SSID = "my-ssid";
@@ -36,14 +35,16 @@ replyNoRouteNack(const ndn::InterestLite& interest)
   ndn::NetworkNackLite nack;
   nack.setReason(ndn_NetworkNackReason_NO_ROUTE);
   g_face.sendNack(nack, interest);
-  Serial << "<N " << ndn::PrintUri(interest.getName()) << endl;
+  Serial.print("<N ");
+  Serial.println(ndn::PrintUri(interest.getName()));
   return true;
 }
 
 void
 processInterest(void*, const ndn::InterestLite& interest, uint64_t)
 {
-  Serial << ">I " << ndn::PrintUri(interest.getName()) << endl;
+  Serial.print(">I ");
+  Serial.println(ndn::PrintUri(interest.getName()));
   g_server0.processInterest(interest) ||
   g_server1.processInterest(interest) ||
   replyNoRouteNack(interest);
@@ -56,7 +57,8 @@ makePayload(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, s
   size_t len = strlen(text);
   memcpy(payloadBuf, text, len);
   *payloadSize = len;
-  Serial << "<D " << ndn::PrintUri(interest.getName()) << endl;
+  Serial.print("<D ");
+  Serial.println(ndn::PrintUri(interest.getName()));
 }
 
 void

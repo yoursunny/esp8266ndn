@@ -1,6 +1,5 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-#include <Streaming.h>
 #include <esp8266ndn.h>
 
 const char* WIFI_SSID = "my-ssid";
