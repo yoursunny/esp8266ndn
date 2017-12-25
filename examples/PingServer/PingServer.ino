@@ -3,6 +3,7 @@
 
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+#include <Streaming.h>
 #include <esp8266ndn.h>
 
 const char* WIFI_SSID = "my-ssid";
@@ -29,20 +30,33 @@ ndn_NameComponent g_comps1[8];
 ndn::NameLite g_prefix1(g_comps1, 8);
 ndn::PingServer g_server1(g_face, g_prefix1);
 
-void
-processInterest(void*, const ndn::InterestLite& interest, uint64_t)
+bool
+replyNoRouteNack(const ndn::InterestLite& interest)
 {
-  g_server0.processInterest(interest) ||
-  g_server1.processInterest(interest);
+  ndn::NetworkNackLite nack;
+  nack.setReason(ndn_NetworkNackReason_NO_ROUTE);
+  g_face.sendNack(nack, interest);
+  Serial << "<N " << ndn::PrintUri(interest.getName()) << endl;
+  return true;
 }
 
 void
-makePayload(void* arg, const ndn::InterestLite&, uint8_t* payloadBuf, size_t* payloadSize)
+processInterest(void*, const ndn::InterestLite& interest, uint64_t)
+{
+  Serial << ">I " << ndn::PrintUri(interest.getName()) << endl;
+  g_server0.processInterest(interest) ||
+  g_server1.processInterest(interest) ||
+  replyNoRouteNack(interest);
+}
+
+void
+makePayload(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, size_t* payloadSize)
 {
   auto text = reinterpret_cast<const char*>(arg);
   size_t len = strlen(text);
   memcpy(payloadBuf, text, len);
   *payloadSize = len;
+  Serial << "<D " << ndn::PrintUri(interest.getName()) << endl;
 }
 
 void
