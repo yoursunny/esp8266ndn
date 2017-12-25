@@ -66,6 +66,7 @@ setup()
 {
   Serial.begin(115200);
   Serial.println();
+  ndn::setLogOutput(Serial);
 
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   while (WiFi.status() != WL_CONNECTED) {
