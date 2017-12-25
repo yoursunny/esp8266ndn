@@ -1,8 +1,8 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
-#include <Arduino.h>
-#include <Streaming.h>
+#include <HardwareSerial.h>
+#include "detail/Streaming.h"
 
 #define DBG_PORT Serial
 
