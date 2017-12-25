@@ -5,8 +5,6 @@ os:
 
 install:
   - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16
-  - sleep 3
-  - export DISPLAY=:1.0
   - curl -L http://downloads.arduino.cc/arduino-1.6.13-linux64.tar.xz | tar xJ; mv arduino-1.6.13 $HOME/arduino_ide
   - export PATH="$HOME/arduino_ide:$PATH"
   - cd $HOME/arduino_ide/hardware
@@ -17,14 +15,17 @@ install:
 before_script:
   - mkdir -p $HOME/Arduino/libraries
   - cp -r $TRAVIS_BUILD_DIR $HOME/Arduino/libraries/esp8266ndn
+  - export DISPLAY=:1.0
   - arduino --board esp8266com:esp8266:generic --save-prefs
 
 script:
   - |
+     NFAIL=0
      for SKETCH in $(find $TRAVIS_BUILD_DIR -name '*.ino'); do
        echo
        echo
        echo -e '\033[0;36m'Building $SKETCH '\033[0m'
        echo
-       arduino --verify $SKETCH
+       arduino --verify $SKETCH || NFAIL=$((NFAIL+1))
      done
+     [[ $NFAIL -eq 0 ]]
