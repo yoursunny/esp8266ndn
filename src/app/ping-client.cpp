@@ -80,6 +80,23 @@ PingClient::processData(const DataLite& data)
 }
 
 bool
+PingClient::processNack(const NetworkNackLite& nack, const InterestLite& interest)
+{
+  if (!m_interest.getName().equals(interest.getName())) {
+    return false;
+  }
+  m_isPending = false;
+
+  uint32_t seq = this->getLastSeq();
+  PINGCLIENT_DBG(F("nack seq=") << _HEX(seq) << F(" rtt=") << _DEC(millis() - m_lastProbe));
+  if (m_evtCb != nullptr) {
+    m_evtCb(m_evtCbArg, Event::NACK, seq);
+  }
+
+  return true;
+}
+
+bool
 PingClient::probe()
 {
   NameLite& name = m_interest.getName();

@@ -38,12 +38,23 @@ processData(void*, const ndn::DataLite& data, uint64_t)
 }
 
 void
+processNack(void*, const ndn::NetworkNackLite& nack, const ndn::InterestLite& interest, uint64_t)
+{
+  g_client0.processNack(nack, interest) ||
+  g_client1.processNack(nack, interest) ||
+  g_client2.processNack(nack, interest);
+}
+
+void
 ndnpingEvent(void* arg, ndn::PingClient::Event evt, uint64_t seq)
 {
   int led = reinterpret_cast<int>(arg);
   switch (evt) {
     case ndn::PingClient::Event::PROBE:
       digitalWrite(led, HIGH);
+      break;
+    case ndn::PingClient::Event::NACK:
+      analogWrite(led, PWMRANGE / 8);
       break;
     default:
       digitalWrite(led, LOW);
@@ -70,6 +81,7 @@ setup()
   }
   g_transport.begin(routerIp, NDN_ROUTER_PORT, 6363);
   g_face.onData(&processData, nullptr);
+  g_face.onNack(&processNack, nullptr);
 
   pinMode(LED0, OUTPUT);
   pinMode(LED1, OUTPUT);

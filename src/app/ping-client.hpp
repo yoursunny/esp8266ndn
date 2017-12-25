@@ -34,6 +34,13 @@ public:
   bool
   processData(const DataLite& data);
 
+  /** \brief process incoming Nack
+   *  \retval true Nack is accepted by this client
+   *  \retval false Nack should be passed to the next consumer
+   */
+  bool
+  processNack(const NetworkNackLite& nack, const InterestLite& interest);
+
   /** \brief send a probe now
    *  \note Response or timeout for previous probe will be ignored.
    */
@@ -45,7 +52,7 @@ public:
     PROBE,
     RESPONSE,
     TIMEOUT,
-    NACK // not implemented
+    NACK,
   };
 
   typedef void (*EventCallback)(void* arg, Event evt, uint64_t seq);
