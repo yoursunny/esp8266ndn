@@ -3,6 +3,7 @@
 #include "../security/hmac-key.hpp"
 
 #include "../ndn-cpp/c/encoding/tlv/tlv.h"
+#include "../ndn-cpp/c/encoding/tlv/tlv-encoder.h"
 #include "../ndn-cpp/lite/encoding/tlv-0_2-wire-format-lite.hpp"
 
 #define FACE_DBG(...) DBG(Face, __VA_ARGS__)
@@ -20,7 +21,7 @@ Face::Face(Transport& transport)
   , m_sigBuf(nullptr)
   , m_signingKey(nullptr)
   , m_ownsSigningKey(false)
-  , m_thisData(nullptr)
+  , m_thisInterest(nullptr)
 {
 }
 
@@ -241,9 +242,9 @@ Face::sendPacket(const uint8_t* pkt, size_t len, uint64_t endpointId)
 }
 
 ndn_Error
-Face::sendInterest(InterestLite& interest, uint64_t endpointId)
+Face::sendInterest(const InterestLite& interest, uint64_t endpointId)
 {
-  this->sendInterestImpl(interest, endpointId, false);
+  this->sendInterestImpl(const_cast<InterestLite&>(interest), endpointId, false);
 }
 
 ndn_Error
@@ -282,15 +283,15 @@ Face::sendSignedInterest(InterestLite& interest, uint64_t endpointId)
 ndn_Error
 Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, bool needSigning)
 {
-  size_t len;
-  ndn_Error error = Tlv0_2WireFormatLite::encodeInterest(interest, &m_signedBegin, &m_signedEnd, m_outArr, &len);
+  size_t signedBegin, signedEnd, len;
+  ndn_Error error = Tlv0_2WireFormatLite::encodeInterest(interest, &signedBegin, &signedEnd, m_outArr, &len);
   if (error) {
     FACE_DBG(F("send Interest encoding-1 error: ") << _DEC(error));
     return error;
   }
 
   if (needSigning) {
-    int sigLen = m_signingKey->sign(m_outBuf + m_signedBegin, m_signedEnd - m_signedBegin, m_sigBuf);
+    int sigLen = m_signingKey->sign(m_outBuf + signedBegin, signedEnd - signedBegin, m_sigBuf);
     if (sigLen == 0) {
       FACE_DBG(F("signing error"));
       return NDN_ERROR_Error_in_sign_operation;
@@ -298,7 +299,7 @@ Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, bool needSig
     NameLite& name = interest.getName();
     name.pop();
     name.append(m_sigBuf, sigLen);
-    error = Tlv0_2WireFormatLite::encodeInterest(interest, &m_signedBegin, &m_signedEnd, m_outArr, &len);
+    error = Tlv0_2WireFormatLite::encodeInterest(interest, &signedBegin, &signedEnd, m_outArr, &len);
     if (error) {
       FACE_DBG(F("send Interest encoding-2 error: ") << _DEC(error));
       return error;
@@ -321,8 +322,8 @@ Face::sendData(DataLite& data, uint64_t endpointId)
     return error;
   }
 
-  size_t len;
-  error = Tlv0_2WireFormatLite::encodeData(data, &m_signedBegin, &m_signedEnd, m_outArr, &len);
+  size_t signedBegin, signedEnd, len;
+  error = Tlv0_2WireFormatLite::encodeData(data, &signedBegin, &signedEnd, m_outArr, &len);
   if (error) {
     FACE_DBG(F("send Data encoding-1 error: ") << _DEC(error));
     return error;
@@ -334,13 +335,50 @@ Face::sendData(DataLite& data, uint64_t endpointId)
     return NDN_ERROR_Error_in_sign_operation;
   }
   data.getSignature().setSignature(BlobLite(m_sigBuf, sigLen));
-  error = Tlv0_2WireFormatLite::encodeData(data, &m_signedBegin, &m_signedEnd, m_outArr, &len);
+  error = Tlv0_2WireFormatLite::encodeData(data, &signedBegin, &signedEnd, m_outArr, &len);
   if (error) {
     FACE_DBG(F("send Data encoding-2 error: ") << _DEC(error));
     return error;
   }
 
   return this->sendPacket(m_outBuf, len, endpointId);
+}
+
+ndn_Error
+Face::sendNack(const NetworkNackLite& nack, const InterestLite& interest, uint64_t endpointId)
+{
+  DynamicUInt8ArrayLite outArr(m_outBuf + NDNFACE_OUTNACK_HEADROOM, NDNFACE_OUTBUF_SIZE - NDNFACE_OUTNACK_HEADROOM, nullptr);
+  size_t signedBegin, signedEnd, interestSize;
+  ndn_Error error = Tlv0_2WireFormatLite::encodeInterest(interest, &signedBegin, &signedEnd, outArr, &interestSize);
+  if (error) {
+    FACE_DBG(F("send Nack encoding error: ") << _DEC(error));
+    return error;
+  }
+
+  static const uint8_t NACK_HDR[] PROGMEM {0xFD, 0x03, 0x20, 0x05, 0xFD, 0x03, 0x21, 0x01, 0xFF, 0x50};
+  const int NACK_REASON_OFFSET = 8; // where is NackReason TLV-VALUE
+
+  size_t fragmentLenSize = ndn_TlvEncoder_sizeOfVarNumber(interestSize);
+  size_t lpPacketLen = sizeof(NACK_HDR) + fragmentLenSize + interestSize;
+  size_t lpPacketLenSize = ndn_TlvEncoder_sizeOfVarNumber(lpPacketLen);
+  size_t lpPacketSize = 1 + lpPacketLenSize + lpPacketLen;
+  size_t lpHeaderSize = lpPacketSize - interestSize;
+
+  if (lpHeaderSize > NDNFACE_OUTNACK_HEADROOM) {
+    FACE_DBG(F("insufficient headroom"));
+    return NDN_ERROR_cannot_store_more_header_bytes_than_the_size_of_headerBuffer;
+  }
+
+  ndn_TlvEncoder encoder;
+  ndn_TlvEncoder_initialize(&encoder, reinterpret_cast<ndn_DynamicUInt8Array*>(&m_outArr));
+  ndn_TlvEncoder_seek(&encoder, NDNFACE_OUTNACK_HEADROOM - lpHeaderSize);
+  ndn_TlvEncoder_writeTypeAndLength(&encoder, ndn_Tlv_LpPacket_LpPacket, lpPacketLen);
+  memcpy_P(m_outBuf + encoder.offset, NACK_HDR, sizeof(NACK_HDR));
+  m_outBuf[encoder.offset + NACK_REASON_OFFSET] = static_cast<uint8_t>(nack.getReason());
+  encoder.offset += sizeof(NACK_HDR);
+  ndn_TlvEncoder_writeVarNumber(&encoder, interestSize);
+
+  return this->sendPacket(m_outBuf + NDNFACE_OUTNACK_HEADROOM - lpHeaderSize, lpPacketSize, endpointId);
 }
 
 } // namespace ndn

@@ -45,6 +45,9 @@ typedef void (*NackCallback)(void* arg, const NetworkNackLite& nackHeader, const
 /** \brief outgoing buffer size, in octets
  */
 #define NDNFACE_OUTBUF_SIZE 1500
+/** \brief where to start encoding Interest when sending Nack
+ */
+#define NDNFACE_OUTNACK_HEADROOM 32
 
 /** \brief a Face provides NDN communication between microcontroller and a remote NDN forwarder
  *
@@ -124,7 +127,7 @@ public:
   /** \brief send an Interest
    */
   ndn_Error
-  sendInterest(InterestLite& interest, uint64_t endpointId = 0);
+  sendInterest(const InterestLite& interest, uint64_t endpointId = 0);
 
   /** \brief send a signed Interest
    *  \param interest the unsigned Interest; must have 2 available name components
@@ -136,11 +139,14 @@ public:
 
   /** \brief send a Data
    *  \pre signing key is set
-   *
-   *  The Data will be signed by the HMAC key before sent out.
    */
   ndn_Error
   sendData(DataLite& data, uint64_t endpointId = 0);
+
+  /** \brief send a Nack
+   */
+  ndn_Error
+  sendNack(const NetworkNackLite& nack, const InterestLite& interest, uint64_t endpointId = 0);
 
 private:
   void
