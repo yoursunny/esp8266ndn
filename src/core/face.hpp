@@ -5,6 +5,7 @@
 
 #include "../ndn-cpp/lite/data-lite.hpp"
 #include "../ndn-cpp/lite/interest-lite.hpp"
+#include "../ndn-cpp/lite/network-nack-lite.hpp"
 #include "../ndn-cpp/lite/util/dynamic-uint8-array-lite.hpp"
 
 namespace ndn {
@@ -18,6 +19,9 @@ typedef void (*InterestCallback)(void* arg, const InterestLite& interest, uint64
 /** \brief Data handler
  */
 typedef void (*DataCallback)(void* arg, const DataLite& data, uint64_t endpointId);
+/** \brief Nack handler
+ */
+typedef void (*NackCallback)(void* arg, const NetworkNackLite& nackHeader, const InterestLite& interest, uint64_t endpointId);
 
 /** \brief incoming buffer size, in octets
  */
@@ -68,6 +72,13 @@ public:
    */
   void
   onData(DataCallback cb, void* cbarg);
+
+  /** \brief set incoming Nack handler
+   *
+   *  Only one handler is allowed. This overwrites any previous handler setting.
+   */
+  void
+  onNack(NackCallback cb, void* cbarg);
 
   /** \brief set signing key
    */
@@ -136,10 +147,13 @@ private:
   processPacket(size_t len, uint64_t endpointId);
 
   void
-  processInterest(size_t len, uint64_t endpointId);
+  processInterestOrNack(size_t len, uint64_t endpointId, const NetworkNackLite* nack);
 
   void
   processData(size_t len, uint64_t endpointId);
+
+  void
+  processLpPacket(size_t len, uint64_t endpointId);
 
   ndn_Error
   sendInterestImpl(InterestLite& interest, uint64_t endpointId, bool needSigning);
@@ -151,6 +165,8 @@ private:
   void* m_interestCbArg;
   DataCallback m_dataCb;
   void* m_dataCbArg;
+  NackCallback m_nackCb;
+  void* m_nackCbArg;
 
   uint8_t m_inBuf[NDNFACE_INBUF_SIZE];
   uint8_t m_outBuf[NDNFACE_OUTBUF_SIZE];
@@ -162,8 +178,11 @@ private:
   const PrivateKey* m_signingKey;
   bool m_ownsSigningKey;
 
-  InterestLite* m_thisInterest;
-  DataLite* m_thisData;
+  const uint8_t* m_inNetPkt;
+  union {
+    InterestLite* m_thisInterest;
+    DataLite* m_thisData;
+  };
   size_t m_signedBegin;
   size_t m_signedEnd;
 };
