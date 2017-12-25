@@ -18,7 +18,6 @@ cp -r $NDNCPPPATH/include/ndn-cpp/lite ./
 cp -r $NDNCPPPATH/src/c ./
 cp -r $NDNCPPPATH/src/lite ./
 cp -r $NDNCPPPATH/contrib/cryptosuite ./
-cp $NDNCPPPATH/COPYING ./
 
 # remove trailing whitespace
 find -type f -exec sed -i -e 's/\s*$//' '{}' '+'
