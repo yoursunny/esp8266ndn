@@ -1,13 +1,12 @@
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#ifndef ESP8266NDN_LOGGER_HPP
+#define ESP8266NDN_LOGGER_HPP
 
-#include <HardwareSerial.h>
+#include "logging.hpp"
 #include "detail/Streaming.h"
 
-#define DBG_PORT Serial
+#define DBG(module, ...) \
+  do { \
+    ::ndn::getLogOutput() << _DEC(millis()) << " [" #module "] " << __VA_ARGS__ << "\n"; \
+  } while (false)
 
-#ifdef DBG_PORT
-#define DBG(module, ...) do { DBG_PORT << _DEC(millis()) << " [" #module "] " << __VA_ARGS__ << "\n"; } while (false)
-#endif
-
-#endif // LOGGER_HPP
+#endif // ESP8266NDN_LOGGER_HPP
