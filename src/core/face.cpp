@@ -149,21 +149,28 @@ bool
 Face::verifyInterest(const PublicKey& pubkey) const
 {
   if (m_thisInterest == nullptr || m_inNetPkt[0] != ndn_Tlv_Interest) {
+    FACE_DBG(F("last packet is not Interest, but ") << _HEX(m_inNetPkt[0]));
     return false;
   }
 
   NameLite& name = m_thisInterest->getName();
   if (name.size() < 2) {
+    FACE_DBG(F("Interest name is too short, has ") << _DEC(name.size()) << " components");
     return false;
   }
 
   const ndn::BlobLite& signatureBits = name.get(-1).getValue();
   if (signatureBits.isNull()) {
+    FACE_DBG(F("Interest SignatureBits parse error"));
     return false;
   }
 
-  return pubkey.verify(m_inNetPkt + m_signedBegin, m_signedEnd - m_signedBegin,
-                       signatureBits.buf(), signatureBits.size());
+  bool res = pubkey.verify(m_inNetPkt + m_signedBegin, m_signedEnd - m_signedBegin,
+                           signatureBits.buf(), signatureBits.size());
+  if (!res) {
+    FACE_DBG(F("Interest SignatureBits is bad"));
+  }
+  return res;
 }
 
 void
@@ -192,16 +199,22 @@ bool
 Face::verifyData(const PublicKey& pubkey) const
 {
   if (m_thisData == nullptr || m_inNetPkt[0] != ndn_Tlv_Data) {
+    FACE_DBG(F("last packet is not Data, but ") << _HEX(m_inNetPkt[0]));
     return false;
   }
 
   const ndn::BlobLite& signatureBits = m_thisData->getSignature().getSignature();
   if (signatureBits.isNull()) {
+    FACE_DBG(F("Data SignatureBits parse error"));
     return false;
   }
 
-  return pubkey.verify(m_inNetPkt + m_signedBegin, m_signedEnd - m_signedBegin,
-                       signatureBits.buf(), signatureBits.size());
+  bool res = pubkey.verify(m_inNetPkt + m_signedBegin, m_signedEnd - m_signedBegin,
+                           signatureBits.buf(), signatureBits.size());
+  if (!res) {
+    FACE_DBG(F("Data SignatureBits is bad"));
+  }
+  return res;
 }
 
 void
@@ -329,7 +342,7 @@ Face::sendData(DataLite& data, uint64_t endpointId)
     return error;
   }
 
-  int sigLen = m_signingKey->sign(m_outBuf + m_signedBegin, m_signedEnd - m_signedBegin, m_sigBuf);
+  int sigLen = m_signingKey->sign(m_outBuf + signedBegin, signedEnd - signedBegin, m_sigBuf);
   if (sigLen == 0) {
     FACE_DBG(F("signing error"));
     return NDN_ERROR_Error_in_sign_operation;
