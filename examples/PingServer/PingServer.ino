@@ -1,7 +1,11 @@
 // PingServer example currently does not perform prefix registration.
-// It's necessary to manually add a route toward the ESP8266 on the router.
+// It's necessary to manually add a route toward the ESP8266/ESP32 on the router.
 
+#if defined(ESP8266)
 #include <ESP8266WiFi.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#endif
 #include <WiFiUdp.h>
 #include <esp8266ndn.h>
 

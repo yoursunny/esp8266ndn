@@ -1,4 +1,8 @@
+#if defined(ESP8266)
 #include <ESP8266WiFi.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#endif
 #include <WiFiUdp.h>
 #include <esp8266ndn.h>
 
@@ -52,9 +56,11 @@ ndnpingEvent(void* arg, ndn::PingClient::Event evt, uint64_t seq)
     case ndn::PingClient::Event::PROBE:
       digitalWrite(led, HIGH);
       break;
+#ifdef ESP8266
     case ndn::PingClient::Event::NACK:
       analogWrite(led, PWMRANGE / 8);
       break;
+#endif
     default:
       digitalWrite(led, LOW);
       break;

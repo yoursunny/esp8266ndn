@@ -1,6 +1,6 @@
 # NDN Arduino library for ESP8266 microcontroller
 
-**esp8266ndn** library enables [Named Data Networking](https://named-data.net/) application development on [ESP8266 core for Arduino](https://github.com/esp8266/Arduino).
+**esp8266ndn** library enables [Named Data Networking](https://named-data.net/) application development on [ESP8266 Arduino core](https://github.com/esp8266/Arduino) and [ESP32 Arduino core](https://github.com/espressif/arduino-esp32).
 
 The following features are implemented in this library:
 
