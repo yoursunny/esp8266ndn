@@ -8,8 +8,6 @@
 
 const char* WIFI_SSID = "my-ssid";
 const char* WIFI_PASS = "my-pass";
-const char* NDN_ROUTER_HOST = "hobo.cs.arizona.edu";
-const uint16_t NDN_ROUTER_PORT = 6363;
 
 const int LED0 = 15;
 const int LED1 = 12;
@@ -80,12 +78,11 @@ setup()
   }
   delay(1000);
 
-  IPAddress routerIp;
-  if (!WiFi.hostByName(NDN_ROUTER_HOST, routerIp)) {
-    Serial.println("cannot resolve router IP");
+  IPAddress routerIp = ndn::queryFchService();
+  if (routerIp == INADDR_NONE) {
     ESP.restart();
   }
-  g_transport.begin(routerIp, NDN_ROUTER_PORT, 6363);
+  g_transport.begin(routerIp, 6363, 6363);
   g_face.onData(&processData, nullptr);
   g_face.onNack(&processNack, nullptr);
 

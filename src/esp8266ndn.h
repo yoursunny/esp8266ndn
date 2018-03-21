@@ -17,6 +17,7 @@
 #include "security/private-key.hpp"
 #include "security/public-key.hpp"
 
+#include "app/autoconfig.hpp"
 #include "app/ping-client.hpp"
 #include "app/ping-server.hpp"
 
