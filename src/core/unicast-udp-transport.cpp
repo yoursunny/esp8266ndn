@@ -72,6 +72,8 @@ UnicastUdpTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
     UUDPTRANSPORT_DBG(F("Udp::endPacket error"));
     return NDN_ERROR_SocketTransport_error_in_send;
   }
+
+  return NDN_ERROR_success;
 }
 
 } // namespace ndn

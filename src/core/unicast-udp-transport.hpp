@@ -1,5 +1,5 @@
-#ifndef ESP8266NDN_UDP_TRANSPORT_HPP
-#define ESP8266NDN_UDP_TRANSPORT_HPP
+#ifndef ESP8266NDN_UNICAST_UDP_TRANSPORT_HPP
+#define ESP8266NDN_UNICAST_UDP_TRANSPORT_HPP
 
 #include "transport.hpp"
 #include <Udp.h>
@@ -34,4 +34,4 @@ private:
 
 } // namespace ndn
 
-#endif // ESP8266NDN_UDP_TRANSPORT_HPP
+#endif // ESP8266NDN_UNICAST_UDP_TRANSPORT_HPP
