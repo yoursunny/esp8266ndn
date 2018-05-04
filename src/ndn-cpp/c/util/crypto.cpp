@@ -1,6 +1,6 @@
 #include <Arduino.h>
 /**
- * Copyright (C) 2013-2017 Regents of the University of California.
+ * Copyright (C) 2013-2018 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -85,6 +85,19 @@ ndn_computeHmacWithSha256
 }
 
 int
+ndn_verifyHmacWithSha256Signature
+  (const uint8_t *key, size_t keyLength, const uint8_t *signature,
+   size_t signatureLength, const uint8_t *data, size_t dataLength)
+{
+  uint8_t dataDigest[ndn_SHA256_DIGEST_SIZE];
+  ndn_computeHmacWithSha256(key, keyLength, data, dataLength, dataDigest);
+
+  // Use constant-time CRYPTO_memcmp to avoid timing attacks.
+  return signatureLength == ndn_SHA256_DIGEST_SIZE && CRYPTO_memcmp
+    (signature, dataDigest, ndn_SHA256_DIGEST_SIZE) == 0;
+}
+
+int
 ndn_verifyDigestSha256Signature
   (const uint8_t *signature, size_t signatureLength, const uint8_t *data,
    size_t dataLength)
@@ -92,7 +105,7 @@ ndn_verifyDigestSha256Signature
   uint8_t dataDigest[ndn_SHA256_DIGEST_SIZE];
   ndn_digestSha256(data, dataLength, dataDigest);
 
-  return signatureLength == ndn_SHA256_DIGEST_SIZE && ndn_memcmp
+  return signatureLength == ndn_SHA256_DIGEST_SIZE && CRYPTO_memcmp
     (signature, dataDigest, ndn_SHA256_DIGEST_SIZE) == 0;
 }
 

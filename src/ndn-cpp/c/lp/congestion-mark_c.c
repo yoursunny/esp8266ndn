@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2018 Regents of the University of California.
+ * Copyright (C) 2018 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,46 +18,33 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-#include "ndn_memory.h"
+#include "congestion-mark.h"
 
-#if !NDN_CPP_HAVE_MEMCMP
-int ndn_memcmp(const uint8_t *buf1, const uint8_t *buf2, size_t len)
+const struct ndn_CongestionMark *
+ndn_CongestionMark_getFirstHeader(const struct ndn_LpPacket *lpPacket)
 {
   size_t i;
-
-  for (i = 0; i < len; i++) {
-    if (buf1[i] > buf2[i])
-      return 1;
-    else if (buf1[i] < buf2[i])
-      return -1;
+  for (i = 0; i < lpPacket->nHeaderFields; ++i) {
+    const struct ndn_LpPacketHeaderField *field = &lpPacket->headerFields[i];
+    if (field->type == ndn_LpPacketHeaderFieldType_CONGESTION_MARK)
+      return &field->congestionMark;
   }
 
   return 0;
 }
-#else
-int ndn_memcmp_stub_to_avoid_empty_file_warning = 0;
-#endif
 
-#if !NDN_CPP_HAVE_MEMCPY
-void ndn_memcpy(uint8_t *dest, const uint8_t *src, size_t len)
+ndn_Error
+ndn_CongestionMark_add
+  (struct ndn_LpPacket *lpPacket, struct ndn_CongestionMark **congestionMark)
 {
-  size_t i;
+  ndn_Error error;
+  struct ndn_LpPacketHeaderField *headerField;
 
-  for (i = 0; i < len; i++)
-    dest[i] = src[i];
+  if ((error = ndn_LpPacket_addEmptyHeaderField(lpPacket, &headerField)))
+    return error;
+  headerField->type = ndn_LpPacketHeaderFieldType_CONGESTION_MARK;
+  *congestionMark = &headerField->congestionMark;
+  ndn_CongestionMark_initialize(*congestionMark);
+
+  return NDN_ERROR_success;
 }
-#else
-int ndn_memcpy_stub_to_avoid_empty_file_warning = 0;
-#endif
-
-#if !NDN_CPP_HAVE_MEMSET
-void ndn_memset(uint8_t *dest, int val, size_t len)
-{
-  size_t i;
-
-  for (i = 0; i < len; i++)
-    dest[i] = (uint8_t)val;
-}
-#else
-int ndn_memset_stub_to_avoid_empty_file_warning = 0;
-#endif

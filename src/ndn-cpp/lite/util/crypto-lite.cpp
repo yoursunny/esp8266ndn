@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2017 Regents of the University of California.
+ * Copyright (C) 2015-2018 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,6 +44,15 @@ CryptoLite::computeHmacWithSha256
    uint8_t *digest)
 {
   ndn_computeHmacWithSha256(key, keyLength, data, dataLength, digest);
+}
+
+bool
+CryptoLite::verifyHmacWithSha256Signature
+  (const uint8_t *key, size_t keyLength, const uint8_t* signature,
+   size_t signatureLength, const uint8_t *data, size_t dataLength)
+{
+  return ndn_verifyHmacWithSha256Signature
+    (key, keyLength, signature, signatureLength, data, dataLength) != 0;
 }
 
 #endif

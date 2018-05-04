@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016-2017 Regents of the University of California.
+ * Copyright (C) 2016-2018 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 
 #include "../../network-nack.h"
 #include "../../lp/incoming-face-id.h"
+#include "../../lp/congestion-mark.h"
 #include "tlv-lp-packet.h"
 
 ndn_Error
@@ -92,6 +93,15 @@ ndn_decodeTlvLpPacket
         return error;
       if ((error = ndn_TlvDecoder_readNonNegativeInteger
            (decoder, fieldLength, &incomingFaceId->faceId)))
+        return error;
+    }
+    else if (fieldType == ndn_Tlv_LpPacket_CongestionMark) {
+      struct ndn_CongestionMark *congestionMark;
+
+      if ((error = ndn_CongestionMark_add(lpPacket, &congestionMark)))
+        return error;
+      if ((error = ndn_TlvDecoder_readNonNegativeInteger
+           (decoder, fieldLength, &congestionMark->congestionMark)))
         return error;
     }
     else {

@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2018 Regents of the University of California.
+ * Copyright (C) 2018 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,21 +19,25 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-#include "../c/data.h"
-#include "../lite/data-lite.hpp"
+#include "../../c/lp/congestion-mark.h"
+#include "../../lite/lp/lp-packet-lite.hpp"
+#include "../../lite/lp/congestion-mark-lite.hpp"
 
 namespace ndn {
 
-DataLite::DataLite
-  (ndn_NameComponent* nameComponents, size_t maxNameComponents,
-   ndn_NameComponent* keyNameComponents, size_t maxKeyNameComponents)
+CongestionMarkLite::CongestionMarkLite()
 {
-  ndn_Data_initialize
-    (this, nameComponents, maxNameComponents, keyNameComponents,
-     maxKeyNameComponents);
+  ndn_CongestionMark_initialize(this);
 }
 
-ndn_Error
-DataLite::set(const DataLite& other) { return ndn_Data_setFromData(this, &other); }
+const CongestionMarkLite*
+CongestionMarkLite::getFirstHeader(const LpPacketLite& lpPacket)
+{
+  const ndn_CongestionMark* result = ndn_CongestionMark_getFirstHeader(&lpPacket);
+  if (result)
+    return &downCast(*result);
+  else
+    return 0;
+}
 
 }

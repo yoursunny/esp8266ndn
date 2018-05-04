@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2016-2017 Regents of the University of California.
+ * Copyright (C) 2016-2018 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -92,6 +92,43 @@ public:
     (const BlobLite& key, const BlobLite& data, uint8_t *digest)
   {
     computeHmacWithSha256(key.buf(), key.size(), data.buf(), data.size(), digest);
+  }
+
+  /**
+   * Verify that the HMAC with sha-256 of the data equals the signature, as
+   * defined in http://tools.ietf.org/html/rfc2104#section-2 . (This is a separate
+   * method from computeHmacWithSha256 so that we can use a crypto-safe
+   * comparison function.)
+   * @param key A pointer to buffer with the key.
+   * @param keyLength The length of key.
+   * @param signature A pointer to the signature bytes.
+   * @param signatureLength The length of signature.
+   * @param data A pointer to the input byte array to verify.
+   * @param dataLength The length of data.
+   * @return True if the signature verifies, false if not.
+   */
+  static bool
+  verifyHmacWithSha256Signature
+    (const uint8_t *key, size_t keyLength, const uint8_t* signature,
+     size_t signatureLength, const uint8_t *data, size_t dataLength);
+
+  /**
+   * Verify that the HMAC with sha-256 of the data equals the signature, as
+   * defined in http://tools.ietf.org/html/rfc2104#section-2 . (This is a separate
+   * method from computeHmacWithSha256 so that we can use a crypto-safe
+   * comparison function.)
+   * @param key The key.
+   * @param signature The signature bytes.
+   * @param data The byte array to verify.
+   * @return True if the signature verifies, false if not.
+   */
+  static bool
+  verifyHmacWithSha256Signature
+    (const BlobLite& key, const BlobLite& signature, const BlobLite& data)
+  {
+    return verifyHmacWithSha256Signature
+      (key.buf(), key.size(), signature.buf(), signature.size(), data.buf(),
+       data.size());
   }
 
   /**

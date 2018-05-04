@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Regents of the University of California.
+ * Copyright (C) 2014-2018 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -322,7 +322,7 @@ ndn_decodeTlvInterest
     interest->maxSuffixComponents = -1;
     interest->exclude.nEntries = 0;
     interest->childSelector = -1;
-    interest->mustBeFresh = 1;
+    interest->mustBeFresh = 0;
   }
 
   // Require a Nonce, but don't force it to be 4 bytes.

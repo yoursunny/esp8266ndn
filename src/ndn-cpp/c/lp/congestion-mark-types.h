@@ -1,6 +1,5 @@
-/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2018 Regents of the University of California.
+ * Copyright (C) 2018 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,21 +18,24 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-#include "../c/data.h"
-#include "../lite/data-lite.hpp"
+#ifndef NDN_CONGESTION_MARK_TYPES_H
+#define NDN_CONGESTION_MARK_TYPES_H
 
-namespace ndn {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-DataLite::DataLite
-  (ndn_NameComponent* nameComponents, size_t maxNameComponents,
-   ndn_NameComponent* keyNameComponents, size_t maxKeyNameComponents)
-{
-  ndn_Data_initialize
-    (this, nameComponents, maxNameComponents, keyNameComponents,
-     maxKeyNameComponents);
+/**
+ * An ndn_CongestionMark represents the congestion mark header field in an
+ * NDNLPv2 packet.
+ * http://redmine.named-data.net/projects/nfd/wiki/NDNLPv2
+ */
+struct ndn_CongestionMark {
+  uint64_t congestionMark; /**< 0 if not specified. */
+};
+
+#ifdef __cplusplus
 }
+#endif
 
-ndn_Error
-DataLite::set(const DataLite& other) { return ndn_Data_setFromData(this, &other); }
-
-}
+#endif

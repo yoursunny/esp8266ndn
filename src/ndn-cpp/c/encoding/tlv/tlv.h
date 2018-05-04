@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Regents of the University of California.
+ * Copyright (C) 2014-2018 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  * Derived from tlv.hpp by Alexander Afanasyev <alexander.afanasyev@ucla.edu>
  *
@@ -100,6 +100,7 @@ enum {
   ndn_Tlv_LpPacket_IncomingFaceId =  817,
   ndn_Tlv_LpPacket_CachePolicy =     820,
   ndn_Tlv_LpPacket_CachePolicyType = 821,
+  ndn_Tlv_LpPacket_CongestionMark =  832,
   ndn_Tlv_LpPacket_IGNORE_MIN =      800,
   ndn_Tlv_LpPacket_IGNORE_MAX =      959
 };
