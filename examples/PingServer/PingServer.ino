@@ -1,29 +1,39 @@
+// Define interface names for MulticastEthernetTransport.
+// In case they are wrong, have a look at MulticastEthernetTransport::listNetifs output.
+#if defined(ESP8266)
+// lwip v1.4 STA interface
+// lwip v2.0 is not supported; its STA interface name is "st" 0
+#define ETHER_FACE_IFNAME "ew"
+#define ETHER_FACE_IFNUM  0
+#elif defined(ESP32)
+// STA interface
+#define ETHER_FACE_IFNAME "st"
+#define ETHER_FACE_IFNUM  1
+#endif
+
 // PingServer example currently does not perform prefix registration.
 // It's necessary to manually add a route toward the ESP8266/ESP32 on the router.
+// nfdc route add /example/esp8266 [ETHERNET-MULTICAST-FACEID]
 
 #if defined(ESP8266)
 #include <ESP8266WiFi.h>
 #elif defined(ESP32)
 #include <WiFi.h>
 #endif
-#include <WiFiUdp.h>
 #include <esp8266ndn.h>
 
 const char* WIFI_SSID = "my-ssid";
 const char* WIFI_PASS = "my-pass";
-const char* NDN_ROUTER_HOST = "my-server.example.org";
-const uint16_t NDN_ROUTER_PORT = 6363;
 const uint8_t NDN_HMAC_KEY[] = {
   0xaf, 0x4a, 0xb1, 0xd2, 0x52, 0x02, 0x7d, 0x67, 0x7d, 0x85, 0x14, 0x31, 0xf1, 0x0e, 0x0e, 0x1d,
   0x92, 0xa9, 0xd4, 0x0a, 0x0f, 0xf4, 0x49, 0x90, 0x06, 0x7e, 0xf6, 0x50, 0xc8, 0x50, 0x2c, 0x6b,
   0x1e, 0xbe, 0x00, 0x2d, 0x5c, 0xaf, 0xd9, 0xe1, 0xd3, 0xa5, 0x25, 0xe2, 0x72, 0xfb, 0xa7, 0xa7,
   0xe4, 0xb0, 0xc9, 0x00, 0xc2, 0xfe, 0x58, 0xb4, 0x9f, 0x38, 0x0b, 0x45, 0xc9, 0x30, 0xfe, 0x26
 };
-char PREFIX0[] = "/example/esp8266-A/ping"; // must be mutable
-char PREFIX1[] = "/example/esp8266-B/ping";
+char PREFIX0[] = "/example/esp8266/A/ping"; // must be mutable
+char PREFIX1[] = "/example/esp8266/B/ping";
 
-WiFiUDP g_udp;
-ndn::UnicastUdpTransport g_transport(g_udp);
+ndn::MulticastEthernetTransport g_transport;
 ndn::Face g_face(g_transport);
 
 ndn_NameComponent g_comps0[8];
@@ -78,12 +88,8 @@ setup()
   }
   delay(1000);
 
-  IPAddress routerIp;
-  if (!WiFi.hostByName(NDN_ROUTER_HOST, routerIp)) {
-    Serial.println("cannot resolve router IP");
-    ESP.restart();
-  }
-  g_transport.begin(routerIp, NDN_ROUTER_PORT, 6363);
+  ndn::MulticastEthernetTransport::listNetifs(Serial);
+  g_transport.begin(ETHER_FACE_IFNAME, ETHER_FACE_IFNUM);
   g_face.onInterest(&processInterest, nullptr);
   g_face.setHmacKey(NDN_HMAC_KEY, sizeof(NDN_HMAC_KEY));
 
