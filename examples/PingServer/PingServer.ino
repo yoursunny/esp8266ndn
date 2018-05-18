@@ -1,12 +1,12 @@
 // Define interface names for MulticastEthernetTransport.
 // In case they are wrong, have a look at MulticastEthernetTransport::listNetifs output.
 #if defined(ESP8266)
-// lwip v1.4 STA interface
-// lwip v2.0 is not supported; its STA interface name is "st" 0
+// lwip v1.4 STA interface "ew" 0
 #define ETHER_FACE_IFNAME "ew"
 #define ETHER_FACE_IFNUM  0
+// lwip v2.0 is not supported; its STA interface name is "st" 0
 #elif defined(ESP32)
-// STA interface
+// STA interface "st" 1
 #define ETHER_FACE_IFNAME "st"
 #define ETHER_FACE_IFNUM  1
 #endif

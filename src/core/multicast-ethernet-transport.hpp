@@ -3,9 +3,6 @@
 
 #include "transport.hpp"
 
-#include <array>
-#include <atomic>
-
 extern "C" {
 struct netif;
 struct pbuf;
@@ -45,31 +42,21 @@ public:
 
 private:
   class Impl;
+  class Queue;
 
-  void
-  rxEnqueue(pbuf* p);
-
-private:
   netif* m_netif;
   void* m_oldInput;
 
   /** \brief The receive queue.
    *
    *  This transport places intercepted packets in RX queue to be receive()'ed
-   *  later, instead of posting to the Face via a callback, for two reasons:
+   *  later, instead of posting them via a callback, for two reasons:
    *  (1) netif_input_fn must not block network stack for too long.
    *  (2) ESP32 executes netif_input_fn in CPU0 and the Arduino main loop in
    *      CPU1. Using the RX queue keeps the application in CPU1, and does not
    *      have to deal with multi-threading.
-   *
-   *  Valid range is [m_rxHead, m_rxTail) mod MCASTETHTRANSPORT_RX_QUEUE_LEN.
    */
-  std::array<pbuf*, MCASTETHTRANSPORT_RX_QUEUE_LEN> m_rxQueue;
-  int m_rxHead;
-  int m_rxTail;
-#ifdef ESP32
-  std::atomic_flag m_rxLock; ///< spinlock for m_rxHead and m_rxTail
-#endif
+  Queue* m_queue;
 };
 
 } // namespace ndn
