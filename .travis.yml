@@ -5,10 +5,12 @@ os:
 env:
   matrix:
     - HARDWARE=esp8266com/esp8266 \
-      CORE=https://github.com/esp8266/Arduino/archive/6d3f0b40239b61472a1a0777b402f00d1165beec.tar.gz \
+      COREGIT=https://github.com/esp8266/Arduino.git \
+      CORECOMMIT=87991aba9febc337b51306d65bbd94c056f4e417 \
       BOARD='--board esp8266com:esp8266:nodemcuv2  --pref custom_CpuFrequency=nodemcuv2_80 --pref custom_FlashSize=nodemcuv2_4M1M'
     - HARDWARE=espressif/esp32 \
-      CORE=https://github.com/espressif/arduino-esp32/archive/3a4ec66d41615cbb1c3e830cb6e761cdc4cca9d3.tar.gz \
+      COREGIT=https://github.com/espressif/arduino-esp32.git \
+      CORECOMMIT=9f8f05735b0ce630c9879038fda2457fcf117618 \
       BOARD='--board espressif:esp32:heltec_wifi_kit_32 --pref custom_FlashFreq=heltec_wifi_kit_32_80'
 
 install:
@@ -18,7 +20,7 @@ install:
   - export PATH="$HOME/arduino_ide:$PATH"
   - cd $HOME/arduino_ide/hardware
   - mkdir -p $HARDWARE; cd $HARDWARE
-  - curl -L $CORE | tar xz --strip 1
+  - git init; git fetch $COREGIT; git checkout $CORECOMMIT; git submodule update --init
   - cd tools; python get.py
 
 before_script:
