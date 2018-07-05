@@ -3,6 +3,7 @@
 
 #include "ndn-cpp/ndn-cpp-all.hpp"
 
+#include "core/ble-server-transport.hpp"
 #include "core/face.hpp"
 #include "core/logging.hpp"
 #include "core/loopback-transport.hpp"
