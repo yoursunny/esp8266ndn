@@ -1,6 +1,7 @@
 #include "face.hpp"
 #include "logger.hpp"
-#include "../security/hmac-key.hpp"
+#include "../security/private-key.hpp"
+#include "../security/public-key.hpp"
 
 #include "../ndn-cpp/c/encoding/tlv/tlv.h"
 #include "../ndn-cpp/c/encoding/tlv/tlv-encoder.h"
@@ -20,16 +21,12 @@ Face::Face(Transport& transport)
   , m_sigInfoArr(m_sigInfoBuf, NDNFACE_SIGINFOBUF_SIZE, nullptr)
   , m_sigBuf(nullptr)
   , m_signingKey(nullptr)
-  , m_ownsSigningKey(false)
   , m_thisInterest(nullptr)
 {
 }
 
 Face::~Face()
 {
-  if (m_ownsSigningKey) {
-    delete m_signingKey;
-  }
   if (m_sigBuf != nullptr) {
     free(m_sigBuf);
   }
@@ -64,21 +61,11 @@ Face::setSigningKey(const PrivateKey& pvtkey)
     free(m_sigBuf);
   }
 
-  if (m_ownsSigningKey) {
-    delete m_signingKey;
-  }
   m_signingKey = &pvtkey;
 
   if (needNewSigBuf) {
     m_sigBuf = reinterpret_cast<uint8_t*>(malloc(pvtkey.getMaxSigLength()));
   }
-}
-
-void
-Face::setHmacKey(const uint8_t* key, size_t keySize)
-{
-  auto hmacKey = new HmacKey(key, keySize);
-  this->setSigningKey(*hmacKey);
 }
 
 void

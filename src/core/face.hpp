@@ -88,18 +88,6 @@ public:
   void
   setSigningKey(const PrivateKey& pvtkey);
 
-  /** \brief set HMAC signing key
-   *  \deprecated use setSigningKey
-   *
-   *  To generate a random HMAC key in Python:
-   *  \code{.py}
-   *  import random
-   *  print ',\n'.join([ ', '.join([ '{0:#04x}'.format(random.randint(0,255)) for i in range(16) ]) for j in range(4) ])
-   *  \endcode
-   */
-  void
-  setHmacKey(const uint8_t* key, size_t keySize) __attribute__((deprecated));
-
   /** \brief loop the underlying transport
    */
   void
@@ -182,7 +170,6 @@ private:
   uint8_t* m_sigBuf;
 
   const PrivateKey* m_signingKey;
-  bool m_ownsSigningKey;
 
   const uint8_t* m_inNetPkt;
   union {
