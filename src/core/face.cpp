@@ -4,6 +4,7 @@
 #include "../security/public-key.hpp"
 
 #include "../ndn-cpp/c/encoding/tlv/tlv.h"
+#include "../ndn-cpp/c/encoding/tlv/tlv-decoder.h"
 #include "../ndn-cpp/c/encoding/tlv/tlv-encoder.h"
 #include "../ndn-cpp/lite/encoding/tlv-0_2-wire-format-lite.hpp"
 
@@ -64,7 +65,7 @@ Face::setSigningKey(const PrivateKey& pvtkey)
   m_signingKey = &pvtkey;
 
   if (needNewSigBuf) {
-    m_sigBuf = reinterpret_cast<uint8_t*>(malloc(pvtkey.getMaxSigLength()));
+    m_sigBuf = reinterpret_cast<uint8_t*>(malloc(2 + pvtkey.getMaxSigLength()));
   }
 }
 
@@ -146,14 +147,18 @@ Face::verifyInterest(const PublicKey& pubkey) const
     return false;
   }
 
-  const ndn::BlobLite& signatureBits = name.get(-1).getValue();
-  if (signatureBits.isNull()) {
-    FACE_DBG(F("Interest SignatureBits parse error"));
+  const ndn::BlobLite& sigValueComp = name.get(-1).getValue();
+  ndn_TlvDecoder decoder;
+  ndn_TlvDecoder_initialize(&decoder, sigValueComp.buf(), sigValueComp.size());
+  ndn_Blob sigValue = {0};
+  ndn_Error e = ndn_TlvDecoder_readBlobTlv(&decoder, ndn_Tlv_SignatureValue, &sigValue);
+  if (e != NDN_ERROR_success) {
+    FACE_DBG(F("Interest SignatureValue parse error ") << _DEC(e));
     return false;
   }
 
   bool res = pubkey.verify(m_inNetPkt + m_signedBegin, m_signedEnd - m_signedBegin,
-                           signatureBits.buf(), signatureBits.size());
+                           sigValue.value, sigValue.length);
   if (!res) {
     FACE_DBG(F("Interest SignatureBits is bad"));
   }
@@ -291,11 +296,15 @@ Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, bool needSig
   }
 
   if (needSigning) {
-    int sigLen = m_signingKey->sign(m_outBuf + signedBegin, signedEnd - signedBegin, m_sigBuf);
-    if (sigLen == 0) {
+    int sigLen = m_signingKey->sign(m_outBuf + signedBegin, signedEnd - signedBegin, m_sigBuf + 2);
+    if (sigLen == 0 || sigLen > 253) {
       FACE_DBG(F("signing error"));
       return NDN_ERROR_Error_in_sign_operation;
     }
+    m_sigBuf[0] = ndn_Tlv_SignatureValue;
+    m_sigBuf[1] = sigLen;
+    sigLen += 2;
+
     NameLite& name = interest.getName();
     name.pop();
     name.append(m_sigBuf, sigLen);
