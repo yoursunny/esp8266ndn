@@ -1,5 +1,5 @@
 #include "loopback-transport.hpp"
-#include "logger.hpp"
+#include "../core/logger.hpp"
 
 #define LOOPBACKTRANSPORT_DBG(...) DBG(LoopbackTransport, __VA_ARGS__)
 

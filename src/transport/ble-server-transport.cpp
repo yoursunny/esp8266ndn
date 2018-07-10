@@ -2,7 +2,7 @@
 // Due to conflicting macro declaration in Arduino.h, BLEDevice.h must be included first.
 #include <BLEDevice.h>
 #include "ble-server-transport.hpp"
-#include "logger.hpp"
+#include "../core/logger.hpp"
 
 #define BLESERVERTRANSPORT_DBG(...) DBG(BleServerTransport, __VA_ARGS__)
 

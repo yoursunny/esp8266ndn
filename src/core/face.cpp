@@ -2,6 +2,7 @@
 #include "logger.hpp"
 #include "../security/private-key.hpp"
 #include "../security/public-key.hpp"
+#include "../transport/transport.hpp"
 
 #include "../ndn-cpp/c/encoding/tlv/tlv.h"
 #include "../ndn-cpp/c/encoding/tlv/tlv-decoder.h"

@@ -3,13 +3,12 @@
 
 #include "ndn-cpp/ndn-cpp-all.hpp"
 
-#include "core/ble-server-transport.hpp"
+#include "app/autoconfig.hpp"
+#include "app/ping-client.hpp"
+#include "app/ping-server.hpp"
+
 #include "core/face.hpp"
 #include "core/logging.hpp"
-#include "core/loopback-transport.hpp"
-#include "core/multicast-ethernet-transport.hpp"
-#include "core/transport.hpp"
-#include "core/unicast-udp-transport.hpp"
 #include "core/uri.hpp"
 
 #include "security/digest-key.hpp"
@@ -19,8 +18,10 @@
 #include "security/private-key.hpp"
 #include "security/public-key.hpp"
 
-#include "app/autoconfig.hpp"
-#include "app/ping-client.hpp"
-#include "app/ping-server.hpp"
+#include "transport/ble-server-transport.hpp"
+#include "transport/loopback-transport.hpp"
+#include "transport/multicast-ethernet-transport.hpp"
+#include "transport/transport.hpp"
+#include "transport/unicast-udp-transport.hpp"
 
 #endif // ESP8266NDN_H

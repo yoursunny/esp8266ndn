@@ -1,8 +1,6 @@
 #ifndef ESP8266NDN_FACE_HPP
 #define ESP8266NDN_FACE_HPP
 
-#include "transport.hpp"
-
 #include "../ndn-cpp/lite/data-lite.hpp"
 #include "../ndn-cpp/lite/interest-lite.hpp"
 #include "../ndn-cpp/lite/network-nack-lite.hpp"
@@ -12,6 +10,7 @@ namespace ndn {
 
 class PrivateKey;
 class PublicKey;
+class Transport;
 
 /** \brief Interest handler
  */
