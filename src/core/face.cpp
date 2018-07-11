@@ -1,11 +1,9 @@
 #include "face.hpp"
 #include "logger.hpp"
 #include "../security/private-key.hpp"
-#include "../security/public-key.hpp"
 #include "../transport/transport.hpp"
 
 #include "../ndn-cpp/c/encoding/tlv/tlv.h"
-#include "../ndn-cpp/c/encoding/tlv/tlv-decoder.h"
 #include "../ndn-cpp/c/encoding/tlv/tlv-encoder.h"
 #include "../ndn-cpp/lite/encoding/tlv-0_2-wire-format-lite.hpp"
 
@@ -15,6 +13,7 @@ namespace ndn {
 
 Face::Face(Transport& transport)
   : m_transport(transport)
+  , m_pb(new PacketBuffer({}))
   , m_interestCb(nullptr)
   , m_interestCbArg(nullptr)
   , m_dataCb(nullptr)
@@ -23,7 +22,6 @@ Face::Face(Transport& transport)
   , m_sigInfoArr(m_sigInfoBuf, NDNFACE_SIGINFOBUF_SIZE, nullptr)
   , m_sigBuf(nullptr)
   , m_signingKey(nullptr)
-  , m_thisInterest(nullptr)
 {
 }
 
@@ -32,6 +30,7 @@ Face::~Face()
   if (m_sigBuf != nullptr) {
     free(m_sigBuf);
   }
+  delete m_pb;
 }
 
 void
@@ -73,172 +72,95 @@ Face::setSigningKey(const PrivateKey& pvtkey)
 void
 Face::loop()
 {
-  uint64_t endpointId;
-
   int packetLimit = NDNFACE_RECEIVE_MAX;
-  size_t pktSize;
-  while (--packetLimit >= 0 && (pktSize = m_transport.receive(m_inBuf, NDNFACE_INBUF_SIZE, &endpointId)) > 0) {
-    m_inNetPkt = m_inBuf;
-    this->processPacket(pktSize, endpointId);
+  while (--packetLimit >= 0) {
+    uint64_t endpointId;
+    ndn_Error e = this->receive(m_pb, &endpointId);
+    if (e) {
+      FACE_DBG(F("receive error ") << _DEC(e));
+    }
+    else {
+      switch (m_pb->getPacketType()) {
+        case 0:
+          return; // no more packets
+        case ndn_Tlv_Interest:
+          if (m_interestCb == nullptr) {
+            FACE_DBG(F("received Interest, no handler"));
+          }
+          else {
+            m_interestCb(m_interestCbArg, *m_pb->getInterest(), endpointId);
+          }
+          break;
+        case ndn_Tlv_Data:
+          if (m_dataCb == nullptr) {
+            FACE_DBG(F("received Data, no handler"));
+          }
+          else {
+            m_dataCb(m_dataCbArg, *m_pb->getData(), endpointId);
+          }
+          break;
+        case ndn_Tlv_LpPacket_Nack:
+          if (m_nackCb == nullptr) {
+            FACE_DBG(F("received Nack, no handler"));
+          }
+          else {
+            m_nackCb(m_nackCbArg, *m_pb->getNack(), *m_pb->getInterest(), endpointId);
+          }
+          break;
+      }
+    }
     yield();
   }
 }
 
-void
-Face::processPacket(size_t len, uint64_t endpointId)
+ndn_Error
+Face::receive(PacketBuffer* pb, uint64_t* endpointId)
 {
-  switch (m_inNetPkt[0]) {
-    case ndn_Tlv_Interest:
-      this->processInterestOrNack(len, endpointId, nullptr);
-      break;
-    case ndn_Tlv_Data:
-      this->processData(len, endpointId);
-      break;
-    case ndn_Tlv_LpPacket_LpPacket:
-      if (m_inNetPkt == m_inBuf) {
-        this->processLpPacket(len, endpointId);
-        break;
-      }
-      // LpPacket nested in LpPacket, fallthrough to failure
-    default:
-      FACE_DBG(F("received unknown TLV-TYPE: 0x") << _HEX(m_inNetPkt[0]));
-      break;
-  }
-}
+  uint8_t* buf;
+  size_t bufSize;
+  std::tie(buf, bufSize) = pb->useBuffer();
 
-void
-Face::processInterestOrNack(size_t len, uint64_t endpointId, const NetworkNackLite* nack)
-{
-  if (m_interestCb == nullptr && nack == nullptr) {
-    FACE_DBG(F("received Interest, no handler"));
-    return;
+  uint64_t ignoredEndpointId;
+  if (endpointId == nullptr) {
+    endpointId = &ignoredEndpointId;
   }
 
-  ndn_NameComponent nameComps[NDNFACE_NAMECOMPS_MAX];
-  ndn_ExcludeEntry excludeEntries[NDNFACE_EXCLUDE_MAX];
-  ndn_NameComponent keyNameComps[NDNFACE_KEYNAMECOMPS_MAX];
-  InterestLite interest(nameComps, NDNFACE_NAMECOMPS_MAX, excludeEntries, NDNFACE_EXCLUDE_MAX, keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
-  ndn_Error error = Tlv0_2WireFormatLite::decodeInterest(interest, m_inNetPkt, len, &m_signedBegin, &m_signedEnd);
-  if (error) {
-    FACE_DBG(F("received Interest decoding error: ") << _DEC(error));
-    return;
+  size_t pktSize = m_transport.receive(buf, bufSize, endpointId);
+  if (pktSize == 0) {
+    return NDN_ERROR_success;
   }
 
-  if (nack == nullptr) {
-    m_thisInterest = &interest;
-    m_interestCb(m_interestCbArg, interest, endpointId);
-    m_thisInterest = nullptr;
-  }
-  else {
-    m_nackCb(m_nackCbArg, *nack, interest, endpointId);
-  }
+  return pb->parse(pktSize);
 }
 
 bool
-Face::verifyInterest(const PublicKey& pubkey) const
+Face::verifyInterest(const PublicKey& pubKey) const
 {
-  if (m_thisInterest == nullptr || m_inNetPkt[0] != ndn_Tlv_Interest) {
-    FACE_DBG(F("last packet is not Interest, but ") << _HEX(m_inNetPkt[0]));
+  if (m_pb->getPacketType() != ndn_Tlv_Interest) {
+    FACE_DBG(F("last packet is not Interest"));
     return false;
   }
 
-  NameLite& name = m_thisInterest->getName();
-  if (name.size() < 2) {
-    FACE_DBG(F("Interest name is too short, has ") << _DEC(name.size()) << " components");
-    return false;
+  PacketBuffer::VerifyResult res = m_pb->verify(pubKey);
+  if (res) {
+    FACE_DBG(F("Interest verify error ") << _DEC(res));
   }
-
-  const ndn::BlobLite& sigValueComp = name.get(-1).getValue();
-  ndn_TlvDecoder decoder;
-  ndn_TlvDecoder_initialize(&decoder, sigValueComp.buf(), sigValueComp.size());
-  ndn_Blob sigValue = {0};
-  ndn_Error e = ndn_TlvDecoder_readBlobTlv(&decoder, ndn_Tlv_SignatureValue, &sigValue);
-  if (e != NDN_ERROR_success) {
-    FACE_DBG(F("Interest SignatureValue parse error ") << _DEC(e));
-    return false;
-  }
-
-  bool res = pubkey.verify(m_inNetPkt + m_signedBegin, m_signedEnd - m_signedBegin,
-                           sigValue.value, sigValue.length);
-  if (!res) {
-    FACE_DBG(F("Interest SignatureBits is bad"));
-  }
-  return res;
-}
-
-void
-Face::processData(size_t len, uint64_t endpointId)
-{
-  if (m_dataCb == nullptr) {
-    FACE_DBG(F("received Data, no handler"));
-    return;
-  }
-
-  ndn_NameComponent nameComps[NDNFACE_NAMECOMPS_MAX];
-  ndn_NameComponent keyNameComps[NDNFACE_KEYNAMECOMPS_MAX];
-  DataLite data(nameComps, NDNFACE_NAMECOMPS_MAX, keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
-  m_thisData = &data;
-  ndn_Error error = Tlv0_2WireFormatLite::decodeData(data, m_inNetPkt, len, &m_signedBegin, &m_signedEnd);
-  if (error) {
-    FACE_DBG(F("received Data decoding error: ") << _DEC(error));
-    return;
-  }
-
-  m_dataCb(m_dataCbArg, data, endpointId);
-  m_thisData = nullptr;
+  return res == PacketBuffer::VERIFY_OK;
 }
 
 bool
-Face::verifyData(const PublicKey& pubkey) const
+Face::verifyData(const PublicKey& pubKey) const
 {
-  if (m_thisData == nullptr || m_inNetPkt[0] != ndn_Tlv_Data) {
-    FACE_DBG(F("last packet is not Data, but ") << _HEX(m_inNetPkt[0]));
+  if (m_pb->getPacketType() != ndn_Tlv_Data) {
+    FACE_DBG(F("last packet is not Data"));
     return false;
   }
 
-  const ndn::BlobLite& signatureBits = m_thisData->getSignature().getSignature();
-  if (signatureBits.isNull()) {
-    FACE_DBG(F("Data SignatureBits parse error"));
-    return false;
+  PacketBuffer::VerifyResult res = m_pb->verify(pubKey);
+  if (res) {
+    FACE_DBG(F("Data verify error ") << _DEC(res));
   }
-
-  bool res = pubkey.verify(m_inNetPkt + m_signedBegin, m_signedEnd - m_signedBegin,
-                           signatureBits.buf(), signatureBits.size());
-  if (!res) {
-    FACE_DBG(F("Data SignatureBits is bad"));
-  }
-  return res;
-}
-
-void
-Face::processLpPacket(size_t len, uint64_t endpointId)
-{
-  // Tlv0_2WireFormatLite::decodeLpPacket only recognizes Nack and IncomingFaceId;
-  // the latter never appears on a non-local connection.
-  ndn_LpPacketHeaderField lpHeaders[1];
-  LpPacketLite lpPkt(lpHeaders, 1);
-  ndn_Error error = Tlv0_2WireFormatLite::decodeLpPacket(lpPkt, m_inBuf, len);
-  if (error) {
-    FACE_DBG(F("received LpPacket decoding error: ") << _DEC(error));
-    return;
-  }
-
-  // Tlv0_2WireFormatLite::decodeLpPacket does not recognize fragmentation headers and would drop them,
-  // so the 'fragment' should be whole packets.
-  const BlobLite& fragment = lpPkt.getFragmentWireEncoding();
-  m_inNetPkt = fragment.buf();
-
-  const NetworkNackLite* nack = NetworkNackLite::getFirstHeader(lpPkt);
-  if (nack == nullptr) {
-    this->processPacket(fragment.size(), endpointId);
-    return;
-  }
-
-  if (m_nackCb == nullptr) {
-    FACE_DBG(F("received Nack, no handler"));
-    return;
-  }
-  this->processInterestOrNack(fragment.size(), endpointId, nack);
+  return res == PacketBuffer::VERIFY_OK;
 }
 
 ndn_Error
