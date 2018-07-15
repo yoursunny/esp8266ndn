@@ -74,6 +74,33 @@ public:
   void
   setSigningKey(const PrivateKey& pvtkey);
 
+  /** \brief access the internal receive buffer
+   *  \sa swapPacketBuffer()
+   */
+  const PacketBuffer*
+  getPacketBuffer() const
+  {
+    return m_pb;
+  }
+
+  /** \brief assign a new receive buffer, and return the current one
+   *
+   *  Face maintains an internal packet buffer for receiving packets. That
+   *  buffer is overwritten every time \c loop() tries to receive a packet.
+   *  If the application desires to retain a receive packet, the onInterest/
+   *  onData/onNack callback may retrieve the current buffer using this
+   *  function, and cause \c loop() to use another buffer for the next receive.
+   *
+   *  This function may also be used to assign the initial packet buffer.
+   *  This is useful if a non-default PacketBuffer::Options is desired.
+   *
+   *  \param pb the new buffer; if nullptr, \c loop() will allocate a new
+   *            packet buffer with default setting.
+   *  \return the current buffer; nullptr if no internal buffer was allocated
+   */
+  PacketBuffer*
+  swapPacketBuffer(PacketBuffer* pb);
+
   /** \brief receive and process up to \p packetLimit packets
    */
   void
@@ -81,14 +108,16 @@ public:
 
   /** \brief verify the signature on current Interest against given public key
    *
-   *  This function is only available within onInterest callback.
+   *  This function is only available within onInterest callback before calling
+   *  \c swapPacketBuffer(). Otherwise, invoke \c PacketBuffer::verify(). 
    */
   bool
   verifyInterest(const PublicKey& pubKey) const;
 
   /** \brief verify the signature on current Data against given public key
    *
-   *  This function is only available within onData callback.
+   *  This function is only available within onData callback before calling
+   *  \c swapPacketBuffer(). Otherwise, invoke \c PacketBuffer::verify(). 
    */
   bool
   verifyData(const PublicKey& pubKey) const;

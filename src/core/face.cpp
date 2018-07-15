@@ -13,7 +13,7 @@ namespace ndn {
 
 Face::Face(Transport& transport)
   : m_transport(transport)
-  , m_pb(new PacketBuffer({}))
+  , m_pb(nullptr)
   , m_interestCb(nullptr)
   , m_interestCbArg(nullptr)
   , m_dataCb(nullptr)
@@ -69,10 +69,21 @@ Face::setSigningKey(const PrivateKey& pvtkey)
   }
 }
 
+PacketBuffer*
+Face::swapPacketBuffer(PacketBuffer* pb)
+{
+  PacketBuffer* oldPb = m_pb;
+  m_pb = pb;
+  return oldPb;
+}
+
 void
 Face::loop(int packetLimit)
 {
   while (--packetLimit >= 0) {
+    if (m_pb == nullptr) {
+      m_pb = new PacketBuffer({});
+    }
     uint64_t endpointId;
     ndn_Error e = this->receive(m_pb, &endpointId);
     if (e) {

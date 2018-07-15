@@ -52,11 +52,13 @@ setup()
   ndn::setLogOutput(Serial);
 
   g_transport.begin("ESP32-BLE-NDN");
+  ndn::PacketBuffer::Options pbOpt;
+  pbOpt.maxSize = 512;
+  g_face.swapPacketBuffer(new ndn::PacketBuffer(pbOpt));
   g_face.onInterest(&processInterest, nullptr);
   g_face.setSigningKey(g_pvtkey);
 
   ndn::parseNameFromUri(g_prefix, PREFIX);
-
   g_server.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("PingServer")));
 }
 
