@@ -21,9 +21,6 @@ typedef void (*DataCallback)(void* arg, const DataLite& data, uint64_t endpointI
  */
 typedef void (*NackCallback)(void* arg, const NetworkNackLite& nackHeader, const InterestLite& interest, uint64_t endpointId);
 
-/** \brief max packets to receive and process on each loop
- */
-#define NDNFACE_RECEIVE_MAX 4
 /** \brief max NameComponent count when preparing outgoing signed Interest
  */
 #define NDNFACE_KEYNAMECOMPS_MAX 12
@@ -46,6 +43,7 @@ typedef void (*NackCallback)(void* arg, const NetworkNackLite& nackHeader, const
 class Face
 {
 public:
+  explicit
   Face(Transport& transport);
 
   ~Face();
@@ -76,10 +74,10 @@ public:
   void
   setSigningKey(const PrivateKey& pvtkey);
 
-  /** \brief loop the underlying transport
+  /** \brief receive and process up to \p packetLimit packets
    */
   void
-  loop();
+  loop(int packetLimit = 4);
 
   /** \brief verify the signature on current Interest against given public key
    *

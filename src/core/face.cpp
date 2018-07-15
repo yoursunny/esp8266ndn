@@ -70,9 +70,8 @@ Face::setSigningKey(const PrivateKey& pvtkey)
 }
 
 void
-Face::loop()
+Face::loop(int packetLimit)
 {
-  int packetLimit = NDNFACE_RECEIVE_MAX;
   while (--packetLimit >= 0) {
     uint64_t endpointId;
     ndn_Error e = this->receive(m_pb, &endpointId);
