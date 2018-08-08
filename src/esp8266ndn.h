@@ -22,6 +22,7 @@
 #include "transport/loopback-transport.hpp"
 #include "transport/multicast-ethernet-transport.hpp"
 #include "transport/transport.hpp"
+#include "transport/udp-transport.hpp"
 #include "transport/unicast-udp-transport.hpp"
 
 #endif // ESP8266NDN_H

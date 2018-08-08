@@ -28,7 +28,7 @@ public:
    *  \retval false Interest should be passed to the next producer
    */
   bool
-  processInterest(const InterestLite& interest);
+  processInterest(const InterestLite& interest, uint64_t endpointId = 0);
 
   /** \brief a probe handler
    *  \param arg cbarg passed to \p onProbe

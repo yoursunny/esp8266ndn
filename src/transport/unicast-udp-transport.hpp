@@ -1,35 +1,23 @@
 #ifndef ESP8266NDN_UNICAST_UDP_TRANSPORT_HPP
 #define ESP8266NDN_UNICAST_UDP_TRANSPORT_HPP
 
-#include "transport.hpp"
-#include <Udp.h>
+#include "udp-transport.hpp"
 
 namespace ndn {
 
 /** \brief a transport that communicates over UDP tunnel to a remote router
  */
-class UnicastUdpTransport : public Transport
+class UnicastUdpTransport : public UdpTransport
 {
 public:
-  explicit
-  UnicastUdpTransport(UDP& udp);
+  using UdpTransport::UdpTransport;
 
   void
-  begin(IPAddress routerIp, uint16_t routerPort, uint16_t localPort);
-
-  void
-  end();
-
-  size_t
-  receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId) final;
-
-  ndn_Error
-  send(const uint8_t* pkt, size_t len, uint64_t endpointId) final;
-
-private:
-  UDP& m_udp;
-  IPAddress m_routerIp;
-  uint16_t m_routerPort;
+  begin(IPAddress routerIp, uint16_t routerPort, uint16_t localPort)
+  {
+    this->UdpTransport::begin(localPort);
+    this->connect(routerIp, routerPort);
+  }
 };
 
 } // namespace ndn

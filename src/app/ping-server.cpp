@@ -13,7 +13,7 @@ PingServer::PingServer(Face& face, const NameLite& prefix)
 }
 
 bool
-PingServer::processInterest(const InterestLite& interest)
+PingServer::processInterest(const InterestLite& interest, uint64_t endpointId)
 {
   if (!m_prefix.match(interest.getName())) {
     return false;
@@ -34,7 +34,7 @@ PingServer::processInterest(const InterestLite& interest)
   }
 
   data.setContent(BlobLite(payload, payloadSize));
-  m_face.sendData(data);
+  m_face.sendData(data, endpointId);
   return true;
 }
 
