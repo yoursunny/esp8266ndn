@@ -2,7 +2,8 @@
 #define ESP8266NDN_UDP_TRANSPORT_HPP
 
 #include "transport.hpp"
-#include <Udp.h>
+
+#include <WiFiUdp.h>
 
 namespace ndn {
 
@@ -11,6 +12,8 @@ namespace ndn {
 class UdpTransport : public Transport
 {
 public:
+  /** \brief interpretation of endpointId
+   */
   union EndpointId {
     uint64_t endpointId;
     struct {
@@ -20,42 +23,47 @@ public:
     };
   };
 
-  explicit
-  UdpTransport(UDP& udp);
+  UdpTransport();
 
-  /** \begin enable the transport
-   *  \param localPort listening port
+  /** \begin listen on a UDP port for packets from any remote endpoint
+   *  \param localPort local port
+   *  \param localIp local interface address (ignored on ESP8266)
    */
   bool
-  begin(uint16_t localPort);
+  beginListen(uint16_t localPort = 6363, IPAddress localIp = INADDR_NONE);
+
+  /** \begin establish a UDP tunnel to a remote endpoint
+   *  \param localIp local interface address
+   *                 (ignored on ESP8266 for unicast; ignored on ESP32 for multicast)
+   *  \param localPort listening port
+   *  \param joinMulticast whether to join multicast group
+   */
+  bool
+  beginTunnel(IPAddress remoteIp, uint16_t remotePort = 6363, uint16_t localPort = 6363);
+
+  /** \begin join a UDP multicast group
+   *  \param localIp local interface address (ignored on ESP32)
+   *  \param groupPort multicast group port
+   */
+  bool
+  beginMulticast(IPAddress localIp = INADDR_NONE, uint16_t groupPort = 56363);
 
   /** \begin disable the transport
    */
   void
   end();
 
-  /** \begin limit the transport to talk to only one remote node
-   *  \param remoteIp an IPv4 unicast address
-   *  \param remotePort a UDP port number
-   */
-  void
-  connect(IPAddress remoteIp, uint16_t remotePort);
-
   /** \begin receive a packet
-   *
-   *  If connect() has not been invoked, the transport accepts packets from any IPv4 unicast
-   *  sender. Identity of sender is reflected in \p endpointId.
-   *  If connect() has been invoked, the transport accepts packets from the specified sender only,
-   *  and \p endpointId remains zero.
+   *  \param[out] endpointId identity of remote endpoint
    */
   size_t
   receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId) final;
 
   /** \begin transmit a packet
-   *  \param endpointId Identity of remote endpoint.
+   *  \param endpointId identity of remote endpoint
    *
-   *  If \p endpointId is zero: if connect() has not been invoked, the packet is sent to the NDN
-   *  multicast group. If connect() has been invoked, the packet is not sent.
+   *  If \p endpointId is zero: sending fails in LISTEN mode, send to remote endpoint in
+   *  TUNNEL mode, send to multicast group in MULTICAST mode.
    */
   ndn_Error
   send(const uint8_t* pkt, size_t len, uint64_t endpointId) final;
@@ -64,9 +72,18 @@ public:
   static const IPAddress MCAST_GROUP;
 
 private:
-  UDP& m_udp;
-  IPAddress m_remoteIp;
-  uint16_t m_remotePort;
+  WiFiUDP m_udp;
+
+  enum class Mode {
+    NONE,
+    LISTEN,
+    TUNNEL,
+    MULTICAST,
+  };
+  Mode m_mode;
+
+  IPAddress m_ip;  ///< remote IP in TUNNEL mode, local IP in MULTICAST mode
+  uint16_t m_port; ///< remote port in TUNNEL mode, group port in MULTICAST mode
 };
 
 } // namespace ndn

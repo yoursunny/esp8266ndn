@@ -3,7 +3,6 @@
 #elif defined(ESP32)
 #include <WiFi.h>
 #endif
-#include <WiFiUdp.h>
 #include <esp8266ndn.h>
 
 const char* WIFI_SSID = "my-ssid";
@@ -16,8 +15,7 @@ char PREFIX0[] = "/ndn/edu/arizona/ping"; // must be mutable
 char PREFIX1[] = "/ndn/edu/ucla/ping";
 char PREFIX2[] = "/ndn/edu/memphis/ping";
 
-WiFiUDP g_udp;
-ndn::UnicastUdpTransport g_transport(g_udp);
+ndn::UdpTransport g_transport;
 ndn::Face g_face(g_transport);
 
 ndn_NameComponent g_comps0[8];
@@ -82,7 +80,7 @@ setup()
   if (routerIp == INADDR_NONE) {
     ESP.restart();
   }
-  g_transport.begin(routerIp, 6363, 6363);
+  g_transport.beginTunnel(routerIp);
   g_face.onData(&processData, nullptr);
   g_face.onNack(&processNack, nullptr);
 

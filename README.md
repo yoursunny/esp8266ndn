@@ -4,14 +4,14 @@
 
 The following features are implemented in this library:
 
-* Encode and decode NDN Interest/Data/Nack packets (using [ndn-cpp-lite](https://github.com/named-data/ndn-cpp))
+* Encode and decode NDN Interest/Data/Nack packets, using [ndn-cpp-lite](https://github.com/named-data/ndn-cpp)
 * Connect to a remote NDN forwarder over unicast UDP tunnel
-* Communicate with neighbors via Ethernet multicast
+* Communicate with neighbors via Ethernet or UDP multicast
 * Communicate with PyNDN application via Bluetooth Low Energy
-* HMAC signing and verification (using [Cryptosuite](https://github.com/Cathedrow/Cryptosuite))
-* ECDSA signing and verification (using [micro-ecc](https://github.com/kmackay/micro-ecc))
+* HMAC signing and verification, using [Cryptosuite](https://github.com/Cathedrow/Cryptosuite)
+* ECDSA signing and verification, using [micro-ecc](https://github.com/kmackay/micro-ecc)
 
-This is a side project owned by [yoursunny.com](https://yoursunny.com). It is not an official part of the NDN platform. The author provides best-effort support on [ndn-lib mailing list](http://www.lists.cs.ucla.edu/mailman/listinfo/ndn-lib).
+This is a side project owned by [yoursunny.com](https://yoursunny.com). It is not an official part of the NDN platform. The author provides best-effort support on [ndn-lib mailing list](https://www.lists.cs.ucla.edu/mailman/listinfo/ndn-lib).
 
 ## Installation
 
