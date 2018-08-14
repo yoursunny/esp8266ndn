@@ -31,6 +31,12 @@ public:
   bool
   begin(const char ifname[2], uint8_t ifnum);
 
+  /** \brief Start intercepting NDN packets on any station interface.
+   *  \return whether success
+   */
+  bool
+  begin();
+
   void
   end();
 

@@ -174,6 +174,22 @@ MulticastEthernetTransport::begin(const char ifname[2], uint8_t ifnum)
   MCASTETHTRANSPORT_DBG(F("enabled on ") << ifname[0] << ifname[1] << ifnum);
 }
 
+bool
+MulticastEthernetTransport::begin()
+{
+  for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
+#if defined(ESP8266)
+    if (netif->name[0] == 'e' && netif->name[1] == 'w') {
+#elif defined(ESP32)
+    if (netif->name[0] == 's' && netif->name[1] == 't') {
+#endif
+      return begin(netif->name, netif->num);
+    }
+  }
+  MCASTETHTRANSPORT_DBG(F("no available netif"));
+  return false;
+}
+
 void
 MulticastEthernetTransport::end()
 {
