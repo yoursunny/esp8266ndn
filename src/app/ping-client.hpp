@@ -34,6 +34,7 @@ public:
   bool
   processData(const DataLite& data) __attribute__((deprecated))
   {
+    return false;
   }
 
   /** \deprecated Calling processNack is no longer necessary.
@@ -41,12 +42,13 @@ public:
   bool
   processNack(const NetworkNackLite& nack, const InterestLite& interest) __attribute__((deprecated))
   {
+    return false;
   }
 
   /** \brief send a probe now
    *  \note Response or timeout for previous probe will be ignored.
    */
-  bool
+  void
   probe();
 
   enum class Event {

@@ -103,7 +103,7 @@ PingClient::processNack(const NetworkNackLite& nackHeader, const InterestLite& i
   return true;
 }
 
-bool
+void
 PingClient::probe()
 {
   NameLite& name = m_interest.getName();

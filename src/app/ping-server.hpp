@@ -38,6 +38,7 @@ public:
   bool
   processInterest(const InterestLite& interest, uint64_t endpointId = 0) __attribute__((deprecated))
   {
+    return false;
   }
 
   /** \brief a probe handler
