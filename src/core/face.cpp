@@ -58,12 +58,13 @@ Face::Face(Transport& transport)
   , m_pb(nullptr)
   , m_handler(nullptr)
   , m_wantNack(true)
-  , m_legacyCallbacks(nullptr)
+  , m_legacyCallbacks(new LegacyCallbackHandler())
   , m_outArr(m_outBuf, NDNFACE_OUTBUF_SIZE, nullptr)
   , m_sigInfoArr(m_sigInfoBuf, NDNFACE_SIGINFOBUF_SIZE, nullptr)
   , m_sigBuf(nullptr)
   , m_signingKey(nullptr)
 {
+  this->addHandler(m_legacyCallbacks);
 }
 
 Face::~Face()
@@ -102,19 +103,8 @@ Face::removeHandler(PacketHandler* h)
 }
 
 void
-Face::prepareLegacyCallbackHandler()
-{
-  if (m_legacyCallbacks != nullptr) {
-    return;
-  }
-  m_legacyCallbacks = new LegacyCallbackHandler();
-  this->addHandler(m_legacyCallbacks);
-}
-
-void
 Face::onInterest(InterestCallback cb, void* cbarg)
 {
-  this->prepareLegacyCallbackHandler();
   m_legacyCallbacks->interestCb = cb;
   m_legacyCallbacks->interestCbArg = cbarg;
 }
@@ -122,7 +112,6 @@ Face::onInterest(InterestCallback cb, void* cbarg)
 void
 Face::onData(DataCallback cb, void* cbarg)
 {
-  this->prepareLegacyCallbackHandler();
   m_legacyCallbacks->dataCb = cb;
   m_legacyCallbacks->dataCbArg = cbarg;
 }
@@ -130,7 +119,6 @@ Face::onData(DataCallback cb, void* cbarg)
 void
 Face::onNack(NackCallback cb, void* cbarg)
 {
-  this->prepareLegacyCallbackHandler();
   m_legacyCallbacks->nackCb = cb;
   m_legacyCallbacks->nackCbArg = cbarg;
 }

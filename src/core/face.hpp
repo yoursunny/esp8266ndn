@@ -160,11 +160,6 @@ public:
   sendNack(const NetworkNackLite& nack, const InterestLite& interest, uint64_t endpointId = 0);
 
 private:
-  class LegacyCallbackHandler;
-
-  void
-  prepareLegacyCallbackHandler();
-
   ndn_Error
   receive(PacketBuffer* pb, uint64_t* endpointId);
 
@@ -178,6 +173,8 @@ private:
 
   PacketHandler* m_handler;
   bool m_wantNack;
+
+  class LegacyCallbackHandler;
   LegacyCallbackHandler* m_legacyCallbacks;
 
   uint8_t m_outBuf[NDNFACE_OUTBUF_SIZE];

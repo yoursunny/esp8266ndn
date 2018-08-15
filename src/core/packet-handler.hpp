@@ -9,6 +9,10 @@ namespace ndn {
  */
 class PacketHandler
 {
+public:
+  virtual
+  ~PacketHandler() = default;
+
 private:
   virtual bool
   processInterest(const InterestLite& interest, uint64_t endpointId);
