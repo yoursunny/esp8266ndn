@@ -5,6 +5,7 @@
 #include <lwip/netif.h>
 #include <lwip/pbuf.h>
 #include <netif/etharp.h>
+#include <IPAddress.h>
 
 #if defined(ESP8266)
 #include <array>
@@ -129,7 +130,8 @@ void
 MulticastEthernetTransport::listNetifs(Print& os)
 {
   for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
-    os << netif->name[0] << netif->name[1] << netif->num << endl;
+    os << netif->name[0] << netif->name[1] << netif->num
+       << ' ' << IPAddress(netif->ip_addr.addr) << endl;
   }
 }
 
@@ -177,15 +179,15 @@ MulticastEthernetTransport::begin(const char ifname[2], uint8_t ifnum)
 bool
 MulticastEthernetTransport::begin()
 {
-  for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
 #if defined(ESP8266)
-    if (netif->name[0] == 'e' && netif->name[1] == 'w') {
+  return begin("ew", 0);
 #elif defined(ESP32)
+  for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
     if (netif->name[0] == 's' && netif->name[1] == 't') {
-#endif
       return begin(netif->name, netif->num);
     }
   }
+#endif
   MCASTETHTRANSPORT_DBG(F("no available netif"));
   return false;
 }
