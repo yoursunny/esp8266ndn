@@ -131,7 +131,7 @@ MulticastEthernetTransport::listNetifs(Print& os)
 {
   for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
     os << netif->name[0] << netif->name[1] << netif->num
-       << ' ' << IPAddress(netif->ip_addr.addr) << endl;
+       << ' ' << IPAddress(*reinterpret_cast<const uint32_t*>(&netif->ip_addr)) << endl;
   }
 }
 
