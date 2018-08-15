@@ -23,12 +23,22 @@ public:
    */
   PingServer(Face& face, const NameLite& prefix);
 
-  /** \brief process incoming Interest
-   *  \retval true Interest is accepted by this server
-   *  \retval false Interest should be passed to the next producer
+  ~PingServer();
+
+  /** \brief let responses go to endpointId zero instead of incoming endpointId
+   */
+  void
+  enableEndpointIdZero()
+  {
+    m_wantEndpointIdZero = true;
+  }
+
+  /** \deprecated Calling processNack is no longer necessary.
    */
   bool
-  processInterest(const InterestLite& interest, uint64_t endpointId = 0);
+  processInterest(const InterestLite& interest, uint64_t endpointId = 0) __attribute__((deprecated))
+  {
+  }
 
   /** \brief a probe handler
    *  \param arg cbarg passed to \p onProbe
@@ -50,10 +60,20 @@ public:
   }
 
 private:
+  bool
+  doProcessInterest(const InterestLite& interest, uint64_t endpointId);
+
+  class Handler;
+
+  friend class Handler;
+
+private:
   Face& m_face;
   const NameLite& m_prefix;
+  Handler* m_handler;
   ProbeCallback m_probeCb;
   void* m_probeCbArg;
+  bool m_wantEndpointIdZero;
 };
 
 } // namespace ndn

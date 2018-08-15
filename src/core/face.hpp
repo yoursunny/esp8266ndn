@@ -1,7 +1,7 @@
 #ifndef ESP8266NDN_FACE_HPP
 #define ESP8266NDN_FACE_HPP
 
-#include "packet-buffer.hpp"
+#include "packet-handler.hpp"
 
 #include "../ndn-cpp/lite/util/dynamic-uint8-array-lite.hpp"
 
@@ -10,16 +10,6 @@ namespace ndn {
 class PrivateKey;
 class PublicKey;
 class Transport;
-
-/** \brief Interest handler
- */
-typedef void (*InterestCallback)(void* arg, const InterestLite& interest, uint64_t endpointId);
-/** \brief Data handler
- */
-typedef void (*DataCallback)(void* arg, const DataLite& data, uint64_t endpointId);
-/** \brief Nack handler
- */
-typedef void (*NackCallback)(void* arg, const NetworkNackLite& nackHeader, const InterestLite& interest, uint64_t endpointId);
 
 /** \brief max NameComponent count when preparing outgoing signed Interest
  */
@@ -48,26 +38,44 @@ public:
 
   ~Face();
 
-  /** \brief set incoming Interest handler
-   *
-   *  Only one handler is allowed. This overwrites any previous handler setting.
+  /** \brief add a callback handler
    */
   void
-  onInterest(InterestCallback cb, void* cbarg);
+  addHandler(PacketHandler* h);
+
+  /** \brief remove a callback handler
+   */
+  bool
+  removeHandler(PacketHandler* h);
+
+  /** \brief set incoming Interest handler
+   *
+   *  This overwrites any previous handler set with this method.
+   */
+  void
+  onInterest(InterestCallback cb, void* cbarg) __attribute__((deprecated));
 
   /** \brief set incoming Data handler
    *
-   *  Only one handler is allowed. This overwrites any previous handler setting.
+   *  This overwrites any previous handler set with this method.
    */
   void
-  onData(DataCallback cb, void* cbarg);
+  onData(DataCallback cb, void* cbarg) __attribute__((deprecated));
 
   /** \brief set incoming Nack handler
    *
-   *  Only one handler is allowed. This overwrites any previous handler setting.
+   *  This overwrites any previous handler set with this method.
    */
   void
-  onNack(NackCallback cb, void* cbarg);
+  onNack(NackCallback cb, void* cbarg) __attribute__((deprecated));
+
+  /** \brief set whether face should respond Nack~NoRoute upon unhandled Interest
+   */
+  void
+  enableNack(bool wantNack)
+  {
+    m_wantNack = wantNack;
+  }
 
   /** \brief set signing key
    */
@@ -109,7 +117,7 @@ public:
   /** \brief verify the signature on current Interest against given public key
    *
    *  This function is only available within onInterest callback before calling
-   *  \c swapPacketBuffer(). Otherwise, invoke \c PacketBuffer::verify(). 
+   *  \c swapPacketBuffer(). Otherwise, invoke \c PacketBuffer::verify().
    */
   bool
   verifyInterest(const PublicKey& pubKey) const;
@@ -117,7 +125,7 @@ public:
   /** \brief verify the signature on current Data against given public key
    *
    *  This function is only available within onData callback before calling
-   *  \c swapPacketBuffer(). Otherwise, invoke \c PacketBuffer::verify(). 
+   *  \c swapPacketBuffer(). Otherwise, invoke \c PacketBuffer::verify().
    */
   bool
   verifyData(const PublicKey& pubKey) const;
@@ -152,6 +160,11 @@ public:
   sendNack(const NetworkNackLite& nack, const InterestLite& interest, uint64_t endpointId = 0);
 
 private:
+  class LegacyCallbackHandler;
+
+  void
+  prepareLegacyCallbackHandler();
+
   ndn_Error
   receive(PacketBuffer* pb, uint64_t* endpointId);
 
@@ -163,12 +176,9 @@ private:
 
   PacketBuffer* m_pb;
 
-  InterestCallback m_interestCb;
-  void* m_interestCbArg;
-  DataCallback m_dataCb;
-  void* m_dataCbArg;
-  NackCallback m_nackCb;
-  void* m_nackCbArg;
+  PacketHandler* m_handler;
+  bool m_wantNack;
+  LegacyCallbackHandler* m_legacyCallbacks;
 
   uint8_t m_outBuf[NDNFACE_OUTBUF_SIZE];
   DynamicUInt8ArrayLite m_outArr;

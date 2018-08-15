@@ -30,6 +30,13 @@ PingClient::PingClient(Face& face, InterestLite& interest, int pingInterval, int
   if (m_pingInterval <= m_pingTimeout) {
     PINGCLIENT_DBG(F("ERROR: interval should be greater than timeout"));
   }
+
+  m_face.addHandler(this);
+}
+
+PingClient::~PingClient()
+{
+  m_face.removeHandler(this);
 }
 
 uint32_t
@@ -63,7 +70,7 @@ PingClient::loop()
 }
 
 bool
-PingClient::processData(const DataLite& data)
+PingClient::processData(const DataLite& data, uint64_t endpointId)
 {
   if (!m_interest.getName().match(data.getName())) {
     return false;
@@ -80,7 +87,7 @@ PingClient::processData(const DataLite& data)
 }
 
 bool
-PingClient::processNack(const NetworkNackLite& nack, const InterestLite& interest)
+PingClient::processNack(const NetworkNackLite& nackHeader, const InterestLite& interest, uint64_t endpointId)
 {
   if (!m_interest.getName().equals(interest.getName())) {
     return false;

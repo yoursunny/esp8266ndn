@@ -29,22 +29,6 @@ ndn::InterestLite g_interest2(g_comps2, 8, nullptr, 0, nullptr, 0);
 ndn::PingClient g_client2(g_face, g_interest2, 17681);
 
 void
-processData(void*, const ndn::DataLite& data, uint64_t)
-{
-  g_client0.processData(data) ||
-  g_client1.processData(data) ||
-  g_client2.processData(data);
-}
-
-void
-processNack(void*, const ndn::NetworkNackLite& nack, const ndn::InterestLite& interest, uint64_t)
-{
-  g_client0.processNack(nack, interest) ||
-  g_client1.processNack(nack, interest) ||
-  g_client2.processNack(nack, interest);
-}
-
-void
 ndnpingEvent(void* arg, ndn::PingClient::Event evt, uint64_t seq)
 {
   int led = reinterpret_cast<int>(arg);
@@ -81,8 +65,6 @@ setup()
     ESP.restart();
   }
   g_transport.beginTunnel(routerIp);
-  g_face.onData(&processData, nullptr);
-  g_face.onNack(&processNack, nullptr);
 
   pinMode(LED0, OUTPUT);
   pinMode(LED1, OUTPUT);

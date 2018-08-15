@@ -6,15 +6,45 @@
 
 namespace ndn {
 
+// have a separate Handler class because deprecated public processInterest has same parameters
+class PingServer::Handler : public PacketHandler
+{
+public:
+  explicit
+  Handler(PingServer& pingServer)
+    : m_pingServer(pingServer)
+  {
+  }
+
+private:
+  bool
+  processInterest(const InterestLite& interest, uint64_t endpointId) override
+  {
+    return m_pingServer.doProcessInterest(interest, endpointId);
+  }
+
+private:
+  PingServer& m_pingServer;
+};
+
 PingServer::PingServer(Face& face, const NameLite& prefix)
   : m_face(face)
   , m_prefix(prefix)
   , m_probeCb(nullptr)
+  , m_wantEndpointIdZero(false)
 {
+  m_handler = new Handler(*this);
+  m_face.addHandler(m_handler);
+}
+
+PingServer::~PingServer()
+{
+  m_face.removeHandler(m_handler);
+  delete m_handler;
 }
 
 bool
-PingServer::processInterest(const InterestLite& interest, uint64_t endpointId)
+PingServer::doProcessInterest(const InterestLite& interest, uint64_t endpointId)
 {
   if (!m_prefix.match(interest.getName())) {
     return false;
@@ -37,7 +67,7 @@ PingServer::processInterest(const InterestLite& interest, uint64_t endpointId)
   }
 
   data.setContent(BlobLite(payload, payloadSize));
-  m_face.sendData(data, endpointId);
+  m_face.sendData(data, m_wantEndpointIdZero ? 0 : endpointId);
   return true;
 }
 

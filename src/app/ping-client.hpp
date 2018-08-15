@@ -7,7 +7,7 @@ namespace ndn {
 
 /** \brief NDN reachability test tool client side
  */
-class PingClient
+class PingClient : public PacketHandler
 {
 public:
   /** \brief constructor
@@ -22,24 +22,26 @@ public:
    */
   PingClient(Face& face, InterestLite& interest, int pingInterval, int pingTimeout = -1);
 
+  ~PingClient();
+
   /** \brief loop the client
    */
   void
   loop();
 
-  /** \brief process incoming Data
-   *  \retval true Data is accepted by this client
-   *  \retval false Data should be passed to the next consumer
+  /** \deprecated Calling processData is no longer necessary.
    */
   bool
-  processData(const DataLite& data);
+  processData(const DataLite& data) __attribute__((deprecated))
+  {
+  }
 
-  /** \brief process incoming Nack
-   *  \retval true Nack is accepted by this client
-   *  \retval false Nack should be passed to the next consumer
+  /** \deprecated Calling processNack is no longer necessary.
    */
   bool
-  processNack(const NetworkNackLite& nack, const InterestLite& interest);
+  processNack(const NetworkNackLite& nack, const InterestLite& interest) __attribute__((deprecated))
+  {
+  }
 
   /** \brief send a probe now
    *  \note Response or timeout for previous probe will be ignored.
@@ -71,6 +73,12 @@ public:
 private:
   uint32_t
   getLastSeq() const;
+
+  bool
+  processData(const DataLite& data, uint64_t endpointId) override;
+
+  bool
+  processNack(const NetworkNackLite& nackHeader, const InterestLite& interest, uint64_t endpointId) override;
 
 private:
   Face& m_face;

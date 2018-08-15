@@ -11,13 +11,54 @@
 
 namespace ndn {
 
+class Face::LegacyCallbackHandler : public PacketHandler
+{
+public:
+  bool
+  processInterest(const InterestLite& interest, uint64_t endpointId) override
+  {
+    if (interestCb == nullptr) {
+      return false;
+    }
+    interestCb(interestCbArg, interest, endpointId);
+    return true;
+  }
+
+  bool
+  processData(const DataLite& data, uint64_t endpointId) override
+  {
+    if (dataCb == nullptr) {
+      return false;
+    }
+    dataCb(dataCbArg, data, endpointId);
+    return true;
+  }
+
+  bool
+  processNack(const NetworkNackLite& nackHeader, const InterestLite& interest, uint64_t endpointId) override
+  {
+    if (nackCb == nullptr) {
+      return false;
+    }
+    nackCb(nackCbArg, nackHeader, interest, endpointId);
+    return true;
+  }
+
+public:
+  InterestCallback interestCb = nullptr;
+  void* interestCbArg = nullptr;
+  DataCallback dataCb = nullptr;
+  void* dataCbArg = nullptr;
+  NackCallback nackCb = nullptr;
+  void* nackCbArg = nullptr;
+};
+
 Face::Face(Transport& transport)
   : m_transport(transport)
   , m_pb(nullptr)
-  , m_interestCb(nullptr)
-  , m_interestCbArg(nullptr)
-  , m_dataCb(nullptr)
-  , m_dataCbArg(nullptr)
+  , m_handler(nullptr)
+  , m_wantNack(true)
+  , m_legacyCallbacks(nullptr)
   , m_outArr(m_outBuf, NDNFACE_OUTBUF_SIZE, nullptr)
   , m_sigInfoArr(m_sigInfoBuf, NDNFACE_SIGINFOBUF_SIZE, nullptr)
   , m_sigBuf(nullptr)
@@ -31,27 +72,67 @@ Face::~Face()
     free(m_sigBuf);
   }
   delete m_pb;
+  if (m_legacyCallbacks != nullptr) {
+    delete m_legacyCallbacks;
+  }
+}
+
+void
+Face::addHandler(PacketHandler* h)
+{
+  h->m_next = m_handler;
+  m_handler = h;
+}
+
+bool
+Face::removeHandler(PacketHandler* h)
+{
+  if (m_handler == h) {
+    m_handler = h->m_next;
+    return true;
+  }
+
+  for (PacketHandler* cur = m_handler; cur != nullptr; cur = cur->m_next) {
+    if (cur->m_next == h) {
+      cur->m_next = h->m_next;
+      return true;
+    }
+  }
+  return false;
+}
+
+void
+Face::prepareLegacyCallbackHandler()
+{
+  if (m_legacyCallbacks != nullptr) {
+    return;
+  }
+  m_legacyCallbacks = new LegacyCallbackHandler();
+  this->addHandler(m_legacyCallbacks);
 }
 
 void
 Face::onInterest(InterestCallback cb, void* cbarg)
 {
-  m_interestCb = cb;
-  m_interestCbArg = cbarg;
+  this->prepareLegacyCallbackHandler();
+  m_legacyCallbacks->interestCb = cb;
+  m_legacyCallbacks->interestCbArg = cbarg;
 }
 
 void
 Face::onData(DataCallback cb, void* cbarg)
 {
-  m_dataCb = cb;
-  m_dataCbArg = cbarg;
+  this->prepareLegacyCallbackHandler();
+  m_legacyCallbacks->dataCb = cb;
+  m_legacyCallbacks->dataCbArg = cbarg;
 }
 
 void
 Face::onNack(NackCallback cb, void* cbarg)
 {
-  m_nackCb = cb;
-  m_nackCbArg = cbarg;
+  this->prepareLegacyCallbackHandler();
+  m_legacyCallbacks->nackCb = cb;
+  m_legacyCallbacks->nackCbArg = cbarg;
 }
 
 void
@@ -93,30 +174,47 @@ Face::loop(int packetLimit)
       switch (m_pb->getPacketType()) {
         case 0:
           return; // no more packets
-        case ndn_Tlv_Interest:
-          if (m_interestCb == nullptr) {
-            FACE_DBG(F("received Interest, no handler"));
+        case ndn_Tlv_Interest: {
+          bool isAccepted = false;
+          const InterestLite& interest = *m_pb->getInterest();
+          for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
+            isAccepted = h->processInterest(interest, endpointId);
           }
-          else {
-            m_interestCb(m_interestCbArg, *m_pb->getInterest(), endpointId);
+          if (!isAccepted) {
+            if (m_wantNack) {
+              ndn::NetworkNackLite nack;
+              nack.setReason(ndn_NetworkNackReason_NO_ROUTE);
+              this->sendNack(nack, interest, endpointId);
+            }
+            else {
+              FACE_DBG(F("received Interest, no handler"));
+            }
           }
           break;
-        case ndn_Tlv_Data:
-          if (m_dataCb == nullptr) {
+        }
+        case ndn_Tlv_Data: {
+          bool isAccepted = false;
+          const DataLite& data = *m_pb->getData();
+          for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
+            isAccepted = h->processData(data, endpointId);
+          }
+          if (!isAccepted) {
             FACE_DBG(F("received Data, no handler"));
           }
-          else {
-            m_dataCb(m_dataCbArg, *m_pb->getData(), endpointId);
-          }
           break;
-        case ndn_Tlv_LpPacket_Nack:
-          if (m_nackCb == nullptr) {
+        }
+        case ndn_Tlv_LpPacket_Nack: {
+          bool isAccepted = false;
+          const NetworkNackLite& nackHeader = *m_pb->getNack();
+          const InterestLite& interest = *m_pb->getInterest();
+          for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
+            isAccepted = h->processNack(nackHeader, interest, endpointId);
+          }
+          if (!isAccepted) {
             FACE_DBG(F("received Nack, no handler"));
           }
-          else {
-            m_nackCb(m_nackCbArg, *m_pb->getNack(), *m_pb->getInterest(), endpointId);
-          }
           break;
+        }
       }
     }
     yield();

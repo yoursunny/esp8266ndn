@@ -31,47 +31,6 @@ ndn_NameComponent g_comps2[8];
 ndn::NameLite g_prefix2(g_comps2, 8);
 ndn::PingServer g_server2(g_face2, g_prefix2);
 
-bool
-replyNoRouteNack(ndn::Face& face, const ndn::InterestLite& interest, uint64_t endpointId)
-{
-  ndn::NetworkNackLite nack;
-  nack.setReason(ndn_NetworkNackReason_NO_ROUTE);
-  face.sendNack(nack, interest, endpointId);
-  Serial.print("<N ");
-  Serial.println(ndn::PrintUri(interest.getName()));
-  return true;
-}
-
-void
-processInterest0(void*, const ndn::InterestLite& interest, uint64_t)
-{
-  Serial.print("0>I ");
-  Serial.println(ndn::PrintUri(interest.getName()));
-  g_server0.processInterest(interest, 0) ||
-  replyNoRouteNack(g_face0, interest, 0);
-  // MulticastEthernetTransport ignores endpointId
-}
-
-void
-processInterest1(void*, const ndn::InterestLite& interest, uint64_t endpointId)
-{
-  Serial.print("1>I ");
-  Serial.println(ndn::PrintUri(interest.getName()));
-  g_server1.processInterest(interest, endpointId) ||
-  replyNoRouteNack(g_face1, interest, endpointId);
-  // set endpointId to same as incoming endpointId, so reply goes to the same remote node
-}
-
-void
-processInterest2(void*, const ndn::InterestLite& interest, uint64_t)
-{
-  Serial.print("2>I ");
-  Serial.println(ndn::PrintUri(interest.getName()));
-  g_server2.processInterest(interest, 0) ||
-  replyNoRouteNack(g_face2, interest, 0);
-  // set endpointId to zero, so reply goes to the multicast group
-}
-
 void
 makePayload(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, size_t* payloadSize)
 {
@@ -79,8 +38,6 @@ makePayload(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, s
   size_t len = strlen(text);
   memcpy(payloadBuf, text, len);
   *payloadSize = len;
-  Serial.print("<D ");
-  Serial.println(ndn::PrintUri(interest.getName()));
 }
 
 void
@@ -102,7 +59,6 @@ setup()
     Serial.println("Ethernet transport initialization failed");
     ESP.restart();
   }
-  g_face0.onInterest(&processInterest0, nullptr);
   g_face0.setSigningKey(g_key);
   ndn::parseNameFromUri(g_prefix0, PREFIX0);
   g_server0.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("Ethernet ndnping server")));
@@ -112,7 +68,6 @@ setup()
     Serial.println("UDP unicast transport initialization failed");
     ESP.restart();
   }
-  g_face1.onInterest(&processInterest1, nullptr);
   g_face1.setSigningKey(g_key);
   ndn::parseNameFromUri(g_prefix1, PREFIX1);
   g_server1.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("UDP unicast ndnping server")));
@@ -122,9 +77,9 @@ setup()
     Serial.println("UDP multicast transport initialization failed");
     ESP.restart();
   }
-  g_face2.onInterest(&processInterest2, nullptr);
   g_face2.setSigningKey(g_key);
   ndn::parseNameFromUri(g_prefix2, PREFIX2);
+  g_server2.enableEndpointIdZero();
   g_server2.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("UDP multicast ndnping server")));
 
   Serial.println(F("Please register prefixes on your router:"));
