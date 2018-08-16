@@ -4,6 +4,7 @@
 #include "packet-handler.hpp"
 
 #include "../ndn-cpp/lite/util/dynamic-uint8-array-lite.hpp"
+#include "../ndn-cpp/lite/util/dynamic-malloc-uint8-array-lite.hpp"
 
 namespace ndn {
 
@@ -77,7 +78,7 @@ public:
     m_wantNack = wantNack;
   }
 
-  /** \brief set signing key
+  /** \brief set default signing key
    */
   void
   setSigningKey(const PrivateKey& pvtkey);
@@ -141,18 +142,18 @@ public:
   sendInterest(const InterestLite& interest, uint64_t endpointId = 0);
 
   /** \brief send a signed Interest
-   *  \param interest the unsigned Interest; must have 2 available name components
-   *                  will become signed
-   *  \pre signing key is set
+   *  \param[inout] interest the unsigned Interest; must have 2 available name components
+   *  \param key private key, nullptr to use default signing key
    */
   ndn_Error
-  sendSignedInterest(InterestLite& interest, uint64_t endpointId = 0);
+  sendSignedInterest(InterestLite& interest, uint64_t endpointId = 0,
+                     const PrivateKey* pvtkey = nullptr);
 
   /** \brief send a Data
-   *  \pre signing key is set
+   *  \param key private key, nullptr to use default signing key
    */
   ndn_Error
-  sendData(DataLite& data, uint64_t endpointId = 0);
+  sendData(DataLite& data, uint64_t endpointId = 0, const PrivateKey* pvtkey = nullptr);
 
   /** \brief send a Nack
    */
@@ -161,10 +162,18 @@ public:
 
 private:
   ndn_Error
-  receive(PacketBuffer* pb, uint64_t* endpointId);
+  receive(uint64_t& endpointId);
 
+  /** \brief send an Interest, possibly after signing
+   */
   ndn_Error
-  sendInterestImpl(InterestLite& interest, uint64_t endpointId, bool needSigning);
+  sendInterestImpl(InterestLite& interest, uint64_t endpointId, const PrivateKey* pvtkey);
+
+  /** \brief sign [input, input+inputLen) into m_sigBuf
+   *  \post m_sigBuf has SignatureValue TLV; signature starts at offset 2
+   */
+  ndn_Error
+  signImpl(const PrivateKey& pvtkey, const uint8_t* input, size_t inputLen, int& sigLen);
 
 private:
   Transport& m_transport;
@@ -181,7 +190,7 @@ private:
   DynamicUInt8ArrayLite m_outArr;
   uint8_t m_sigInfoBuf[NDNFACE_SIGINFOBUF_SIZE];
   DynamicUInt8ArrayLite m_sigInfoArr;
-  uint8_t* m_sigBuf;
+  DynamicMallocUInt8ArrayLite m_sigBuf;
 
   const PrivateKey* m_signingKey;
 };

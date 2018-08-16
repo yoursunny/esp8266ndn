@@ -61,7 +61,7 @@ Face::Face(Transport& transport)
   , m_legacyCallbacks(new LegacyCallbackHandler())
   , m_outArr(m_outBuf, NDNFACE_OUTBUF_SIZE, nullptr)
   , m_sigInfoArr(m_sigInfoBuf, NDNFACE_SIGINFOBUF_SIZE, nullptr)
-  , m_sigBuf(nullptr)
+  , m_sigBuf(0)
   , m_signingKey(nullptr)
 {
   this->addHandler(m_legacyCallbacks);
@@ -69,13 +69,10 @@ Face::Face(Transport& transport)
 
 Face::~Face()
 {
-  if (m_sigBuf != nullptr) {
-    free(m_sigBuf);
+  if (m_pb != nullptr) {
+    delete m_pb;
   }
-  delete m_pb;
-  if (m_legacyCallbacks != nullptr) {
-    delete m_legacyCallbacks;
-  }
+  delete m_legacyCallbacks;
 }
 
 void
@@ -126,16 +123,7 @@ Face::onNack(NackCallback cb, void* cbarg)
 void
 Face::setSigningKey(const PrivateKey& pvtkey)
 {
-  bool needNewSigBuf = m_signingKey == nullptr || pvtkey.getMaxSigLength() > m_signingKey->getMaxSigLength();
-  if (needNewSigBuf && m_sigBuf != nullptr) {
-    free(m_sigBuf);
-  }
-
   m_signingKey = &pvtkey;
-
-  if (needNewSigBuf) {
-    m_sigBuf = reinterpret_cast<uint8_t*>(malloc(2 + pvtkey.getMaxSigLength()));
-  }
 }
 
 PacketBuffer*
@@ -154,7 +142,7 @@ Face::loop(int packetLimit)
       m_pb = new PacketBuffer({});
     }
     uint64_t endpointId;
-    ndn_Error e = this->receive(m_pb, &endpointId);
+    ndn_Error e = this->receive(endpointId);
     if (e) {
       FACE_DBG(F("receive error ") << _DEC(e));
     }
@@ -210,23 +198,18 @@ Face::loop(int packetLimit)
 }
 
 ndn_Error
-Face::receive(PacketBuffer* pb, uint64_t* endpointId)
+Face::receive(uint64_t& endpointId)
 {
   uint8_t* buf;
   size_t bufSize;
-  std::tie(buf, bufSize) = pb->useBuffer();
+  std::tie(buf, bufSize) = m_pb->useBuffer();
 
-  uint64_t ignoredEndpointId;
-  if (endpointId == nullptr) {
-    endpointId = &ignoredEndpointId;
-  }
-
-  size_t pktSize = m_transport.receive(buf, bufSize, endpointId);
+  size_t pktSize = m_transport.receive(buf, bufSize, &endpointId);
   if (pktSize == 0) {
     return NDN_ERROR_success;
   }
 
-  return pb->parse(pktSize);
+  return m_pb->parse(pktSize);
 }
 
 bool
@@ -268,20 +251,23 @@ Face::sendPacket(const uint8_t* pkt, size_t len, uint64_t endpointId)
 ndn_Error
 Face::sendInterest(const InterestLite& interest, uint64_t endpointId)
 {
-  this->sendInterestImpl(const_cast<InterestLite&>(interest), endpointId, false);
+  this->sendInterestImpl(const_cast<InterestLite&>(interest), endpointId, nullptr);
 }
 
 ndn_Error
-Face::sendSignedInterest(InterestLite& interest, uint64_t endpointId)
+Face::sendSignedInterest(InterestLite& interest, uint64_t endpointId, const PrivateKey* pvtkey)
 {
-  if (m_signingKey == nullptr) {
+  if (pvtkey == nullptr) {
+    pvtkey = m_signingKey;
+  }
+  if (pvtkey == nullptr) {
     FACE_DBG(F("cannot sign Interest: signing key is unset"));
     return NDN_ERROR_Incorrect_key_size;
   }
 
   ndn_NameComponent keyNameComps[NDNFACE_KEYNAMECOMPS_MAX];
   SignatureLite signature(keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
-  ndn_Error error = m_signingKey->setSignatureInfo(signature);
+  ndn_Error error = pvtkey->setSignatureInfo(signature);
   if (error) {
     FACE_DBG(F("setSignatureInfo error: ") << _DEC(error));
     return error;
@@ -301,11 +287,11 @@ Face::sendSignedInterest(InterestLite& interest, uint64_t endpointId)
     return error;
   }
 
-  return this->sendInterestImpl(interest, endpointId, true);
+  return this->sendInterestImpl(interest, endpointId, pvtkey);
 }
 
 ndn_Error
-Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, bool needSigning)
+Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, const PrivateKey* pvtkey)
 {
   size_t signedBegin, signedEnd, len;
   ndn_Error error = Tlv0_2WireFormatLite::encodeInterest(interest, &signedBegin, &signedEnd, m_outArr, &len);
@@ -314,19 +300,17 @@ Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, bool needSig
     return error;
   }
 
-  if (needSigning) {
-    int sigLen = m_signingKey->sign(m_outBuf + signedBegin, signedEnd - signedBegin, m_sigBuf + 2);
-    if (sigLen == 0 || sigLen > 253) {
-      FACE_DBG(F("signing error"));
-      return NDN_ERROR_Error_in_sign_operation;
+  if (pvtkey != nullptr) {
+    int sigLen;
+    error = this->signImpl(*pvtkey, m_outBuf + signedBegin, signedEnd - signedBegin, sigLen);
+    if (error) {
+      FACE_DBG(F("signing error ") << _DEC(error));
+      return error;
     }
-    m_sigBuf[0] = ndn_Tlv_SignatureValue;
-    m_sigBuf[1] = sigLen;
-    sigLen += 2;
 
     NameLite& name = interest.getName();
     name.pop();
-    name.append(m_sigBuf, sigLen);
+    name.append(m_sigBuf.getArray(), sigLen + 2);
     error = Tlv0_2WireFormatLite::encodeInterest(interest, &signedBegin, &signedEnd, m_outArr, &len);
     if (error) {
       FACE_DBG(F("send Interest encoding-2 error: ") << _DEC(error));
@@ -338,13 +322,16 @@ Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, bool needSig
 }
 
 ndn_Error
-Face::sendData(DataLite& data, uint64_t endpointId)
+Face::sendData(DataLite& data, uint64_t endpointId, const PrivateKey* pvtkey)
 {
-  if (m_signingKey == nullptr) {
+  if (pvtkey == nullptr) {
+    pvtkey = m_signingKey;
+  }
+  if (pvtkey == nullptr) {
     FACE_DBG(F("cannot sign Data: signing key is unset"));
     return NDN_ERROR_Incorrect_key_size;
   }
-  ndn_Error error = m_signingKey->setSignatureInfo(data.getSignature());
+  ndn_Error error = pvtkey->setSignatureInfo(data.getSignature());
   if (error) {
     FACE_DBG(F("setSignatureInfo error: ") << _DEC(error));
     return error;
@@ -357,12 +344,13 @@ Face::sendData(DataLite& data, uint64_t endpointId)
     return error;
   }
 
-  int sigLen = m_signingKey->sign(m_outBuf + signedBegin, signedEnd - signedBegin, m_sigBuf);
-  if (sigLen == 0) {
-    FACE_DBG(F("signing error"));
-    return NDN_ERROR_Error_in_sign_operation;
+  int sigLen;
+  error = this->signImpl(*pvtkey, m_outBuf + signedBegin, signedEnd - signedBegin, sigLen);
+  if (error) {
+    FACE_DBG(F("signing error ") << _DEC(error));
+    return error;
   }
-  data.getSignature().setSignature(BlobLite(m_sigBuf, sigLen));
+  data.getSignature().setSignature(BlobLite(&m_sigBuf.getArray()[2], sigLen));
   error = Tlv0_2WireFormatLite::encodeData(data, &signedBegin, &signedEnd, m_outArr, &len);
   if (error) {
     FACE_DBG(F("send Data encoding-2 error: ") << _DEC(error));
@@ -370,6 +358,28 @@ Face::sendData(DataLite& data, uint64_t endpointId)
   }
 
   return this->sendPacket(m_outBuf, len, endpointId);
+}
+
+ndn_Error
+Face::signImpl(const PrivateKey& pvtkey, const uint8_t* input, size_t inputLen, int& sigLen)
+{
+  if (pvtkey.getMaxSigLength() > 253) { // we expect TLV-LENGTH to be one octet
+    return NDN_ERROR_TLV_length_exceeds_buffer_length;
+  }
+  ndn_Error error = m_sigBuf.ensureLength(2 + pvtkey.getMaxSigLength());
+  if (error) {
+    return error;
+  }
+
+  uint8_t* sigBuf = m_sigBuf.getArray();
+  sigLen = pvtkey.sign(input, inputLen, &sigBuf[2]);
+  if (sigLen == 0) {
+    return NDN_ERROR_Error_in_sign_operation;
+  }
+
+  sigBuf[1] = sigLen;
+  sigBuf[0] = ndn_Tlv_SignatureValue;
+  return NDN_ERROR_success;
 }
 
 ndn_Error
