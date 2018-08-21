@@ -174,6 +174,7 @@ MulticastEthernetTransport::begin(const char ifname[2], uint8_t ifnum)
   m_oldInput = reinterpret_cast<void*>(m_netif->input);
   m_netif->input = MulticastEthernetTransport::Impl::input;
   MCASTETHTRANSPORT_DBG(F("enabled on ") << ifname[0] << ifname[1] << ifnum);
+  return true;
 }
 
 bool
@@ -241,12 +242,16 @@ MulticastEthernetTransport::receive(uint8_t* buf, size_t bufSize, uint64_t* endp
 ndn_Error
 MulticastEthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 {
-  uint16_t frameSize = sizeof(eth_hdr) + len;
+  uint16_t payloadLen = max(static_cast<uint16_t>(len), static_cast<uint16_t>(46));
+  uint16_t frameSize = sizeof(eth_hdr) + payloadLen;
   pbuf* p = pbuf_alloc(PBUF_RAW, frameSize, PBUF_RAM);
   if (p == nullptr) {
     return NDN_ERROR_DynamicUInt8Array_realloc_failed;
   }
   p->len = p->tot_len = frameSize;
+  if (frameSize > payloadLen) {
+    memset(p->payload, 0, frameSize);
+  }
 
   eth_hdr* eth = reinterpret_cast<eth_hdr*>(p->payload);
   ETHADDR32_COPY(&eth->dest, "\x01\x00\x5E\x00\x17\xAA");
