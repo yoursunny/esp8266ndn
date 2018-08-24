@@ -77,7 +77,7 @@ UdpTransport::end()
 }
 
 size_t
-UdpTransport::receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId)
+UdpTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId)
 {
   if (m_mode == Mode::NONE) {
     return 0;
@@ -88,13 +88,13 @@ UdpTransport::receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId)
         m_udp.flush();
         continue;
       }
-      *endpointId = 0;
+      endpointId = 0;
     }
     else {
       EndpointId endpoint = {0};
       endpoint.ip = static_cast<uint32_t>(m_udp.remoteIP());
       endpoint.port = m_udp.remotePort();
-      *endpointId = endpoint.endpointId;
+      endpointId = endpoint.endpointId;
     }
 
     int len = m_udp.read(buf, bufSize);

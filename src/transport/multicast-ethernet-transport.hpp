@@ -41,7 +41,7 @@ public:
   end();
 
   size_t
-  receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId) final;
+  receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId) final;
 
   ndn_Error
   send(const uint8_t* pkt, size_t len, uint64_t endpointId) final;

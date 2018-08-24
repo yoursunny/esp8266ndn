@@ -204,7 +204,7 @@ Face::receive(uint64_t& endpointId)
   size_t bufSize;
   std::tie(buf, bufSize) = m_pb->useBuffer();
 
-  size_t pktSize = m_transport.receive(buf, bufSize, &endpointId);
+  size_t pktSize = m_transport.receive(buf, bufSize, endpointId);
   if (pktSize == 0) {
     return NDN_ERROR_success;
   }

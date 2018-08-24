@@ -34,7 +34,7 @@ BleServerTransport::begin(const char* deviceName)
 }
 
 size_t
-BleServerTransport::receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId)
+BleServerTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId)
 {
   std::string value = m_rx->getValue();
   if (value.empty()) {
@@ -46,6 +46,7 @@ BleServerTransport::receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId)
     return 0;
   }
 
+  endpointId = 0;
   memcpy(buf, value.data(), value.size());
   return value.size();
 }

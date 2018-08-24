@@ -15,16 +15,16 @@ public:
   /** \brief receive a packet
    *  \param buf receive buffer
    *  \param bufSize receive buffer size
-   *  \param endpointId indicates the remote endpoint
+   *  \param[out] endpointId identifier of the remote endpoint
    *  \return size of received packet, or zero if no packet available
    */
   virtual size_t
-  receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId) = 0;
+  receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId) = 0;
 
   /** \brief send a packet
    *  \param pkt packet to send
    *  \param len packet size
-   *  \param endpointId indicates the remote endpoint
+   *  \param endpointId identifier of the remote endpoint
    */
   virtual ndn_Error
   send(const uint8_t* pkt, size_t len, uint64_t endpointId) = 0;

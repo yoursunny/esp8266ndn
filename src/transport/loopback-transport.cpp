@@ -19,14 +19,14 @@ LoopbackTransport::begin(LoopbackTransport& other)
 }
 
 size_t
-LoopbackTransport::receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId)
+LoopbackTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId)
 {
   if (m_len == 0) {
     return 0;
   }
 
   memcpy(buf, m_pkt, min(m_len, bufSize));
-  *endpointId = m_endpointId;
+  endpointId = m_endpointId;
 
   size_t len = m_len;
   m_len = 0;

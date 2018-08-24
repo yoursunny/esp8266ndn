@@ -209,7 +209,7 @@ MulticastEthernetTransport::end()
 }
 
 size_t
-MulticastEthernetTransport::receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId)
+MulticastEthernetTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId)
 {
   size_t pktSize = 0;
   pbuf* p;
@@ -227,8 +227,8 @@ MulticastEthernetTransport::receive(uint8_t* buf, size_t bufSize, uint64_t* endp
     }
 
     const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(p->payload);
-    *endpointId = 0;
-    memcpy(endpointId, &eth->src, 6);
+    endpointId = 0;
+    memcpy(&endpointId, &eth->src, 6);
 
     pktSize = p->tot_len - sizeof(eth_hdr);
     memcpy(buf, reinterpret_cast<const uint8_t*>(p->payload) + sizeof(eth_hdr), pktSize);

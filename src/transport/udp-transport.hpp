@@ -57,7 +57,7 @@ public:
    *  \param[out] endpointId identity of remote endpoint
    */
   size_t
-  receive(uint8_t* buf, size_t bufSize, uint64_t* endpointId) final;
+  receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId) final;
 
   /** \begin transmit a packet
    *  \param endpointId identity of remote endpoint
