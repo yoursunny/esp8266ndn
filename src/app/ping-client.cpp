@@ -6,6 +6,18 @@
 
 namespace ndn {
 
+PingClient::Interval::Interval(int center, int variation)
+  : min(center - abs(variation))
+  , max(center + abs(variation))
+{
+}
+
+int
+PingClient::Interval::operator()() const
+{
+  return random(this->min, this->max);
+}
+
 static inline int
 determineTimeout(int pingTimeout, const InterestLite& interest)
 {
@@ -18,17 +30,18 @@ determineTimeout(int pingTimeout, const InterestLite& interest)
   return static_cast<int>(interest.getInterestLifetimeMilliseconds());
 }
 
-PingClient::PingClient(Face& face, InterestLite& interest, int pingInterval, int pingTimeout)
+PingClient::PingClient(Face& face, InterestLite& interest, Interval pingInterval, int pingTimeout)
   : m_face(face)
   , m_interest(interest)
   , m_pingInterval(pingInterval)
   , m_pingTimeout(determineTimeout(pingTimeout, interest))
   , m_lastProbe(millis())
   , m_isPending(false)
+  , m_nextProbe(0)
   , m_evtCb(nullptr)
 {
-  if (m_pingInterval <= m_pingTimeout) {
-    PINGCLIENT_DBG(F("ERROR: interval should be greater than timeout"));
+  if (m_pingInterval.min <= m_pingTimeout) {
+    PINGCLIENT_DBG(F("ERROR: minimum interval should be greater than timeout"));
   }
 
   m_face.addHandler(this);
@@ -64,7 +77,7 @@ PingClient::loop()
     }
   }
 
-  if (now - m_lastProbe > m_pingInterval) {
+  if (now > m_nextProbe) {
     this->probe();
   }
 }
@@ -122,6 +135,7 @@ PingClient::probe()
 
   m_isPending = true;
   m_lastProbe = millis();
+  m_nextProbe = m_lastProbe + m_pingInterval();
 
   if (m_evtCb != nullptr) {
     m_evtCb(m_evtCbArg, Event::PROBE, seq);

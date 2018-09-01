@@ -22,7 +22,7 @@ ndn::PingServer g_server(g_face, g_sPrefix);
 char CPREFIX[] = "/example/esp32/lora/ping";
 ndn_NameComponent g_cComps[5];
 ndn::InterestLite g_cInterest(g_cComps, 5, nullptr, 0, nullptr, 0);
-ndn::PingClient g_client(g_face, g_cInterest, 2500);
+ndn::PingClient g_client(g_face, g_cInterest, {2500, 500});
 
 void
 serverProbe(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, size_t* payloadSize)

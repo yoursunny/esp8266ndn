@@ -2,6 +2,7 @@
 #define ESP8266NDN_PING_CLIENT_HPP
 
 #include "../core/face.hpp"
+#include "../core/esp32-1734.hpp"
 
 namespace ndn {
 
@@ -10,6 +11,25 @@ namespace ndn {
 class PingClient : public PacketHandler
 {
 public:
+  /** \brief Randomizable probe interval.
+   */
+  class Interval
+  {
+  public:
+    /** \brief Set the probe interval within [center-variation, center+variation].
+     */
+    Interval(int center, int variation = 0);
+
+    /** \brief Get a random interval.
+     */
+    int
+    operator()() const;
+
+public:
+    const int min;
+    const int max;
+  };
+
   /** \brief constructor
    *  \param face a face to communication with router
    *  \param interest a prepared Interest for probe packets;
@@ -20,7 +40,7 @@ public:
    *  \param pingTimeout probe timeout, in millis; default is InterestLifetime;
    *         must be less than \p pingInterval
    */
-  PingClient(Face& face, InterestLite& interest, int pingInterval, int pingTimeout = -1);
+  PingClient(Face& face, InterestLite& interest, Interval pingInterval, int pingTimeout = -1);
 
   ~PingClient();
 
@@ -86,10 +106,11 @@ private:
   Face& m_face;
   InterestLite& m_interest;
   uint8_t m_seqBuf[9]; ///< buffer for sequence number component
-  const int m_pingInterval;
+  const Interval m_pingInterval;
   const int m_pingTimeout;
   unsigned long m_lastProbe; ///< timestamp of last probe
   bool m_isPending; ///< whether lastProbe is waiting for either response or timeout
+  unsigned long m_nextProbe; ///< timestamp of next probe
   EventCallback m_evtCb;
   void* m_evtCbArg;
 };
