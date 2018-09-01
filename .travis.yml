@@ -3,14 +3,16 @@ language: bash
 os:
   - linux
 env:
+  global:
+    - HELTECCOMMIT=348f16525b3280792c1289ee015666774251afd5
   matrix:
     - HARDWARE=esp8266com/esp8266 \
       COREGIT=https://github.com/esp8266/Arduino.git \
-      CORECOMMIT=87991aba9febc337b51306d65bbd94c056f4e417 \
+      CORECOMMIT=c33ef89f603b81b01a1e4c5cebd89be4fbfe7b29 \
       BOARD='--board esp8266com:esp8266:nodemcuv2  --pref custom_CpuFrequency=nodemcuv2_80 --pref custom_FlashSize=nodemcuv2_4M1M'
     - HARDWARE=espressif/esp32 \
       COREGIT=https://github.com/espressif/arduino-esp32.git \
-      CORECOMMIT=9f8f05735b0ce630c9879038fda2457fcf117618 \
+      CORECOMMIT=a0f0bd930cfd2d607bf3d3288f46e2d265dd2e11 \
       BOARD='--board espressif:esp32:heltec_wifi_kit_32 --pref custom_FlashFreq=heltec_wifi_kit_32_80'
 
 install:
@@ -22,6 +24,7 @@ install:
   - mkdir -p $HARDWARE; cd $HARDWARE
   - git init; git fetch $COREGIT; git checkout $CORECOMMIT; git submodule update --init
   - cd tools; python get.py
+  - cd ../libraries; curl -L https://github.com/Heltec-Aaron-Lee/WiFi_Kit_series/archive/$HELTECCOMMIT.tar.gz | tar xz WiFi_Kit_series-$HELTECCOMMIT/esp32/libraries/LoRa --strip-components=3
 
 before_script:
   - mkdir -p $HOME/Arduino/libraries

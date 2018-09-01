@@ -20,6 +20,7 @@
 
 #include "transport/ble-server-transport.hpp"
 #include "transport/loopback-transport.hpp"
+#include "transport/lora-transport.hpp"
 #include "transport/multicast-ethernet-transport.hpp"
 #include "transport/transport.hpp"
 #include "transport/udp-transport.hpp"
