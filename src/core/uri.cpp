@@ -20,23 +20,11 @@ parseNameFromUri(NameLite& name, char* uri)
   return true;
 }
 
-// strspn is missing: https://github.com/esp8266/Arduino/issues/572
-// http://clc-wiki.net/mediawiki/index.php?title=C_standard_library:string.h:strspn&oldid=4237
-static size_t
-my_strspn(const char* s1, const char* s2)
-{
-  size_t ret = 0;
-  while (*s1 && strchr(s2, *s1++)) {
-    ret++;
-  }
-  return ret;
-}
-
 NameLite::Component
 parseNameComponentFromUri(char* uri)
 {
   size_t len = strlen(uri);
-  if (len >= 3 && my_strspn(uri, ".") == len) {
+  if (len >= 3 && strspn(uri, ".") == len) {
     return NameLite::Component(reinterpret_cast<uint8_t*>(uri), len - 3);
   }
 
@@ -154,9 +142,9 @@ PrintUri::printTo(Print& p, const NameLite::Component& comp) const
       case '7':
       case '8':
       case '9':
-      case '+':
-      case '_':
       case '-':
+      case '_':
+      case '~':
         len += p.print(ch);
         break;
       default:

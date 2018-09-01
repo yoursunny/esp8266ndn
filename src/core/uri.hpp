@@ -28,7 +28,7 @@ public:
   explicit
   PrintUri(const NameLite& name);
 
-  virtual size_t
+  size_t
   printTo(Print& p) const override;
 
 private:

@@ -15,11 +15,16 @@ demo(char* uri)
     Serial.println(" components.");
 
     for (int i = 0; i < name.size(); ++i) {
+      const ndn::BlobLite& compV = name.get(i).getValue();
       Serial.print("Component ");
       Serial.print(i, DEC);
       Serial.print(" has ");
-      Serial.print(name.get(i).getValue().size(), DEC);
-      Serial.println(" octets.");
+      Serial.print(compV.size(), DEC);
+      Serial.print(" octets:");
+      for (size_t j = 0; j < compV.size(); ++j) {
+        Serial.printf(" %02X", compV.buf()[j]);
+      }
+      Serial.println();
     }
 
     Serial.print("Printed URI is ");
@@ -43,7 +48,7 @@ setup()
   char uri3[] = "/H/I";
   char uri4[] = "/J/...";
   char uri5[] = "/.../..../.....";
-  char uri6[] = "/%00GH%ab%cD%EF";
+  char uri6[] = "/%00GH%ab%cD%EF%2B";
 
   demo(uri0);
   demo(uri1);
