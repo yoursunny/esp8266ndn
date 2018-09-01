@@ -99,7 +99,7 @@ if __name__ == '__main__':
         description='ndnping over Bluetooth Low Energy.')
     parser.add_argument('--addr', type=str, required=True, help='BLE address')
     parser.add_argument('--prefix', type=str,
-                        default='/example/esp32-ble/ping', help='NDN prefix')
+                        default='/example/esp32/ble/ping', help='NDN prefix')
     parser.add_argument('--interval', type=int,
                         default=1000, help='interval (ms)')
     args = parser.parse_args()

@@ -3,7 +3,7 @@
 
 #include <esp8266ndn.h>
 
-char PREFIX[] = "/example/esp32-ble/ping";
+char PREFIX[] = "/example/esp32/ble/ping";
 
 ndn::BleServerTransport g_transport;
 ndn::Face g_face(g_transport);
@@ -13,26 +13,6 @@ ndn_NameComponent g_comps[4];
 ndn::NameLite g_prefix(g_comps, 4);
 ndn::PingServer g_server(g_face, g_prefix);
 
-bool
-replyNoRouteNack(const ndn::InterestLite& interest)
-{
-  ndn::NetworkNackLite nack;
-  nack.setReason(ndn_NetworkNackReason_NO_ROUTE);
-  g_face.sendNack(nack, interest);
-  Serial.print("<N ");
-  Serial.println(ndn::PrintUri(interest.getName()));
-  return true;
-}
-
-void
-processInterest(void*, const ndn::InterestLite& interest, uint64_t)
-{
-  Serial.print(">I ");
-  Serial.println(ndn::PrintUri(interest.getName()));
-  g_server.processInterest(interest) ||
-  replyNoRouteNack(interest);
-}
-
 void
 makePayload(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, size_t* payloadSize)
 {
@@ -40,8 +20,6 @@ makePayload(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, s
   size_t len = strlen(text);
   memcpy(payloadBuf, text, len);
   *payloadSize = len;
-  Serial.print("<D ");
-  Serial.println(ndn::PrintUri(interest.getName()));
 }
 
 void
@@ -51,11 +29,19 @@ setup()
   Serial.println();
   ndn::setLogOutput(Serial);
 
+  // BLE MTU is 512, no need for the default 1500-octet buffer
+  {
+    ndn::PacketBuffer::Options opt;
+    opt.maxSize = 512;
+    opt.maxNameComps = 8;
+    opt.maxKeyNameComps = 8;
+    auto newPb = new ndn::PacketBuffer(opt);
+    auto oldPb = g_face.swapPacketBuffer(newPb);
+    if (oldPb != nullptr) {
+      delete oldPb;
+    }
+  }
   g_transport.begin("ESP32-BLE-NDN");
-  ndn::PacketBuffer::Options pbOpt;
-  pbOpt.maxSize = 512;
-  g_face.swapPacketBuffer(new ndn::PacketBuffer(pbOpt));
-  g_face.onInterest(&processInterest, nullptr);
   g_face.setSigningKey(g_pvtkey);
 
   ndn::parseNameFromUri(g_prefix, PREFIX);
