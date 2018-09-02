@@ -1,5 +1,6 @@
 #include "face.hpp"
 #include "logger.hpp"
+#include "with-components-buffer.hpp"
 #include "../security/private-key.hpp"
 #include "../transport/transport.hpp"
 
@@ -265,8 +266,7 @@ Face::sendSignedInterest(InterestLite& interest, uint64_t endpointId, const Priv
     return NDN_ERROR_Incorrect_key_size;
   }
 
-  ndn_NameComponent keyNameComps[NDNFACE_KEYNAMECOMPS_MAX];
-  SignatureLite signature(keyNameComps, NDNFACE_KEYNAMECOMPS_MAX);
+  SignatureWCB<NDNFACE_KEYNAMECOMPS_MAX> signature;
   ndn_Error error = pvtkey->setSignatureInfo(signature);
   if (error) {
     FACE_DBG(F("setSignatureInfo error: ") << _DEC(error));

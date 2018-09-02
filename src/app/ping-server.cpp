@@ -1,6 +1,7 @@
 #include "ping-server.hpp"
 #include "../core/logger.hpp"
 #include "../core/uri.hpp"
+#include "../core/with-components-buffer.hpp"
 
 #define PINGSERVER_DBG(...) DBG(PingServer, __VA_ARGS__)
 
@@ -50,8 +51,7 @@ PingServer::doProcessInterest(const InterestLite& interest, uint64_t endpointId)
     return false;
   }
 
-  static ndn_NameComponent nameComps[NDNPINGSERVER_NAMECOMPS_MAX];
-  ndn::DataLite data(nameComps, NDNPINGSERVER_NAMECOMPS_MAX, nullptr, 0);
+  DataWCB<NDNPINGSERVER_NAMECOMPS_MAX, 0> data;
   data.getName().set(interest.getName());
   data.getMetaInfo().setFreshnessPeriod(0.0);
   PINGSERVER_DBG(F("processing request ") << PrintUri(interest.getName()));

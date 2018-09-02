@@ -13,22 +13,19 @@ ndn::DigestKey g_key;
 ndn::MulticastEthernetTransport g_transport0;
 ndn::Face g_face0(g_transport0);
 char PREFIX0[] = "/example/esp8266/ether/ping";
-ndn_NameComponent g_comps0[8];
-ndn::NameLite g_prefix0(g_comps0, 8);
+ndn::NameWCB<8> g_prefix0;
 ndn::PingServer g_server0(g_face0, g_prefix0);
 
 ndn::UdpTransport g_transport1;
 ndn::Face g_face1(g_transport1);
 char PREFIX1[] = "/example/esp8266/udp/ping";
-ndn_NameComponent g_comps1[8];
-ndn::NameLite g_prefix1(g_comps1, 8);
+ndn::NameWCB<8> g_prefix1;
 ndn::PingServer g_server1(g_face1, g_prefix1);
 
 ndn::UdpTransport g_transport2;
 ndn::Face g_face2(g_transport2);
 char PREFIX2[] = "/example/esp8266/udpm/ping";
-ndn_NameComponent g_comps2[8];
-ndn::NameLite g_prefix2(g_comps2, 8);
+ndn::NameWCB<8> g_prefix2;
 ndn::PingServer g_server2(g_face2, g_prefix2);
 
 void

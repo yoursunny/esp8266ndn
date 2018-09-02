@@ -30,8 +30,7 @@ const uint8_t PUBKEY[] {
   0x12, 0x98, 0x16, 0xB6, 0x29, 0x30, 0xD5, 0x8D, 0x29, 0xA3, 0xE9, 0x94, 0xF1, 0x68, 0x35, 0x6E,
   0xC8, 0xE6, 0xEA, 0xE3, 0x7B, 0x45, 0x36, 0xB1, 0x6D, 0xA1, 0xA7, 0x19, 0x38, 0xC1, 0x0F, 0x92,
 };
-ndn_NameComponent g_ecKeyNameComps[4];
-ndn::NameLite g_ecKeyName(g_ecKeyNameComps, 4);
+ndn::NameWCB<4> g_ecKeyName;
 ndn::EcPrivateKey g_pvtkey(PVTKEY, g_ecKeyName);
 ndn::EcPublicKey g_pubkey(PUBKEY);
 #endif
@@ -48,9 +47,7 @@ processInterest1(void*, const ndn::InterestLite& interest, uint64_t)
   Serial.print(" verified=");
   Serial.println(g_face1.verifyInterest(g_pubkey));
 
-  ndn_NameComponent nameComps[4];
-  ndn_NameComponent keyNameComps[4];
-  ndn::DataLite data(nameComps, 4, keyNameComps, 4);
+  ndn::DataWCB<4, 4> data;
   data.getName().set(interest.getName());
 
   g_face1.sendData(data);
@@ -62,8 +59,7 @@ processInterest1(void*, const ndn::InterestLite& interest, uint64_t)
 void
 sendInterest2()
 {
-  ndn_NameComponent nameComps[4];
-  ndn::InterestLite interest(nameComps, 4, nullptr, 0, nullptr, 0);
+  ndn::InterestWCB<4, 0> interest;
 
   ndn::NameLite& name = interest.getName();
   name.append("hello");

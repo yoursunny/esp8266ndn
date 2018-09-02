@@ -9,7 +9,10 @@
 
 #include "core/face.hpp"
 #include "core/logging.hpp"
+#include "core/packet-buffer.hpp"
+#include "core/packet-handler.hpp"
 #include "core/uri.hpp"
+#include "core/with-components-buffer.hpp"
 
 #include "security/digest-key.hpp"
 #include "security/ec-private-key.hpp"

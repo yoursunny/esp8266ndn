@@ -7,13 +7,13 @@
 ndn::DigestKey g_key;
 ndn::LoraTransport<LoRaClass> g_transport(LoRa);
 ndn::Face g_face(g_transport);
+
 char SPREFIX[] = "/example/esp32/lora/ping";
-ndn_NameComponent g_sComps[4];
-ndn::NameLite g_sPrefix(g_sComps, 4);
+ndn::NameWCB<4> g_sPrefix;
 ndn::PingServer g_server(g_face, g_sPrefix);
+
 char CPREFIX[] = "/example/esp32/lora/ping";
-ndn_NameComponent g_cComps[5];
-ndn::InterestLite g_cInterest(g_cComps, 5, nullptr, 0, nullptr, 0);
+ndn::InterestWCB<5, 0> g_cInterest;
 ndn::PingClient g_client(g_face, g_cInterest, {3000, 500});
 bool g_enableClient = true;
 

@@ -9,8 +9,7 @@ ndn::BleServerTransport g_transport;
 ndn::Face g_face(g_transport);
 ndn::DigestKey g_pvtkey;
 
-ndn_NameComponent g_comps[4];
-ndn::NameLite g_prefix(g_comps, 4);
+ndn::NameWCB<4> g_prefix;
 ndn::PingServer g_server(g_face, g_prefix);
 
 void

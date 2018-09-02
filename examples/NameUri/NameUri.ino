@@ -3,8 +3,7 @@
 void
 demo(char* uri)
 {
-  ndn_NameComponent comps[4];
-  ndn::NameLite name(comps, 4);
+  ndn::NameWCB<4> name;
 
   Serial.print("Input URI is ");
   Serial.println(uri);

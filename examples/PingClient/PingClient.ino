@@ -18,14 +18,11 @@ char PREFIX2[] = "/ndn/edu/memphis/ping";
 ndn::UdpTransport g_transport;
 ndn::Face g_face(g_transport);
 
-ndn_NameComponent g_comps0[8];
-ndn::InterestLite g_interest0(g_comps0, 8, nullptr, 0, nullptr, 0);
+ndn::InterestWCB<8, 0> g_interest0;
 ndn::PingClient g_client0(g_face, g_interest0, 17849);
-ndn_NameComponent g_comps1[8];
-ndn::InterestLite g_interest1(g_comps1, 8, nullptr, 0, nullptr, 0);
+ndn::InterestWCB<8, 0> g_interest1;
 ndn::PingClient g_client1(g_face, g_interest1, 17345);
-ndn_NameComponent g_comps2[8];
-ndn::InterestLite g_interest2(g_comps2, 8, nullptr, 0, nullptr, 0);
+ndn::InterestWCB<8, 0> g_interest2;
 ndn::PingClient g_client2(g_face, g_interest2, 17681);
 
 void
