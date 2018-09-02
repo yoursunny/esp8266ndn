@@ -4,6 +4,9 @@
 // https://github.com/Heltec-Aaron-Lee/WiFi_Kit_series/tree/master/esp32/libraries/LoRa
 #include <LoRa.h>
 
+#define PIN_LED 25
+#define PIN_BTN 0
+
 ndn::DigestKey g_key;
 ndn::LoraTransport<LoRaClass> g_transport(LoRa);
 ndn::Face g_face(g_transport);
@@ -26,7 +29,7 @@ serverProbe(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, s
 void
 clientEvent(void* arg, ndn::PingClient::Event evt, uint64_t seq)
 {
-  digitalWrite(LED_BUILTIN, evt == ndn::PingClient::Event::PROBE ? HIGH : LOW);
+  digitalWrite(PIN_LED, evt == ndn::PingClient::Event::PROBE ? HIGH : LOW);
   if (evt == ndn::PingClient::Event::RESPONSE) {
     Serial.printf("C RSSI=%d SNR=%f\n", LoRa.packetRssi(), LoRa.packetSnr());
   }
@@ -38,8 +41,8 @@ setup()
   Serial.begin(115200);
   Serial.println();
   ndn::setLogOutput(Serial);
-  pinMode(KEY_BUILTIN, INPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(PIN_BTN, INPUT);
+  pinMode(PIN_LED, OUTPUT);
 
   // initialize LoRa
   LoRa.setTxPower(12);
@@ -76,10 +79,10 @@ loop()
 {
   g_face.loop();
 
-  if (digitalRead(KEY_BUILTIN) == LOW) {
+  if (digitalRead(PIN_BTN) == LOW) {
     g_enableClient = !g_enableClient;
     Serial.println(g_enableClient ? "Enabling client" : "Disabling client");
-    while (digitalRead(KEY_BUILTIN) == LOW) // wait for key release
+    while (digitalRead(PIN_BTN) == LOW) // wait for key release
       ;
   }
 
@@ -87,6 +90,6 @@ loop()
     g_client.loop();
   }
   else {
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(PIN_LED, HIGH);
   }
 }
