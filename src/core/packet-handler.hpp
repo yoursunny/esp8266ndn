@@ -25,6 +25,7 @@ private:
 
 private:
   PacketHandler* m_next = nullptr;
+  int8_t m_prio = 0;
 
   friend class Face;
 };

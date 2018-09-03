@@ -6,6 +6,8 @@
 #include "../ndn-cpp/lite/util/dynamic-uint8-array-lite.hpp"
 #include "../ndn-cpp/lite/util/dynamic-malloc-uint8-array-lite.hpp"
 
+#include <memory>
+
 namespace ndn {
 
 class PrivateKey;
@@ -40,9 +42,10 @@ public:
   ~Face();
 
   /** \brief add a callback handler
+   *  \param prio priority, smaller number means higher priority.
    */
   void
-  addHandler(PacketHandler* h);
+  addHandler(PacketHandler* h, int8_t prio = 0);
 
   /** \brief remove a callback handler
    */
@@ -161,6 +164,9 @@ public:
   sendNack(const NetworkNackLite& nack, const InterestLite& interest, uint64_t endpointId = 0);
 
 private:
+  void
+  enableLegacyCallbacks();
+
   ndn_Error
   receive(uint64_t& endpointId);
 
@@ -184,7 +190,7 @@ private:
   bool m_wantNack;
 
   class LegacyCallbackHandler;
-  LegacyCallbackHandler* m_legacyCallbacks;
+  std::unique_ptr<LegacyCallbackHandler> m_legacyCallbacks;
 
   uint8_t m_outBuf[NDNFACE_OUTBUF_SIZE];
   DynamicUInt8ArrayLite m_outArr;

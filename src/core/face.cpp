@@ -15,6 +15,12 @@ namespace ndn {
 class Face::LegacyCallbackHandler : public PacketHandler
 {
 public:
+  explicit
+  LegacyCallbackHandler(Face& face)
+  {
+    face.addHandler(this, 127);
+  }
+
   bool
   processInterest(const InterestLite& interest, uint64_t endpointId) override
   {
@@ -59,13 +65,11 @@ Face::Face(Transport& transport)
   , m_pb(nullptr)
   , m_handler(nullptr)
   , m_wantNack(true)
-  , m_legacyCallbacks(new LegacyCallbackHandler())
   , m_outArr(m_outBuf, NDNFACE_OUTBUF_SIZE, nullptr)
   , m_sigInfoArr(m_sigInfoBuf, NDNFACE_SIGINFOBUF_SIZE, nullptr)
   , m_sigBuf(0)
   , m_signingKey(nullptr)
 {
-  this->addHandler(m_legacyCallbacks);
 }
 
 Face::~Face()
@@ -73,27 +77,32 @@ Face::~Face()
   if (m_pb != nullptr) {
     delete m_pb;
   }
-  delete m_legacyCallbacks;
 }
 
 void
-Face::addHandler(PacketHandler* h)
+Face::addHandler(PacketHandler* h, int8_t prio)
 {
-  h->m_next = m_handler;
-  m_handler = h;
+  h->m_prio = prio;
+  if (m_handler == nullptr || m_handler->m_prio >= prio) {
+    h->m_next = m_handler;
+    m_handler = h;
+  }
+  else {
+    PacketHandler* cur = m_handler;
+    while (cur->m_next != nullptr && cur->m_next->m_prio < prio) {
+      cur = cur->m_next;
+    }
+    h->m_next = cur->m_next;
+    cur->m_next = h;
+  }
 }
 
 bool
 Face::removeHandler(PacketHandler* h)
 {
-  if (m_handler == h) {
-    m_handler = h->m_next;
-    return true;
-  }
-
-  for (PacketHandler* cur = m_handler; cur != nullptr; cur = cur->m_next) {
-    if (cur->m_next == h) {
-      cur->m_next = h->m_next;
+  for (PacketHandler** cur = &m_handler; *cur != nullptr; cur = &(*cur)->m_next) {
+    if (*cur == h) {
+      *cur = h->m_next;
       return true;
     }
   }
@@ -101,8 +110,17 @@ Face::removeHandler(PacketHandler* h)
 }
 
 void
+Face::enableLegacyCallbacks()
+{
+  if (!m_legacyCallbacks) {
+    m_legacyCallbacks.reset(new LegacyCallbackHandler(*this));
+  }
+}
+
+void
 Face::onInterest(InterestCallback cb, void* cbarg)
 {
+  this->enableLegacyCallbacks();
   m_legacyCallbacks->interestCb = cb;
   m_legacyCallbacks->interestCbArg = cbarg;
 }
@@ -110,6 +128,7 @@ Face::onInterest(InterestCallback cb, void* cbarg)
 void
 Face::onData(DataCallback cb, void* cbarg)
 {
+  this->enableLegacyCallbacks();
   m_legacyCallbacks->dataCb = cb;
   m_legacyCallbacks->dataCbArg = cbarg;
 }
@@ -117,6 +136,7 @@ Face::onData(DataCallback cb, void* cbarg)
 void
 Face::onNack(NackCallback cb, void* cbarg)
 {
+  this->enableLegacyCallbacks();
   m_legacyCallbacks->nackCb = cb;
   m_legacyCallbacks->nackCbArg = cbarg;
 }
