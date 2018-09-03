@@ -64,8 +64,9 @@ public:
 class Face::TracingHandler : public PacketHandler
 {
 public:
-  TracingHandler(Face& face, Print& output)
+  TracingHandler(Face& face, Print& output, const String& prefix)
     : m_output(output)
+    , m_prefix(prefix.length() == 0 ? " " : " " + prefix + " ")
   {
     face.addHandler(this, -127);
   }
@@ -73,14 +74,14 @@ public:
   void
   logInterest(const InterestLite& interest, uint64_t endpointId, char dir = '<')
   {
-    m_output << millis() << ' ' << dir << "I " << PrintUri{interest.getName()}
+    m_output << millis() << m_prefix << dir << "I " << PrintUri{interest.getName()}
              << F(" endpoint=") << _HEX(endpointId) << endl;
   }
 
   void
   logData(const DataLite& data, uint64_t endpointId, char dir = '<')
   {
-    m_output << millis() << ' ' << dir << "D " << PrintUri{data.getName()}
+    m_output << millis() << m_prefix << dir << "D " << PrintUri{data.getName()}
              << F(" endpoint=") << _HEX(endpointId) << endl;
   }
 
@@ -88,7 +89,7 @@ public:
   logNack(const NetworkNackLite& nackHeader, const InterestLite& interest,
           uint64_t endpointId, char dir = '<')
   {
-    m_output << millis() << ' ' << dir << "N " << PrintUri{interest.getName()}
+    m_output << millis() << m_prefix << dir << "N " << PrintUri{interest.getName()}
              << '~' << static_cast<int>(nackHeader.getReason())
              << F(" endpoint=") << _HEX(endpointId) << endl;
   }
@@ -117,6 +118,7 @@ public:
 
 private:
   Print& m_output;
+  String m_prefix;
 };
 
 Face::Face(Transport& transport)
@@ -201,9 +203,9 @@ Face::onNack(NackCallback cb, void* cbarg)
 }
 
 void
-Face::enableTracing(Print& output)
+Face::enableTracing(Print& output, const String& prefix)
 {
-  m_tracing.reset(new TracingHandler(*this, output));
+  m_tracing.reset(new TracingHandler(*this, output, prefix));
 }
 
 void

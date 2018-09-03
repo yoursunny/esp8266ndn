@@ -77,7 +77,7 @@ public:
   /** \brief enable per-packet tracing
    */
   void
-  enableTracing(Print& output);
+  enableTracing(Print& output, const String& prefix = "");
 
   /** \brief set whether face should respond Nack~NoRoute upon unhandled Interest
    */
