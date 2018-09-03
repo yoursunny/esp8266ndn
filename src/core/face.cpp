@@ -1,5 +1,6 @@
 #include "face.hpp"
 #include "logger.hpp"
+#include "uri.hpp"
 #include "with-components-buffer.hpp"
 #include "../security/private-key.hpp"
 #include "../transport/transport.hpp"
@@ -58,6 +59,64 @@ public:
   void* dataCbArg = nullptr;
   NackCallback nackCb = nullptr;
   void* nackCbArg = nullptr;
+};
+
+class Face::TracingHandler : public PacketHandler
+{
+public:
+  TracingHandler(Face& face, Print& output)
+    : m_output(output)
+  {
+    face.addHandler(this, -127);
+  }
+
+  void
+  logInterest(const InterestLite& interest, uint64_t endpointId, char dir = '<')
+  {
+    m_output << millis() << ' ' << dir << "I " << PrintUri{interest.getName()}
+             << F(" endpoint=") << _HEX(endpointId) << endl;
+  }
+
+  void
+  logData(const DataLite& data, uint64_t endpointId, char dir = '<')
+  {
+    m_output << millis() << ' ' << dir << "D " << PrintUri{data.getName()}
+             << F(" endpoint=") << _HEX(endpointId) << endl;
+  }
+
+  void
+  logNack(const NetworkNackLite& nackHeader, const InterestLite& interest,
+          uint64_t endpointId, char dir = '<')
+  {
+    m_output << millis() << ' ' << dir << "N " << PrintUri{interest.getName()}
+             << '~' << static_cast<int>(nackHeader.getReason())
+             << F(" endpoint=") << _HEX(endpointId) << endl;
+  }
+
+  bool
+  processInterest(const InterestLite& interest, uint64_t endpointId) override
+  {
+    this->logInterest(interest, endpointId, '>');
+    return false;
+  }
+
+  bool
+  processData(const DataLite& data, uint64_t endpointId) override
+  {
+    this->logData(data, endpointId, '>');
+    return false;
+  }
+
+  bool
+  processNack(const NetworkNackLite& nackHeader, const InterestLite& interest,
+              uint64_t endpointId) override
+  {
+    this->logNack(nackHeader, interest, endpointId, '>');
+    return false;
+  }
+
+private:
+  Print& m_output;
 };
 
 Face::Face(Transport& transport)
@@ -139,6 +198,12 @@ Face::onNack(NackCallback cb, void* cbarg)
   this->enableLegacyCallbacks();
   m_legacyCallbacks->nackCb = cb;
   m_legacyCallbacks->nackCbArg = cbarg;
+}
+
+void
+Face::enableTracing(Print& output)
+{
+  m_tracing.reset(new TracingHandler(*this, output));
 }
 
 void
@@ -338,6 +403,9 @@ Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, const Privat
     }
   }
 
+  if (m_tracing) {
+    m_tracing->logInterest(interest, endpointId);
+  }
   return this->sendPacket(m_outBuf, len, endpointId);
 }
 
@@ -377,6 +445,9 @@ Face::sendData(DataLite& data, uint64_t endpointId, const PrivateKey* pvtkey)
     return error;
   }
 
+  if (m_tracing) {
+    m_tracing->logData(data, endpointId);
+  }
   return this->sendPacket(m_outBuf, len, endpointId);
 }
 
@@ -436,6 +507,9 @@ Face::sendNack(const NetworkNackLite& nack, const InterestLite& interest, uint64
   encoder.offset += sizeof(NACK_HDR);
   ndn_TlvEncoder_writeVarNumber(&encoder, interestSize);
 
+  if (m_tracing) {
+    m_tracing->logNack(nack, interest, endpointId);
+  }
   return this->sendPacket(m_outBuf + NDNFACE_OUTNACK_HEADROOM - lpHeaderSize, lpPacketSize, endpointId);
 }
 

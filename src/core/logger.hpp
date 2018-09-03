@@ -3,6 +3,7 @@
 
 #include "logging.hpp"
 #include "detail/Streaming.h"
+#include "detail/PriUint64.h"
 
 #define DBG(module, ...) \
   do { \

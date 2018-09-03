@@ -7,6 +7,7 @@
 #include "../ndn-cpp/lite/util/dynamic-malloc-uint8-array-lite.hpp"
 
 #include <memory>
+#include <Print.h>
 
 namespace ndn {
 
@@ -72,6 +73,11 @@ public:
    */
   void
   onNack(NackCallback cb, void* cbarg) __attribute__((deprecated));
+
+  /** \brief enable per-packet tracing
+   */
+  void
+  enableTracing(Print& output);
 
   /** \brief set whether face should respond Nack~NoRoute upon unhandled Interest
    */
@@ -188,6 +194,9 @@ private:
 
   PacketHandler* m_handler;
   bool m_wantNack;
+
+  class TracingHandler;
+  std::unique_ptr<TracingHandler> m_tracing;
 
   class LegacyCallbackHandler;
   std::unique_ptr<LegacyCallbackHandler> m_legacyCallbacks;
