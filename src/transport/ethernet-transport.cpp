@@ -173,9 +173,9 @@ EthernetTransport::begin(const char ifname[2], uint8_t ifnum)
 bool
 EthernetTransport::begin()
 {
-#if defined(ESP8266)
+#if defined(ESP8266) && LWIP_VERSION_MAJOR == 1
   return begin("ew", 0);
-#elif defined(ESP32)
+#else
   for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
     if (netif->name[0] == 's' && netif->name[1] == 't') {
       return begin(netif->name, netif->num);
