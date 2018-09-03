@@ -10,7 +10,7 @@ const char* WIFI_PASS = "my-pass";
 
 ndn::DigestKey g_key;
 
-ndn::MulticastEthernetTransport g_transport0;
+ndn::EthernetTransport g_transport0;
 ndn::Face g_face0(g_transport0);
 char PREFIX0[] = "/example/esp8266/ether/ping";
 ndn::NameWCB<8> g_prefix0;
@@ -52,30 +52,34 @@ setup()
   }
   delay(1000);
 
-  ndn::MulticastEthernetTransport::listNetifs(Serial);
+  ndn::EthernetTransport::listNetifs(Serial);
   bool ok = g_transport0.begin(); // select any STA netif
   if (!ok) {
-    Serial.println("Ethernet transport initialization failed");
+    Serial.println(F("Ethernet transport initialization failed"));
     ESP.restart();
   }
+  g_face0.enableTracing(Serial, F("face0"));
   g_face0.setSigningKey(g_key);
   ndn::parseNameFromUri(g_prefix0, PREFIX0);
+  g_server0.enableEndpointIdZero();
   g_server0.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("Ethernet ndnping server")));
 
   ok = g_transport1.beginListen();
   if (!ok) {
-    Serial.println("UDP unicast transport initialization failed");
+    Serial.println(F("UDP unicast transport initialization failed"));
     ESP.restart();
   }
+  g_face1.enableTracing(Serial, F("face1"));
   g_face1.setSigningKey(g_key);
   ndn::parseNameFromUri(g_prefix1, PREFIX1);
   g_server1.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("UDP unicast ndnping server")));
 
   ok = g_transport2.beginMulticast(WiFi.localIP());
   if (!ok) {
-    Serial.println("UDP multicast transport initialization failed");
+    Serial.println(F("UDP multicast transport initialization failed"));
     ESP.restart();
   }
+  g_face2.enableTracing(Serial, F("face2"));
   g_face2.setSigningKey(g_key);
   ndn::parseNameFromUri(g_prefix2, PREFIX2);
   g_server2.enableEndpointIdZero();

@@ -41,6 +41,7 @@ setup()
     }
   }
   g_transport.begin("ESP32-BLE-NDN");
+  g_face.enableTracing(Serial);
   g_face.setSigningKey(g_pvtkey);
 
   ndn::parseNameFromUri(g_prefix, PREFIX);

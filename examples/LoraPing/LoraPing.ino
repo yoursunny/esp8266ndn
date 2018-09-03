@@ -69,6 +69,7 @@ setup()
 
   ndn::parseNameFromUri(g_sPrefix, SPREFIX);
   ndn::parseNameFromUri(g_cInterest.getName(), CPREFIX);
+  g_face.enableTracing(Serial);
   g_face.setSigningKey(g_key);
   g_server.onProbe(&serverProbe, nullptr);
   g_client.onEvent(&clientEvent, nullptr);

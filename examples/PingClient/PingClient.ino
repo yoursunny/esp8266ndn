@@ -64,6 +64,7 @@ setup()
     ESP.restart();
   }
   g_transport.beginTunnel(routerIp);
+  g_face.enableTracing(Serial);
 
   pinMode(LED0, OUTPUT);
   pinMode(LED1, OUTPUT);
