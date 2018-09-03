@@ -1,4 +1,4 @@
-#include "multicast-ethernet-transport.hpp"
+#include "ethernet-transport.hpp"
 #include "../core/logger.hpp"
 
 #include <lwip/init.h>
@@ -13,12 +13,12 @@
 #include <freertos/queue.h>
 #endif
 
-#define MCASTETHTRANSPORT_DBG(...) DBG(MulticastEthernetTransport, __VA_ARGS__)
+#define ETHTRANSPORT_DBG(...) DBG(EthernetTransport, __VA_ARGS__)
 
 namespace ndn {
 
 #if defined(ESP8266)
-class MulticastEthernetTransport::Queue
+class EthernetTransport::Queue
 {
 public:
   Queue()
@@ -53,17 +53,17 @@ public:
   }
 
 private:
-  std::array<pbuf*, MCASTETHTRANSPORT_RX_QUEUE_LEN> m_arr;
+  std::array<pbuf*, ETHTRANSPORT_RX_QUEUE_LEN> m_arr;
   int m_head;
   int m_tail;
 };
 #elif defined(ESP32)
-class MulticastEthernetTransport::Queue
+class EthernetTransport::Queue
 {
 public:
   Queue()
   {
-    m_queue = xQueueCreate(MCASTETHTRANSPORT_RX_QUEUE_LEN, sizeof(pbuf*));
+    m_queue = xQueueCreate(ETHTRANSPORT_RX_QUEUE_LEN, sizeof(pbuf*));
   }
 
   ~Queue()
@@ -93,9 +93,9 @@ private:
 };
 #endif
 
-static MulticastEthernetTransport* g_multicastEthernetTransport = nullptr;
+static EthernetTransport* g_ethTransport = nullptr;
 
-class MulticastEthernetTransport::Impl
+class EthernetTransport::Impl
 {
 public:
   static err_t
@@ -103,31 +103,24 @@ public:
 };
 
 err_t
-MulticastEthernetTransport::Impl::input(pbuf* p, netif* inp)
+EthernetTransport::Impl::input(pbuf* p, netif* inp)
 {
-  if (g_multicastEthernetTransport == nullptr ||
-      g_multicastEthernetTransport->m_netif != inp) {
-    pbuf_free(p);
+  const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(p->payload);
+  if (g_ethTransport != nullptr && g_ethTransport->m_netif == inp &&
+      p->len >= sizeof(eth_hdr) && eth->type == PP_HTONS(0x8624)) {
+    bool ok = g_ethTransport->m_queue->push(p);
+    if (!ok) {
+      ETHTRANSPORT_DBG(F("RX queue is full"));
+      pbuf_free(p);
+    }
     return ERR_OK;
   }
 
-  if (p->len >= sizeof(eth_hdr)) {
-    const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(p->payload);
-    if (eth->type == PP_HTONS(0x8624)) {
-      bool ok = g_multicastEthernetTransport->m_queue->push(p);
-      if (!ok) {
-        MCASTETHTRANSPORT_DBG(F("RX queue is full"));
-        pbuf_free(p);
-      }
-      return ERR_OK;
-    }
-  }
-
-  return reinterpret_cast<netif_input_fn>(g_multicastEthernetTransport->m_oldInput)(p, inp);
+  return reinterpret_cast<netif_input_fn>(g_ethTransport->m_oldInput)(p, inp);
 }
 
 void
-MulticastEthernetTransport::listNetifs(Print& os)
+EthernetTransport::listNetifs(Print& os)
 {
   for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
     os << netif->name[0] << netif->name[1] << netif->num
@@ -135,25 +128,25 @@ MulticastEthernetTransport::listNetifs(Print& os)
   }
 }
 
-MulticastEthernetTransport::MulticastEthernetTransport()
+EthernetTransport::EthernetTransport()
   : m_netif(nullptr)
   , m_oldInput(nullptr)
 {
 }
 
 bool
-MulticastEthernetTransport::begin(const char ifname[2], uint8_t ifnum)
+EthernetTransport::begin(const char ifname[2], uint8_t ifnum)
 {
   if (LWIP_VERSION_MAJOR != 1) {
-    MCASTETHTRANSPORT_DBG(F("packet interception on lwip ") << LWIP_VERSION_MAJOR << "." <<
+    ETHTRANSPORT_DBG(F("packet interception on lwip ") << LWIP_VERSION_MAJOR << "." <<
                           LWIP_VERSION_MINOR << F(" is not tested and may not work"));
   }
   if (m_netif != nullptr) {
-    MCASTETHTRANSPORT_DBG(F("this instance is active"));
+    ETHTRANSPORT_DBG(F("this instance is active"));
     return false;
   }
-  if (g_multicastEthernetTransport != nullptr) {
-    MCASTETHTRANSPORT_DBG(F("another instance is active"));
+  if (g_ethTransport != nullptr) {
+    ETHTRANSPORT_DBG(F("another instance is active"));
     return false;
   }
 
@@ -165,20 +158,20 @@ MulticastEthernetTransport::begin(const char ifname[2], uint8_t ifnum)
     }
   }
   if (m_netif == nullptr) {
-    MCASTETHTRANSPORT_DBG(F("netif ") << ifname[0] << ifname[1] << ifnum << F(" not found"));
+    ETHTRANSPORT_DBG(F("netif ") << ifname[0] << ifname[1] << ifnum << F(" not found"));
     return false;
   }
 
   m_queue = new Queue();
-  g_multicastEthernetTransport = this;
+  g_ethTransport = this;
   m_oldInput = reinterpret_cast<void*>(m_netif->input);
-  m_netif->input = MulticastEthernetTransport::Impl::input;
-  MCASTETHTRANSPORT_DBG(F("enabled on ") << ifname[0] << ifname[1] << ifnum);
+  m_netif->input = EthernetTransport::Impl::input;
+  ETHTRANSPORT_DBG(F("enabled on ") << ifname[0] << ifname[1] << ifnum);
   return true;
 }
 
 bool
-MulticastEthernetTransport::begin()
+EthernetTransport::begin()
 {
 #if defined(ESP8266)
   return begin("ew", 0);
@@ -189,46 +182,48 @@ MulticastEthernetTransport::begin()
     }
   }
 #endif
-  MCASTETHTRANSPORT_DBG(F("no available netif"));
+  ETHTRANSPORT_DBG(F("no available netif"));
   return false;
 }
 
 void
-MulticastEthernetTransport::end()
+EthernetTransport::end()
 {
-  g_multicastEthernetTransport = nullptr;
+  m_netif->input = reinterpret_cast<netif_input_fn>(m_oldInput);
+  g_ethTransport = nullptr;
   pbuf* p;
   while ((p = m_queue->pop()) != nullptr) {
     pbuf_free(p);
   }
   delete m_queue;
-  m_netif->input = reinterpret_cast<netif_input_fn>(m_oldInput);
   m_oldInput = nullptr;
   m_netif = nullptr;
-  MCASTETHTRANSPORT_DBG(F("disabled"));
+  ETHTRANSPORT_DBG(F("disabled"));
 }
 
 size_t
-MulticastEthernetTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId)
+EthernetTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId)
 {
   size_t pktSize = 0;
   pbuf* p;
   while ((p = m_queue->pop()) != nullptr) {
     if (p->next != nullptr) {
-      MCASTETHTRANSPORT_DBG(F("unhandled: chained packet"));
+      ETHTRANSPORT_DBG(F("unhandled: chained packet"));
       pbuf_free(p);
       continue;
     }
 
     if (p->tot_len > bufSize) {
-      MCASTETHTRANSPORT_DBG(F("insufficient receive buffer: tot_len=") << _DEC(p->tot_len));
+      ETHTRANSPORT_DBG(F("insufficient receive buffer: tot_len=") << _DEC(p->tot_len));
       pbuf_free(p);
       continue;
     }
 
     const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(p->payload);
-    endpointId = 0;
-    memcpy(&endpointId, &eth->src, 6);
+    EndpointId endpoint = {0};
+    memcpy(endpoint.addr, &eth->src, 6);
+    endpoint.isMulticast = 0x01 & (*reinterpret_cast<const uint8_t*>(&eth->dest));
+    endpointId = endpoint.endpointId;
 
     pktSize = p->tot_len - sizeof(eth_hdr);
     memcpy(buf, reinterpret_cast<const uint8_t*>(p->payload) + sizeof(eth_hdr), pktSize);
@@ -240,7 +235,7 @@ MulticastEthernetTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endp
 }
 
 ndn_Error
-MulticastEthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
+EthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 {
   uint16_t payloadLen = max(static_cast<uint16_t>(len), static_cast<uint16_t>(46));
   uint16_t frameSize = sizeof(eth_hdr) + payloadLen;
@@ -254,7 +249,14 @@ MulticastEthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpoi
   }
 
   eth_hdr* eth = reinterpret_cast<eth_hdr*>(p->payload);
-  ETHADDR32_COPY(&eth->dest, "\x01\x00\x5E\x00\x17\xAA");
+  if (endpointId == 0) {
+    ETHADDR32_COPY(&eth->dest, "\x01\x00\x5E\x00\x17\xAA");
+  }
+  else {
+    EndpointId endpoint;
+    endpoint.endpointId = endpointId;
+    ETHADDR32_COPY(&eth->dest, endpoint.addr);
+  }
   ETHADDR16_COPY(&eth->src, m_netif->hwaddr);
   eth->type = PP_HTONS(0x8624);
   memcpy(reinterpret_cast<uint8_t*>(p->payload) + sizeof(eth_hdr), pkt, len);
@@ -262,7 +264,7 @@ MulticastEthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpoi
   err_t e = m_netif->linkoutput(m_netif, p);
   pbuf_free(p);
   if (e != ERR_OK) {
-    MCASTETHTRANSPORT_DBG(F("linkoutput error ") << _DEC(e));
+    ETHTRANSPORT_DBG(F("linkoutput error ") << _DEC(e));
     return NDN_ERROR_SocketTransport_error_in_send;
   }
 
