@@ -1,5 +1,3 @@
-#include <StreamString.h>
-
 class KeyFixtureBase
 {
 public:
@@ -40,17 +38,6 @@ public:
     return key.verify(input, inputLen, sig.data(), sig.size());
   }
 
-private:
-  static String
-  toHexString(const uint8_t* input, size_t len)
-  {
-    StreamString os;
-    for (size_t i = 0; i < len; ++i) {
-      os.printf("%02x", input[i]);
-    }
-    return os;
-  }
-
 public:
   std::vector<uint8_t> sig;
 };
@@ -66,7 +53,7 @@ testF(KeyFixtureOnce, DigestKey_basic)
   assertEqual(this->sign(key), static_cast<int>(ndn_SHA256_DIGEST_SIZE));
   // echo -n 'yoursunny.com' | openssl sha256
   assertEqual(this->getSigHex(),
-              F("ec41c17185c911f9f2fed2a8f6cc9e1ab4e9f06c7e62dd2e4baefc5b56596043"));
+              F("EC41C17185C911F9F2FED2A8F6CC9E1AB4E9F06C7E62DD2E4BAEFC5B56596043"));
   assertTrue(this->verify(key));
 }
 
@@ -77,6 +64,6 @@ testF(KeyFixtureOnce, HmacKey_basic)
   assertEqual(this->sign(key), static_cast<int>(ndn_SHA256_DIGEST_SIZE));
   // echo -n 'yoursunny.com' | openssl sha256 -hmac 'secret'
   assertEqual(this->getSigHex(),
-              F("e6680a517902ff958545af733359499bdc59fab051fcfac02a0f253c099da12e"));
+              F("E6680A517902FF958545AF733359499BDC59FAB051FCFAC02A0F253C099DA12E"));
   assertTrue(this->verify(key));
 }
