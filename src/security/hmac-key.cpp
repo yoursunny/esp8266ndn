@@ -32,13 +32,8 @@ HmacKey::setSignatureInfo(SignatureLite& signature) const
 bool
 HmacKey::verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const
 {
-  if (sigLen != ndn_SHA256_DIGEST_SIZE) {
-    return false;
-  }
-
-  uint8_t newSig[ndn_SHA256_DIGEST_SIZE];
-  CryptoLite::computeHmacWithSha256(m_secret, m_secretLen, input, inputLen, newSig);
-  return compareDigest(sig, newSig, ndn_SHA256_DIGEST_SIZE);
+  return CryptoLite::verifyHmacWithSha256Signature(m_secret, m_secretLen, sig, sigLen,
+                                                   input, inputLen);
 }
 
 } // namespace ndn

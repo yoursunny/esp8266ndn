@@ -60,7 +60,6 @@
 #include "./c/util/ndn_memory.h"
 #include "./c/util/ndn_realloc.h"
 #include "./c/util/time.h"
-#include "./cryptosuite/sha256.h"
 #include "./lite/common-lite.hpp"
 #include "./lite/control-parameters-lite.hpp"
 #include "./lite/control-response-lite.hpp"

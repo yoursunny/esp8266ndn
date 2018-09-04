@@ -17,7 +17,6 @@ cp -r $NDNCPPPATH/include/ndn-cpp/c ./
 cp -r $NDNCPPPATH/include/ndn-cpp/lite ./
 cp -r $NDNCPPPATH/src/c ./
 cp -r $NDNCPPPATH/src/lite ./
-cp -r $NDNCPPPATH/contrib/cryptosuite ./
 
 # remove trailing whitespace
 find -type f -exec sed -i -e 's/\s*$//' '{}' '+'
@@ -29,14 +28,12 @@ find -name '*transport*' -delete
 find -name 'ec-*-key*' -delete
 find -name 'rsa-*-key*' -delete
 
+# delete crypto.c
+rm c/util/crypto.c
+
 # delete ndn-cpp-config include
 for F in $(grep -lr '#include .*ndn-cpp-config.h' c lite); do
   sed -i '/#include .*ndn-cpp-config.h/ d' $F
-done
-
-# correct contrib include
-for F in $(grep -lr '#include ".*cryptosuite' c lite); do
-  sed -i 's~#include ".*cryptosuite/\(.*\)"~#include <ndn-cpp/cryptosuite/\1>~' $F
 done
 
 # change #include to relative path
@@ -52,9 +49,8 @@ sed -i '/#define round/ c\#define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.
 # enable CryptoLite::computeHmacWithSha256
 sed -i '/#if NDN_CPP_HAVE_LIBCRYPTO/ c\#if 1' lite/util/crypto-lite.cpp
 
-# fix ndn_generateRandomBytes
-sed -i -e '1 i\#include <Arduino.h>' c/util/crypto.c
-mv c/util/crypto.c c/util/crypto.cpp # esp8266/Arduino.h defines random() for C++ only
+# disable cryptosuite SHA256
+sed -i '/#ifdef ARDUINO/ c\#if 0' lite/util/crypto-lite.cpp
 
 # fix ndn_getNowMilliseconds
 sed -i -e '1 i\#include <Arduino.h>' -e '/^ndn_getNowMilliseconds/ p' -e '/^ndn_getNowMilliseconds/ a\{\n  return millis();\n}' -e '/^ndn_getNowMilliseconds/,/}/ d' c/util/time.c
