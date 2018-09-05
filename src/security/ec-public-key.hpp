@@ -2,6 +2,7 @@
 #define ESP8266NDN_EC_PUBLIC_KEY_HPP
 
 #include "public-key.hpp"
+#include <memory>
 
 namespace ndn {
 
@@ -12,16 +13,19 @@ class EcPublicKey : public PublicKey
 public:
   /** \brief Construct EC public key from key bits.
    *  \param bits uncompressed points in standard format without leading 0x04 prefix;
-   *              may come from PGMSPACE, will be copied
+   *              may come from PROGMEM, will be copied
    */
   explicit
   EcPublicKey(const uint8_t bits[64]);
+
+  ~EcPublicKey();
 
   bool
   verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const final;
 
 private:
-  uint8_t m_pubKey[64];
+  class Impl;
+  std::unique_ptr<Impl> m_impl;
 };
 
 } // namespace ndn

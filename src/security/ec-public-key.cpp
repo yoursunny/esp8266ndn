@@ -1,16 +1,52 @@
 #include "ec-public-key.hpp"
+#include "../ndn-cpp/lite/util/crypto-lite.hpp"
+#include <pgmspace.h>
+
+#if defined(ESP8266)
+#include <bearssl/bearssl_hash.h>
+#include <bearssl/bearssl_ec.h>
+#elif defined(ESP32)
 #include "detail/asn1.hpp"
 #include "micro-ecc/uECC.h"
-#include "../ndn-cpp/lite/util/crypto-lite.hpp"
 #include <cstring>
-#include <pgmspace.h>
+#endif
 
 namespace ndn {
 
-EcPublicKey::EcPublicKey(const uint8_t bits[64])
+class EcPublicKey::Impl
 {
-  memcpy_P(m_pubKey, bits, sizeof(m_pubKey));
+public:
+  explicit
+  Impl(const uint8_t bits[64]);
+
+  bool
+  verify(const uint8_t hash[ndn_SHA256_DIGEST_SIZE], const uint8_t* sig, size_t sigLen) const;
+
+private:
+  uint8_t m_bits[65];
+#if defined(ESP8266)
+  br_ec_public_key m_key;
+#endif
+};
+
+#if defined(ESP8266)
+
+EcPublicKey::Impl::Impl(const uint8_t bits[64])
+{
+  m_bits[0] = 0x04;
+  memcpy_P(&m_bits[1], bits, 64);
+  m_key.curve = BR_EC_secp256r1;
+  m_key.q = m_bits;
+  m_key.qlen = sizeof(m_bits);
 }
+
+bool
+EcPublicKey::Impl::verify(const uint8_t hash[ndn_SHA256_DIGEST_SIZE], const uint8_t* sig, size_t sigLen) const
+{
+  return br_ecdsa_i31_vrfy_asn1(&br_ec_p256_m31, hash, ndn_SHA256_DIGEST_SIZE, &m_key, sig, sigLen);
+}
+
+#elif defined(ESP32)
 
 // Read ASN1 integer at input..end into output[0:32].
 // Return pointer past end of ASN1 integer, or nullptr if failure.
@@ -52,18 +88,37 @@ decodeSignatureBits(const uint8_t* input, size_t len, uint8_t* decoded)
   return input == end;
 }
 
+EcPublicKey::Impl::Impl(const uint8_t bits[64])
+{
+  memcpy_P(m_bits, bits, 64);
+}
+
 bool
-EcPublicKey::verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const
+EcPublicKey::Impl::verify(const uint8_t hash[ndn_SHA256_DIGEST_SIZE], const uint8_t* sig, size_t sigLen) const
 {
   uint8_t rawSig[uECC_BYTES * 2];
   if (!decodeSignatureBits(sig, sigLen, rawSig)) {
     return false;
   }
 
+  return uECC_verify(m_bits, hash, rawSig);
+}
+
+#endif
+
+EcPublicKey::EcPublicKey(const uint8_t bits[64])
+{
+  m_impl.reset(new Impl(bits));
+}
+
+EcPublicKey::~EcPublicKey() = default;
+
+bool
+EcPublicKey::verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const
+{
   uint8_t hash[ndn_SHA256_DIGEST_SIZE];
   CryptoLite::digestSha256(input, inputLen, hash);
-
-  return uECC_verify(m_pubKey, hash, rawSig);
+  return m_impl->verify(hash, sig, sigLen);
 }
 
 } // namespace ndn

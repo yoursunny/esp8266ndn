@@ -2,6 +2,7 @@
 #define ESP8266NDN_EC_PRIVATE_KEY_HPP
 
 #include "private-key.hpp"
+#include <memory>
 
 namespace ndn {
 
@@ -12,10 +13,12 @@ class EcPrivateKey : public PrivateKey
 public:
   /** \brief Construct EC private key from key bits.
    *  \param bits uncompressed points in standard format;
-   *              may come from PGMSPACE, will be copied
+   *              may come from PROGMEM, will be copied
    *  \param keyName certificate name; caller must retain memory
    */
   EcPrivateKey(const uint8_t bits[32], const NameLite& keyName);
+
+  ~EcPrivateKey();
 
   size_t
   getMaxSigLength() const final
@@ -33,7 +36,8 @@ public:
   static constexpr size_t MAX_SIG_LENGTH = 72;
 
 private:
-  uint8_t m_pvtKey[32];
+  class Impl;
+  std::unique_ptr<Impl> m_impl;
   const NameLite& m_keyName;
 };
 

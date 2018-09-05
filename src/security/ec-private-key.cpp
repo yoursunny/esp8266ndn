@@ -1,24 +1,57 @@
 #include "ec-private-key.hpp"
-#include "detail/asn1.hpp"
-#include "micro-ecc/uECC.h"
 #include "../ndn-cpp/lite/util/crypto-lite.hpp"
-#include <cstring>
 #include <pgmspace.h>
 
+#if defined(ESP8266)
+#include <bearssl/bearssl_hash.h>
+#include <bearssl/bearssl_ec.h>
+#elif defined(ESP32)
+#include "detail/asn1.hpp"
+#include "micro-ecc/uECC.h"
+#include <cstring>
+#endif
+
 namespace ndn {
+
+class EcPrivateKey::Impl
+{
+public:
+  explicit
+  Impl(const uint8_t bits[32]);
+
+  int
+  sign(const uint8_t hash[ndn_SHA256_DIGEST_SIZE], uint8_t* sig) const;
+
+private:
+  uint8_t m_bits[32];
+#if defined(ESP8266)
+  br_ec_private_key m_key;
+#endif
+};
+
+#if defined(ESP8266)
+
+EcPrivateKey::Impl::Impl(const uint8_t bits[32])
+{
+  memcpy_P(m_bits, bits, sizeof(m_bits));
+  m_key.curve = BR_EC_secp256r1;
+  m_key.x = m_bits;
+  m_key.xlen = 65;
+}
+
+int
+EcPrivateKey::Impl::sign(const uint8_t hash[ndn_SHA256_DIGEST_SIZE], uint8_t* sig) const
+{
+  return br_ecdsa_i31_sign_asn1(&br_ec_p256_m31, &br_sha256_vtable, hash, &m_key, sig);
+}
+
+#elif defined(ESP32)
 
 static int
 rng(uint8_t* dest, unsigned size)
 {
   CryptoLite::generateRandomBytes(dest, size);
   return 1;
-}
-
-EcPrivateKey::EcPrivateKey(const uint8_t bits[32], const NameLite& keyName)
-  : m_keyName(keyName)
-{
-  memcpy_P(m_pvtKey, bits, sizeof(m_pvtKey));
-  uECC_set_rng(&rng);
 }
 
 // Determine ASN1 length of integer at integer[0:32].
@@ -74,18 +107,38 @@ encodeSignatureBits(uint8_t* sig)
   return sig - begin;
 }
 
+EcPrivateKey::Impl::Impl(const uint8_t bits[32])
+{
+  uECC_set_rng(&rng);
+  memcpy_P(m_bits, bits, sizeof(m_bits));
+}
+
+int
+EcPrivateKey::Impl::sign(const uint8_t hash[ndn_SHA256_DIGEST_SIZE], uint8_t* sig) const
+{
+  int res = uECC_sign(m_bits, hash, sig + 8);
+  if (res == 0) {
+    return 0;
+  }
+  return encodeSignatureBits(sig);
+}
+
+#endif
+
+EcPrivateKey::EcPrivateKey(const uint8_t bits[32], const NameLite& keyName)
+  : m_keyName(keyName)
+{
+  m_impl.reset(new Impl(bits));
+}
+
+EcPrivateKey::~EcPrivateKey() = default;
+
 int
 EcPrivateKey::sign(const uint8_t* input, size_t inputLen, uint8_t* sig) const
 {
   uint8_t hash[ndn_SHA256_DIGEST_SIZE];
   CryptoLite::digestSha256(input, inputLen, hash);
-
-  int res = uECC_sign(m_pvtKey, hash, sig + 8);
-  if (res == 0) {
-    return 0;
-  }
-
-  return encodeSignatureBits(sig);
+  return m_impl->sign(hash, sig);
 }
 
 ndn_Error
