@@ -22,6 +22,7 @@
 #include "security/public-key.hpp"
 
 #include "transport/ble-server-transport.hpp"
+#include "transport/ethernet-transport.hpp"
 #include "transport/loopback-transport.hpp"
 #include "transport/lora-transport.hpp"
 #include "transport/multicast-ethernet-transport.hpp"

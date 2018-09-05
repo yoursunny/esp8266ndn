@@ -6,6 +6,7 @@
 namespace ndn {
 
 /** \brief a transport that communicates over Ethernet multicast
+ *  \deprecated use EthernetTransport and send to endpointId=0
  */
 class MulticastEthernetTransport : public EthernetTransport
 {
