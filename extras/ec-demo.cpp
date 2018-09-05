@@ -1,4 +1,4 @@
-// g++ -std=c++11 -o ec-demo ec-demo.cpp $(pkg-config --cflags --libs libndn-cxx)
+// g++ -std=c++14 -o ec-demo ec-demo.cpp $(pkg-config --cflags --libs libndn-cxx)
 
 #include <cinttypes>
 #include <cstdlib>
@@ -24,8 +24,8 @@ bool readKeyBits(FILE* input, uint8_t* output, int len) {
   return true;
 }
 
-void printHexArray(std::ostream& os, const std::string& var, const uint8_t* buf, int len) {
-  os << "const uint8_t " << var << "[] {\n";
+void printHexArray(std::ostream& os, const std::string& var, const uint8_t* buf, int len, bool isProgmem = false) {
+  os << "const uint8_t " << var << "[] " << (isProgmem ? "PROGMEM " : "") << " {\n";
 
   ndn::util::IndentedStream osi(os, "  ");
   osi << std::hex << std::uppercase << std::setfill('0');
@@ -76,8 +76,8 @@ int main() {
   }
 
   // print key as array for use in code
-  printHexArray(std::cout, "PVTKEY", pvtkeyBits, sizeof(pvtkeyBits));
-  printHexArray(std::cout, "PUBKEY", pubkeyBits, sizeof(pubkeyBits));
+  printHexArray(std::cout, "PVTKEY", pvtkeyBits, sizeof(pvtkeyBits), true);
+  printHexArray(std::cout, "PUBKEY", pubkeyBits, sizeof(pubkeyBits), true);
 
   // print key as line for use in demo program
   printHexLine(std::cout, "pvtkey", pvtkeyBits, sizeof(pvtkeyBits));

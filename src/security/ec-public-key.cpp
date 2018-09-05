@@ -3,12 +3,13 @@
 #include "micro-ecc/uECC.h"
 #include "../ndn-cpp/lite/util/crypto-lite.hpp"
 #include <cstring>
+#include <pgmspace.h>
 
 namespace ndn {
 
 EcPublicKey::EcPublicKey(const uint8_t bits[64])
-  : m_pubKey(bits)
 {
+  memcpy_P(m_pubKey, bits, sizeof(m_pubKey));
 }
 
 // Read ASN1 integer at input..end into output[0:32].

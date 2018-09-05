@@ -3,6 +3,7 @@
 #include "micro-ecc/uECC.h"
 #include "../ndn-cpp/lite/util/crypto-lite.hpp"
 #include <cstring>
+#include <pgmspace.h>
 
 namespace ndn {
 
@@ -14,9 +15,9 @@ rng(uint8_t* dest, unsigned size)
 }
 
 EcPrivateKey::EcPrivateKey(const uint8_t bits[32], const NameLite& keyName)
-  : m_pvtKey(bits)
-  , m_keyName(keyName)
+  : m_keyName(keyName)
 {
+  memcpy_P(m_pvtKey, bits, sizeof(m_pvtKey));
   uECC_set_rng(&rng);
 }
 

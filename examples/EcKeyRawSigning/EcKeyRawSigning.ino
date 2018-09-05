@@ -78,8 +78,6 @@ size_t promptHex(const __FlashStringHelper* prompt, uint8_t* buf, size_t bufLen,
 }
 
 void actSign() {
-  //uint8_t input[64];
-  //size_t inputLen = promptHex(F("input="), input, sizeof(input), 0);
   const uint8_t* input = THE_INPUT;
   size_t inputLen = sizeof(THE_INPUT);
   uint8_t sig[ndn::EcPrivateKey::MAX_SIG_LENGTH];
@@ -99,8 +97,6 @@ void actSign() {
 }
 
 void actVerify() {
-  //uint8_t input[64];
-  //size_t inputLen = promptHex(F("input="), input, sizeof(input), 0);
   const uint8_t* input = THE_INPUT;
   size_t inputLen = sizeof(THE_INPUT);
   uint8_t sig[ndn::EcPrivateKey::MAX_SIG_LENGTH];

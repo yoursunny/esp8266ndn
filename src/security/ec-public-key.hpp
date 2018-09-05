@@ -12,7 +12,7 @@ class EcPublicKey : public PublicKey
 public:
   /** \brief Construct EC public key from key bits.
    *  \param bits uncompressed points in standard format without leading 0x04 prefix;
-   *              caller must retain memory of these bits
+   *              may come from PGMSPACE, will be copied
    */
   explicit
   EcPublicKey(const uint8_t bits[64]);
@@ -21,7 +21,7 @@ public:
   verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const final;
 
 private:
-  const uint8_t* m_pubKey;
+  uint8_t m_pubKey[64];
 };
 
 } // namespace ndn

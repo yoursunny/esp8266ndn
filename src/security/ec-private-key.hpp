@@ -11,8 +11,9 @@ class EcPrivateKey : public PrivateKey
 {
 public:
   /** \brief Construct EC private key from key bits.
-   *  \param bits uncompressed points in standard format; caller must retain memory of these bits
-   *  \param keyName certificate name; caller must retain memory of the NameLite
+   *  \param bits uncompressed points in standard format;
+   *              may come from PGMSPACE, will be copied
+   *  \param keyName certificate name; caller must retain memory
    */
   EcPrivateKey(const uint8_t bits[32], const NameLite& keyName);
 
@@ -32,7 +33,7 @@ public:
   static constexpr size_t MAX_SIG_LENGTH = 72;
 
 private:
-  const uint8_t* m_pvtKey;
+  uint8_t m_pvtKey[32];
   const NameLite& m_keyName;
 };
 
