@@ -124,20 +124,17 @@ class EcPrivateKeyImpl
 {
 public:
   explicit
-  EcPrivateKeyImpl(const uint8_t bits[32])
+  EcPrivateKeyImpl(const uint8_t bits[65])
   {
     uECC_set_rng(&rng);
-    memcpy_P(m_bits, bits, sizeof(m_bits));
+    memcpy_P(m_bits, bits, 32);
   }
 
   int
   sign(const uint8_t hash[ndn_SHA256_DIGEST_SIZE], uint8_t* sig) const
   {
     int res = uECC_sign(m_bits, hash, sig + 8);
-    if (res == 0) {
-      return 0;
-    }
-    return encodeSignatureBits(sig);
+    return res != 0 && encodeSignatureBits(sig);
   }
 
 private:
@@ -148,9 +145,9 @@ class EcPublicKeyImpl
 {
 public:
   explicit
-  EcPublicKeyImpl(const uint8_t bits[64])
+  EcPublicKeyImpl(const uint8_t bits[65])
   {
-    memcpy_P(m_bits, bits, 64);
+    memcpy_P(m_bits, &bits[1], 64);
   }
 
   bool

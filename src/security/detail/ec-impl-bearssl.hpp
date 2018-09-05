@@ -37,10 +37,9 @@ class EcPublicKeyImpl
 {
 public:
   explicit
-  EcPublicKeyImpl(const uint8_t bits[64])
+  EcPublicKeyImpl(const uint8_t bits[65])
   {
-    m_bits[0] = 0x04;
-    memcpy_P(&m_bits[1], bits, 64);
+    memcpy_P(m_bits, bits, 65);
     m_key.curve = BR_EC_secp256r1;
     m_key.q = m_bits;
     m_key.qlen = 65;
