@@ -3,6 +3,7 @@
 
 #include "private-key.hpp"
 #include "public-key.hpp"
+#include <memory>
 
 namespace ndn {
 
@@ -16,6 +17,8 @@ public:
    *  \param secretLen length of shared secret
    */
   HmacKey(const uint8_t* secret, size_t secretLen);
+
+  ~HmacKey();
 
   size_t
   getMaxSigLength() const final
@@ -33,8 +36,8 @@ public:
   verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const final;
 
 private:
-  const uint8_t* m_secret;
-  size_t m_secretLen;
+  class Impl;
+  std::unique_ptr<Impl> m_impl;
   uint8_t m_keyDigest[ndn_SHA256_DIGEST_SIZE];
 };
 

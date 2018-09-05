@@ -24,11 +24,9 @@ find -type f -exec sed -i -e 's/\s*$//' '{}' '+'
 # delete transport
 find -name '*transport*' -delete
 
-# delete RSA and EC keys
+# delete crypto
 find -name 'ec-*-key*' -delete
 find -name 'rsa-*-key*' -delete
-
-# delete crypto.c
 rm c/util/crypto.c
 
 # delete ndn-cpp-config include
@@ -45,9 +43,6 @@ done | bash
 
 # make round(x) macro consistent with Arduino.h
 sed -i '/#define round/ c\#define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))' c/common.h
-
-# enable CryptoLite::computeHmacWithSha256
-sed -i '/#if NDN_CPP_HAVE_LIBCRYPTO/ c\#if 1' lite/util/crypto-lite.cpp
 
 # disable cryptosuite SHA256
 sed -i '/#ifdef ARDUINO/ c\#if 0' lite/util/crypto-lite.cpp

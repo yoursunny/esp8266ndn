@@ -36,7 +36,7 @@ CryptoLite::generateRandomBytes(uint8_t *buffer, size_t bufferLength)
   return ndn_generateRandomBytes(buffer, bufferLength);
 }
 
-#if 1
+#if NDN_CPP_HAVE_LIBCRYPTO
 
 void
 CryptoLite::computeHmacWithSha256
