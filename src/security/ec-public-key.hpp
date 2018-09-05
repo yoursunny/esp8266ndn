@@ -5,6 +5,9 @@
 #include <memory>
 
 namespace ndn {
+namespace detail {
+class EcPublicKeyImpl;
+} // namespace detail
 
 /** \brief Holds an EC public key (curve secp256r1) for SignatureSha256WithEcdsa signature type.
  */
@@ -24,7 +27,7 @@ public:
   verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const final;
 
 private:
-  class Impl;
+  using Impl = detail::EcPublicKeyImpl;
   std::unique_ptr<Impl> m_impl;
 };
 

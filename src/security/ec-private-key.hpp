@@ -5,6 +5,9 @@
 #include <memory>
 
 namespace ndn {
+namespace detail {
+class EcPrivateKeyImpl;
+} // namespace detail
 
 /** \brief Holds an EC private key (curve secp256r1) for SignatureSha256WithEcdsa signature type.
  */
@@ -36,7 +39,7 @@ public:
   static constexpr size_t MAX_SIG_LENGTH = 72;
 
 private:
-  class Impl;
+  using Impl = detail::EcPrivateKeyImpl;
   std::unique_ptr<Impl> m_impl;
   const NameLite& m_keyName;
 };

@@ -6,6 +6,9 @@
 #include <memory>
 
 namespace ndn {
+namespace detail {
+class HmacImpl;
+} // namespace detail
 
 /** \brief Holds an HMAC key for SignatureHmacWithSha256 signature type.
  */
@@ -36,7 +39,7 @@ public:
   verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const final;
 
 private:
-  class Impl;
+  using Impl = detail::HmacImpl;
   std::unique_ptr<Impl> m_impl;
   uint8_t m_keyDigest[ndn_SHA256_DIGEST_SIZE];
 };
