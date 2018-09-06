@@ -5,6 +5,7 @@
 #include <memory>
 
 namespace ndn {
+class EcPublicKey;
 namespace detail {
 class EcPrivateKeyImpl;
 } // namespace detail
@@ -35,6 +36,13 @@ public:
    */
   bool
   import(const uint8_t bits[32]);
+
+  /** \brief Generate key pair.
+   *
+   *  Updates this and \p pub with private and public key bits.
+   */
+  bool
+  generate(EcPublicKey& pub);
 
   size_t
   getMaxSigLength() const final

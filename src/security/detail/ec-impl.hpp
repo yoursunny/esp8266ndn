@@ -7,4 +7,6 @@
 #include "ec-impl-microecc.hpp"
 #endif
 
+#include "eckeygen-impl-microecc.hpp"
+
 #endif // ESP8266NDN_EC_IMPL_HPP

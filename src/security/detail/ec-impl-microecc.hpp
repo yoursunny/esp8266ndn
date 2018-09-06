@@ -1,8 +1,8 @@
 #ifndef ESP8266NDN_EC_IMPL_MICROECC_HPP
 #define ESP8266NDN_EC_IMPL_MICROECC_HPP
 
-#include "uECC.h"
-#include "../../ndn-cpp/lite/util/crypto-lite.hpp"
+#include "microecc.hpp"
+#include "../../ndn-cpp/c/common.h"
 
 #include <cstring>
 #include <pgmspace.h>
@@ -14,13 +14,6 @@ enum {
   ASN1_SEQUENCE = 0x30,
   ASN1_INTEGER  = 0x02,
 };
-
-inline int
-rng(uint8_t* dest, unsigned size)
-{
-  CryptoLite::generateRandomBytes(dest, size);
-  return 1;
-}
 
 /** \brief Determine ASN1 length of integer at integer[0:32].
  */
@@ -126,7 +119,7 @@ public:
   explicit
   EcPrivateKeyImpl(const uint8_t bits[32])
   {
-    uECC_set_rng(&rng);
+    setMicroEccRng();
     memcpy_P(m_bits, bits, 32);
   }
 

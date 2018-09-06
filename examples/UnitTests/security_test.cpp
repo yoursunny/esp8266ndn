@@ -116,3 +116,20 @@ testF(KeyFixtureOnce, EcKey_basic)
   this->modifySig();
   assertFalse(this->verify(pub));
 }
+
+testF(KeyFixtureOnce, EcKey_generate)
+{
+  ndn::NameWCB<1> name;
+  name.append("key");
+  ndn::EcPrivateKey pvt(name);
+  ndn::EcPublicKey pub;
+  assertTrue(pvt.generate(pub));
+  yield();
+
+  assertMore(this->sign(pvt), 0);
+  yield();
+  assertTrue(this->verify(pub));
+  yield();
+  this->modifySig();
+  assertFalse(this->verify(pub));
+}

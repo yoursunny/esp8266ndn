@@ -1,4 +1,5 @@
 #include "ec-private-key.hpp"
+#include "ec-public-key.hpp"
 #include "detail/ec-impl.hpp"
 #include "../ndn-cpp/lite/util/crypto-lite.hpp"
 
@@ -22,6 +23,12 @@ EcPrivateKey::import(const uint8_t bits[32])
 {
   m_impl.reset(new Impl(bits));
   return true;
+}
+
+bool
+EcPrivateKey::generate(EcPublicKey& pub)
+{
+  return detail::makeEcKey(*this, pub);
 }
 
 int
