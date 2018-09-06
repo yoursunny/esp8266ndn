@@ -1,4 +1,9 @@
+#include <esp8266ndn.h>
+
+#include <AUnitVerbose.h>
 #include <StreamString.h>
+
+using namespace aunit;
 
 static String
 toHexString(const uint8_t* input, size_t len)

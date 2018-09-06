@@ -1,3 +1,5 @@
+#include "test-common.hpp"
+
 class UriFixture : public TestOnce
 {
 public:
