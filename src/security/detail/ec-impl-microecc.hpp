@@ -1,5 +1,5 @@
-#ifndef ESP8266NDN_EC_IMPL_BEARSSL_HPP
-#define ESP8266NDN_EC_IMPL_BEARSSL_HPP
+#ifndef ESP8266NDN_EC_IMPL_MICROECC_HPP
+#define ESP8266NDN_EC_IMPL_MICROECC_HPP
 
 #include "uECC.h"
 #include "../../ndn-cpp/lite/util/crypto-lite.hpp"
@@ -124,7 +124,7 @@ class EcPrivateKeyImpl
 {
 public:
   explicit
-  EcPrivateKeyImpl(const uint8_t bits[65])
+  EcPrivateKeyImpl(const uint8_t bits[32])
   {
     uECC_set_rng(&rng);
     memcpy_P(m_bits, bits, 32);
@@ -134,7 +134,7 @@ public:
   sign(const uint8_t hash[ndn_SHA256_DIGEST_SIZE], uint8_t* sig) const
   {
     int res = uECC_sign(m_bits, hash, sig + 8);
-    return res != 0 && encodeSignatureBits(sig);
+    return res == 0 ? 0 : encodeSignatureBits(sig);
   }
 
 private:
@@ -164,4 +164,4 @@ private:
 } // namespace detail
 } // namespace ndn
 
-#endif // ESP8266NDN_EC_IMPL_BEARSSL_HPP
+#endif // ESP8266NDN_EC_IMPL_MICROECC_HPP

@@ -11,7 +11,7 @@ EcPublicKey::EcPublicKey(const uint8_t bits[64])
   uint8_t bits1[65];
   bits1[0] = 0x04;
   memcpy_P(&bits1[1], bits, 64);
-  m_impl.reset(new Impl(bits1));
+  this->import(bits1);
 }
 
 EcPublicKey::~EcPublicKey() = default;
