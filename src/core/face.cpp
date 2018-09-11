@@ -339,7 +339,7 @@ Face::sendPacket(const uint8_t* pkt, size_t len, uint64_t endpointId)
 ndn_Error
 Face::sendInterest(const InterestLite& interest, uint64_t endpointId)
 {
-  this->sendInterestImpl(const_cast<InterestLite&>(interest), endpointId, nullptr);
+  return this->sendInterestImpl(const_cast<InterestLite&>(interest), endpointId, nullptr);
 }
 
 ndn_Error

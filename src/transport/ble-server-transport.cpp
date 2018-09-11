@@ -56,6 +56,7 @@ BleServerTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 {
   m_tx->setValue(const_cast<uint8_t*>(pkt), len);
   m_tx->notify();
+  return NDN_ERROR_success;
 }
 
 } // namespace ndn

@@ -110,10 +110,6 @@ UdpTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId)
 ndn_Error
 UdpTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 {
-  if (m_mode == Mode::NONE) {
-    return NDN_ERROR_SocketTransport_socket_is_not_open;
-  }
-
   int res = -1;
   if (endpointId == 0) {
     switch (m_mode) {
@@ -130,9 +126,14 @@ UdpTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
         res = m_udp.beginMulticastPacket();
 #endif
         break;
+      case Mode::NONE:
+        return NDN_ERROR_SocketTransport_socket_is_not_open;
     }
   }
   else {
+    if (m_mode == Mode::NONE) {
+      return NDN_ERROR_SocketTransport_socket_is_not_open;
+    }
     EndpointId endpoint;
     endpoint.endpointId = endpointId;
     res = m_udp.beginPacket(IPAddress(endpoint.ip), endpoint.port);
