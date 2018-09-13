@@ -13,54 +13,6 @@
 
 namespace ndn {
 
-class Face::LegacyCallbackHandler : public PacketHandler
-{
-public:
-  explicit
-  LegacyCallbackHandler(Face& face)
-  {
-    face.addHandler(this, 127);
-  }
-
-  bool
-  processInterest(const InterestLite& interest, uint64_t endpointId) override
-  {
-    if (interestCb == nullptr) {
-      return false;
-    }
-    interestCb(interestCbArg, interest, endpointId);
-    return true;
-  }
-
-  bool
-  processData(const DataLite& data, uint64_t endpointId) override
-  {
-    if (dataCb == nullptr) {
-      return false;
-    }
-    dataCb(dataCbArg, data, endpointId);
-    return true;
-  }
-
-  bool
-  processNack(const NetworkNackLite& nackHeader, const InterestLite& interest, uint64_t endpointId) override
-  {
-    if (nackCb == nullptr) {
-      return false;
-    }
-    nackCb(nackCbArg, nackHeader, interest, endpointId);
-    return true;
-  }
-
-public:
-  InterestCallback interestCb = nullptr;
-  void* interestCbArg = nullptr;
-  DataCallback dataCb = nullptr;
-  void* dataCbArg = nullptr;
-  NackCallback nackCb = nullptr;
-  void* nackCbArg = nullptr;
-};
-
 class Face::TracingHandler : public PacketHandler
 {
 public:
@@ -168,38 +120,6 @@ Face::removeHandler(PacketHandler* h)
     }
   }
   return false;
-}
-
-void
-Face::enableLegacyCallbacks()
-{
-  if (!m_legacyCallbacks) {
-    m_legacyCallbacks.reset(new LegacyCallbackHandler(*this));
-  }
-}
-
-void
-Face::onInterest(InterestCallback cb, void* cbarg)
-{
-  this->enableLegacyCallbacks();
-  m_legacyCallbacks->interestCb = cb;
-  m_legacyCallbacks->interestCbArg = cbarg;
-}
-
-void
-Face::onData(DataCallback cb, void* cbarg)
-{
-  this->enableLegacyCallbacks();
-  m_legacyCallbacks->dataCb = cb;
-  m_legacyCallbacks->dataCbArg = cbarg;
-}
-
-void
-Face::onNack(NackCallback cb, void* cbarg)
-{
-  this->enableLegacyCallbacks();
-  m_legacyCallbacks->nackCb = cb;
-  m_legacyCallbacks->nackCbArg = cbarg;
 }
 
 void

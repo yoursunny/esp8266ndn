@@ -14,7 +14,7 @@ namespace ndn {
 
 /** \brief NDN reachability test tool server side
  */
-class PingServer
+class PingServer : public PacketHandler
 {
 public:
   /** \brief constructor
@@ -31,14 +31,6 @@ public:
   enableEndpointIdZero()
   {
     m_wantEndpointIdZero = true;
-  }
-
-  /** \deprecated Calling processNack is no longer necessary.
-   */
-  bool
-  processInterest(const InterestLite& interest, uint64_t endpointId = 0) __attribute__((deprecated))
-  {
-    return false;
   }
 
   /** \brief a probe handler
@@ -62,16 +54,11 @@ public:
 
 private:
   bool
-  doProcessInterest(const InterestLite& interest, uint64_t endpointId);
-
-  class Handler;
-
-  friend class Handler;
+  processInterest(const InterestLite& interest, uint64_t endpointId) override;
 
 private:
   Face& m_face;
   const NameLite& m_prefix;
-  Handler* m_handler;
   ProbeCallback m_probeCb;
   void* m_probeCbArg;
   bool m_wantEndpointIdZero;

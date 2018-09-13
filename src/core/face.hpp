@@ -53,27 +53,6 @@ public:
   bool
   removeHandler(PacketHandler* h);
 
-  /** \brief set incoming Interest handler
-   *
-   *  This overwrites any previous handler set with this method.
-   */
-  void
-  onInterest(InterestCallback cb, void* cbarg) __attribute__((deprecated));
-
-  /** \brief set incoming Data handler
-   *
-   *  This overwrites any previous handler set with this method.
-   */
-  void
-  onData(DataCallback cb, void* cbarg) __attribute__((deprecated));
-
-  /** \brief set incoming Nack handler
-   *
-   *  This overwrites any previous handler set with this method.
-   */
-  void
-  onNack(NackCallback cb, void* cbarg) __attribute__((deprecated));
-
   /** \brief enable per-packet tracing
    */
   void
@@ -170,9 +149,6 @@ public:
   sendNack(const NetworkNackLite& nack, const InterestLite& interest, uint64_t endpointId = 0);
 
 private:
-  void
-  enableLegacyCallbacks();
-
   ndn_Error
   receive(uint64_t& endpointId);
 
@@ -197,9 +173,6 @@ private:
 
   class TracingHandler;
   std::unique_ptr<TracingHandler> m_tracing;
-
-  class LegacyCallbackHandler;
-  std::unique_ptr<LegacyCallbackHandler> m_legacyCallbacks;
 
   uint8_t m_outBuf[NDNFACE_OUTBUF_SIZE];
   DynamicUInt8ArrayLite m_outArr;
