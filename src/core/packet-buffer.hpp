@@ -11,6 +11,13 @@ namespace ndn {
 
 class PublicKey;
 
+enum class PacketType {
+  NONE     = 0,
+  INTEREST = 0x05,
+  DATA     = 0x06,
+  NACK     = 0x0320,
+};
+
 /** \brief a received packet and its associated memory buffers
  */
 class PacketBuffer
@@ -44,28 +51,32 @@ public:
   parse(size_t len);
 
   /** \brief determine packet type
-   *  \retval ndn_Tlv_Interest      Interest
-   *  \retval ndn_Tlv_Data          Data
-   *  \retval ndn_Tlv_LpPacket_Nack Nack
-   *  \retval 0                     no parsed packet
+   */
+  PacketType
+  getPktType() const;
+
+  /** \deprecated use getPktType()
    */
   int
-  getPacketType() const;
+  getPacketType() const __attribute__((deprecated))
+  {
+    return static_cast<int>(this->getPktType());
+  }
 
   /** \brief get parsed Interest
-   *  \pre getPacketType() == ndn_Tlv_Interest || getPacketType() == ndn_Tlv_LpPacket_Nack
+   *  \pre getPacketType() == PacketType::INTEREST || getPacketType() == PacketType::NACK
    */
   const InterestLite*
   getInterest() const;
 
   /** \brief get parsed Data
-   *  \pre getPacketType() == ndn_Tlv_Data
+   *  \pre getPacketType() == PacketType::DATA
    */
   const DataLite*
   getData() const;
 
   /** \brief get parsed Nack
-   *  \pre getPacketType() == ndn_Tlv_LpPacket_Nack
+   *  \pre getPacketType() == PacketType::NACK
    */
   const NetworkNackLite*
   getNack() const;

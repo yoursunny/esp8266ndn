@@ -128,30 +128,30 @@ PacketBuffer::parseLpPacket()
   return this->parseInterestOrNack(nack);
 }
 
-int
-PacketBuffer::getPacketType() const
+PacketType
+PacketBuffer::getPktType() const
 {
   if (m_netPkt == nullptr) {
-    return 0;
+    return PacketType::NONE;
   }
   if (m_netPkt[0] == ndn_Tlv_Data) {
-    return ndn_Tlv_Data;
+    return PacketType::DATA;
   }
   if (m_netPkt[0] == ndn_Tlv_Interest) {
     if (m_nack.reason != ndn_NetworkNackReason_NONE) {
-      return ndn_Tlv_LpPacket_Nack;
+      return PacketType::NACK;
     }
-    return ndn_Tlv_Interest;
+    return PacketType::INTEREST;
   }
-  return 0;
+  return PacketType::NONE;
 }
 
 const InterestLite*
 PacketBuffer::getInterest() const
 {
-  switch (this->getPacketType()) {
-    case ndn_Tlv_Interest:
-    case ndn_Tlv_LpPacket_Nack:
+  switch (this->getPktType()) {
+    case PacketType::INTEREST:
+    case PacketType::NACK:
       return &InterestLite::downCast(m_interest);
   }
   return nullptr;
@@ -160,7 +160,7 @@ PacketBuffer::getInterest() const
 const DataLite*
 PacketBuffer::getData() const
 {
-  if (this->getPacketType() == ndn_Tlv_Data) {
+  if (this->getPktType() == PacketType::DATA) {
     return &DataLite::downCast(m_data);
   }
   return nullptr;
@@ -169,7 +169,7 @@ PacketBuffer::getData() const
 const NetworkNackLite*
 PacketBuffer::getNack() const
 {
-  if (this->getPacketType() == ndn_Tlv_LpPacket_Nack) {
+  if (this->getPktType() == PacketType::NACK) {
     return &NetworkNackLite::downCast(m_nack);
   }
   return nullptr;
@@ -178,10 +178,10 @@ PacketBuffer::getNack() const
 PacketBuffer::VerifyResult
 PacketBuffer::verify(const PublicKey& pubKey) const
 {
-  switch (this->getPacketType()) {
-    case ndn_Tlv_Interest:
+  switch (this->getPktType()) {
+    case PacketType::INTEREST:
       return this->verifyInterest(pubKey);
-    case ndn_Tlv_Data:
+    case PacketType::DATA:
       return this->verifyData(pubKey);
   }
   return VERIFY_NO_PKT;

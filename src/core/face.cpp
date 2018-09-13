@@ -155,10 +155,10 @@ Face::loop(int packetLimit)
       FACE_DBG(F("receive error ") << _DEC(e));
     }
     else {
-      switch (m_pb->getPacketType()) {
-        case 0:
+      switch (m_pb->getPktType()) {
+        case PacketType::NONE:
           return; // no more packets
-        case ndn_Tlv_Interest: {
+        case PacketType::INTEREST: {
           bool isAccepted = false;
           const InterestLite& interest = *m_pb->getInterest();
           for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
@@ -176,7 +176,7 @@ Face::loop(int packetLimit)
           }
           break;
         }
-        case ndn_Tlv_Data: {
+        case PacketType::DATA: {
           bool isAccepted = false;
           const DataLite& data = *m_pb->getData();
           for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
@@ -187,7 +187,7 @@ Face::loop(int packetLimit)
           }
           break;
         }
-        case ndn_Tlv_LpPacket_Nack: {
+        case PacketType::NACK: {
           bool isAccepted = false;
           const NetworkNackLite& nackHeader = *m_pb->getNack();
           const InterestLite& interest = *m_pb->getInterest();
@@ -223,7 +223,7 @@ Face::receive(uint64_t& endpointId)
 bool
 Face::verifyInterest(const PublicKey& pubKey) const
 {
-  if (m_pb->getPacketType() != ndn_Tlv_Interest) {
+  if (m_pb->getPktType() != PacketType::INTEREST) {
     FACE_DBG(F("last packet is not Interest"));
     return false;
   }
@@ -238,7 +238,7 @@ Face::verifyInterest(const PublicKey& pubKey) const
 bool
 Face::verifyData(const PublicKey& pubKey) const
 {
-  if (m_pb->getPacketType() != ndn_Tlv_Data) {
+  if (m_pb->getPktType() != PacketType::DATA) {
     FACE_DBG(F("last packet is not Data"));
     return false;
   }
