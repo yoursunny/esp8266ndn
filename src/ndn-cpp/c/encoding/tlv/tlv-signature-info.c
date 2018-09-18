@@ -179,7 +179,8 @@ ndn_encodeTlvSignatureInfo
       error = ndn_TlvDecoder_readNonNegativeIntegerTlv
         (&decoder, ndn_Tlv_SignatureType, &signatureType);
     if (!error)
-      error = ndn_TlvDecoder_finishNestedTlvs(&decoder, endOffset);
+      // Skip unrecognized TLVs, even if they have a critical type code.
+      error = ndn_TlvDecoder_finishNestedTlvsSkipCritical(&decoder, endOffset);
     if (error)
       return NDN_ERROR_The_Generic_signature_encoding_is_not_a_valid_NDN_TLV_SignatureInfo;
 
@@ -248,6 +249,9 @@ ndn_decodeTlvSignatureInfo
     // Get the bytes of the SignatureInfo TLV.
     if ((error = ndn_TlvDecoder_getSlice
          (decoder, beginOffset, endOffset, &signatureInfo->signatureInfoEncoding)))
+      return error;
+    // Skip the remaining TLVs now, allowing unrecognized critical type codes.
+    if ((error = ndn_TlvDecoder_finishNestedTlvsSkipCritical(decoder, endOffset)))
       return error;
   }
 

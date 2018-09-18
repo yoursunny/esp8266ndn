@@ -73,6 +73,13 @@ public:
   int
   getMaxSuffixComponents() const { return maxSuffixComponents; }
 
+  /**
+   * Get the CanBePrefix flag. If not specified, the default is true.
+   * @return The CanBePrefix flag.
+   */
+  bool
+  getCanBePrefix() const;
+
   const KeyLocatorLite&
   getKeyLocator() const { return KeyLocatorLite::downCast(keyLocator); }
 
@@ -155,6 +162,15 @@ public:
     this->maxSuffixComponents = maxSuffixComponents;
     return *this;
   }
+
+  /**
+   * Set the CanBePrefix flag.
+   * @param canBePrefix True if the Interest name can be a prefix. If you do not
+   * set this flag, the default value is true.
+   * @return This InterestLite so that you can chain calls to update values.
+   */
+  InterestLite&
+  setCanBePrefix(bool canBePrefix);
 
   /**
    * Set the child selector.

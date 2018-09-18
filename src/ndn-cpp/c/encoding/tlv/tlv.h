@@ -31,6 +31,7 @@ enum {
   ndn_Tlv_Data =             6,
   ndn_Tlv_Name =             7,
   ndn_Tlv_ImplicitSha256DigestComponent = 1,
+  ndn_Tlv_ParametersSha256DigestComponent = 2,
   ndn_Tlv_NameComponent =    8,
   ndn_Tlv_Selectors =        9,
   ndn_Tlv_Nonce =            10,
@@ -54,7 +55,10 @@ enum {
   ndn_Tlv_KeyLocator =       28,
   ndn_Tlv_KeyLocatorDigest = 29,
   ndn_Tlv_ForwardingHint =   30,
-  ndn_Tlv_SelectedDelegation = 32
+  ndn_Tlv_SelectedDelegation = 32,
+  ndn_Tlv_CanBePrefix =      33,
+  ndn_Tlv_HopLimit =         34,
+  ndn_Tlv_Parameters =       35
 };
 
 enum {

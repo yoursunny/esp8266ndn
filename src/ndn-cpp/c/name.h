@@ -39,7 +39,28 @@ extern "C" {
 static __inline void ndn_NameComponent_initialize(struct ndn_NameComponent *self, const uint8_t *value, size_t valueLength)
 {
   self->type = ndn_NameComponentType_GENERIC;
+  self->otherTypeCode = -1;
   ndn_Blob_initialize(&self->value, value, valueLength);
+}
+
+/**
+ * Set this name component to have the values from the other name component.
+ * @param self A pointer to this ndn_NameComponent struct.
+ * @param type The component type as an int from the
+ * ndn_NameComponentType enum. If the name component type is not a
+ * recognized ndn_NameComponentType enum value, then set this to
+ * ndn_NameComponentType_OTHER_CODE and use the otherTypeCode parameter.
+ * @param otherTypeCode If type is ndn_NameComponentType_OTHER_CODE, then this
+ * is the packet's unrecognized content type code, which must be non-negative.
+ */
+static __inline void
+ndn_NameComponent_setType
+  (struct ndn_NameComponent *self, ndn_NameComponentType type,
+   int otherTypeCode)
+{
+  self->type = type;
+  self->otherTypeCode =
+    (type == ndn_NameComponentType_OTHER_CODE ? otherTypeCode : -1);
 }
 
 /**
@@ -132,6 +153,17 @@ static __inline int
 ndn_NameComponent_isImplicitSha256Digest(const struct ndn_NameComponent *self)
 {
   return self->type == ndn_NameComponentType_IMPLICIT_SHA256_DIGEST ? 1 : 0;
+}
+
+/**
+ * Check if this component is a ParametersSha256Digest component.
+ * @param self A pointer to the ndn_NameComponent struct.
+ * @return 1 if this is a ParametersSha256Digest component, else 0.
+ */
+static __inline int
+ndn_NameComponent_isParametersSha256Digest(const struct ndn_NameComponent *self)
+{
+  return self->type == ndn_NameComponentType_PARAMETERS_SHA256_DIGEST ? 1 : 0;
 }
 
 /**
@@ -453,6 +485,19 @@ ndn_NameComponent_setImplicitSha256Digest
   (struct ndn_NameComponent *self, const uint8_t* digest, size_t digestLength);
 
 /**
+ * Set this name component to have type ParametersSha256DigestComponent with the
+ * given digest value, so that ndn_NameComponent_isParametersSha256Digest is 1.
+ * @param self A pointer to this ndn_NameComponent struct.
+ * @param digest The pre-allocated buffer for the SHA-256 digest value.
+ * @param digestLength The length of digest, which must be ndn_SHA256_DIGEST_SIZE.
+ * @return 0 for success, or an error code if digestLength is not
+ * ndn_SHA256_DIGEST_SIZE.
+ */
+ndn_Error
+ndn_NameComponent_setParametersSha256Digest
+  (struct ndn_NameComponent *self, const uint8_t* digest, size_t digestLength);
+
+/**
  * Initialize an ndn_Name struct with the components array.
  * @param self pointer to the ndn_Name struct
  * @param components the pre-allocated array of ndn_NameComponent
@@ -550,6 +595,28 @@ static __inline ndn_Error ndn_Name_appendImplicitSha256Digest
   if ((error = ndn_Name_appendComponent(self, 0, 0)))
     return error;
   return ndn_NameComponent_setImplicitSha256Digest
+    (&self->components[self->nComponents - 1], digest, digestLength);
+}
+
+/**
+ * Append a component of type ParametersSha256DigestComponent to this name with
+ * the given digest value, so that ndn_NameComponent_isParametersSha256Digest is
+ * 1.
+ * @param self pointer to the ndn_Name struct.
+ * @param digest The pre-allocated buffer for the SHA-256 digest value.
+ * @param digestLength The length of digest, which must be ndn_SHA256_DIGEST_SIZE.
+ * @return 0 for success, or an error code if digestLength is not
+ * ndn_SHA256_DIGEST_SIZE, or if there is no more room in the components array
+ * (nComponents is already maxComponents).
+ */
+static __inline ndn_Error ndn_Name_appendParametersSha256Digest
+  (struct ndn_Name *self, const uint8_t* digest, size_t digestLength)
+{
+  ndn_Error error;
+  // Add an empty component.
+  if ((error = ndn_Name_appendComponent(self, 0, 0)))
+    return error;
+  return ndn_NameComponent_setParametersSha256Digest
     (&self->components[self->nComponents - 1], digest, digestLength);
 }
 

@@ -86,18 +86,23 @@ ndn_TlvDecoder_readExtendedVarNumber(struct ndn_TlvDecoder *self, unsigned int f
 
 ndn_Error
 ndn_TlvDecoder_skipRemainingNestedTlvs
-  (struct ndn_TlvDecoder *self, size_t endOffset)
+  (struct ndn_TlvDecoder *self, size_t endOffset, int skipCritical)
 {
   while(self->offset < endOffset) {
     ndn_Error error;
-    uint64_t dummyType;
+    uint64_t type;
+    int critical;
     uint64_t lengthVarNumber;
 
-    if ((error = ndn_TlvDecoder_readVarNumber(self, &dummyType)))
+    if ((error = ndn_TlvDecoder_readVarNumber(self, &type)))
       return error;
 
     if ((error = ndn_TlvDecoder_readVarNumber(self, &lengthVarNumber)))
       return error;
+    critical = (type <= 31 || (type & 1) == 1);
+    if (critical && !skipCritical)
+      return NDN_ERROR_Unrecognized_critical_TLV_type_code;
+
     // Silently ignore if the length is larger than size_t.
     self->offset += (size_t)lengthVarNumber;
     if (self->offset > self->inputLength)

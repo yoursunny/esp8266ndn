@@ -141,21 +141,45 @@ ndn_NameComponent_setImplicitSha256Digest
   return NDN_ERROR_success;
 }
 
+ndn_Error
+ndn_NameComponent_setParametersSha256Digest
+  (struct ndn_NameComponent *self, const uint8_t* digest, size_t digestLength)
+{
+  if (digestLength != ndn_SHA256_DIGEST_SIZE)
+    return NDN_ERROR_Incorrect_digest_size;
+
+  ndn_NameComponent_initialize(self, digest, digestLength);
+  self->type = ndn_NameComponentType_PARAMETERS_SHA256_DIGEST;
+  return NDN_ERROR_success;
+}
+
 int ndn_NameComponent_equals
   (const struct ndn_NameComponent *self, const struct ndn_NameComponent *other)
 {
-  return self->value.length == other->value.length &&
-         ndn_memcmp(self->value.value, other->value.value,
-                    self->value.length) == 0 &&
-         self->type == other->type;
+  if (self->type == ndn_NameComponentType_OTHER_CODE)
+    return self->value.length == other->value.length &&
+      ndn_memcmp(self->value.value, other->value.value,
+                 self->value.length) == 0 &&
+      other->type == ndn_NameComponentType_OTHER_CODE &&
+      self->otherTypeCode == other->otherTypeCode;
+  else
+    return self->value.length == other->value.length &&
+      ndn_memcmp(self->value.value, other->value.value,
+                 self->value.length) == 0 &&
+      self->type == other->type;
 }
 
 int ndn_NameComponent_compare
   (const struct ndn_NameComponent *self, const struct ndn_NameComponent *other)
 {
-  if (self->type < other->type)
+  int myTypeCode = (self->type == ndn_NameComponentType_OTHER_CODE ?
+                    self->otherTypeCode : (int)self->type);
+  int otherTypeCode = (other->type == ndn_NameComponentType_OTHER_CODE ?
+                       other->otherTypeCode : (int)other->type);
+
+  if (myTypeCode < otherTypeCode)
     return -1;
-  if (self->type > other->type)
+  if (myTypeCode > otherTypeCode)
     return 1;
 
   if (self->value.length < other->value.length)

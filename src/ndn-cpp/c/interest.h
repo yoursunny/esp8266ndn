@@ -140,6 +140,18 @@ static __inline void ndn_Interest_initialize
 }
 
 /**
+ * Get the CanBePrefix flag. If not specified, the default is true.
+ * @param self A pointer to the ndn_Interest struct.
+ * @return 1 if the Interest name can be a prefix, otherwise 0.
+ */
+static __inline int ndn_Interest_getCanBePrefix(const struct ndn_Interest *self)
+{
+  // Use the closest v0.2 semantics. CanBePrefix is the opposite of exact
+  // match where MaxSuffixComponents is 1 (for the implicit digest).
+  return self->maxSuffixComponents != 1;
+}
+
+/**
  * Get the MustBeFresh flag.
  * @param self A pointer to the ndn_Interest struct.
  * @return 1 if must be fresh, otherwise 0.
@@ -150,11 +162,24 @@ static __inline int ndn_Interest_getMustBeFresh(const struct ndn_Interest *self)
 }
 
 /**
+ * Set the CanBePrefix flag.
+ * @param self A pointer to the ndn_Interest struct.
+ * @param canBePrefix 1 if the Interest name can be a prefix. If you do not
+ * set this flag, the default value is 1.
+ */
+static __inline void
+ndn_Interest_setCanBePrefix(struct ndn_Interest *self, int canBePrefix)
+{
+  // Use the closest v0.2 semantics. CanBePrefix is the opposite of exact
+  // match where MaxSuffixComponents is 1 (for the implicit digest).
+  self->maxSuffixComponents = (canBePrefix ? -1 : 1);
+}
+
+/**
  * Set the MustBeFresh flag.
  * @param self A pointer to the ndn_Interest struct.
  * @param mustBeFresh 1 if the content must be fresh, otherwise 0. If
  * you do not set this flag, the default value is 1.
- * @return This Interest so that you can chain calls to update values.
  */
 static __inline void
 ndn_Interest_setMustBeFresh(struct ndn_Interest *self, int mustBeFresh)

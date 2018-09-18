@@ -29,10 +29,16 @@ extern "C" {
 
 /**
  * An ndn_NameComponentType specifies the recognized types of a name component.
+ * If the component type in the packet is not a recognized enum value, then we
+ * use ndn_NameComponentType_OTHER_CODE and you can call
+ * Name.Component.getOtherTypeCode(). We do this to keep the recognized
+ * component type values independent of packet encoding details.
  */
 typedef enum {
   ndn_NameComponentType_IMPLICIT_SHA256_DIGEST = 1,
-  ndn_NameComponentType_GENERIC = 8
+  ndn_NameComponentType_PARAMETERS_SHA256_DIGEST = 2,
+  ndn_NameComponentType_GENERIC = 8,
+  ndn_NameComponentType_OTHER_CODE = 0x7fff
 } ndn_NameComponentType;
 
 /**
@@ -40,6 +46,7 @@ typedef enum {
  */
 struct ndn_NameComponent {
   ndn_NameComponentType type;
+  int otherTypeCode;
   struct ndn_Blob value;     /**< A Blob with a pointer to the pre-allocated buffer for the component value */
 };
 

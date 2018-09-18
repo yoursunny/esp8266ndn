@@ -22,6 +22,25 @@
 #include "../../c/util/crypto.h"
 #include "../../lite/util/crypto-lite.hpp"
 
+#if 0
+
+#include <Arduino.h>
+
+// Define this in a .cpp file since the random() function is overloaded.
+ndn_Error
+ndn_generateRandomBytes(uint8_t *buffer, size_t bufferLength)
+{
+  // Assume the application has already initialized it, e.g.:
+  // randomSeed(analogRead(0));
+  size_t i;
+  for (i = 0; i < bufferLength; ++i)
+    buffer[i] = random(0, 256);
+
+  return NDN_ERROR_success;
+}
+
+#endif
+
 namespace ndn {
 
 void

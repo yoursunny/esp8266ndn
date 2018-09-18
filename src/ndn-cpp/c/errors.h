@@ -85,7 +85,9 @@ typedef enum {
   NDN_ERROR_Incorrect_initial_vector_size,
   NDN_ERROR_Incorrect_digest_size,
   NDN_ERROR_An_Interest_may_not_have_a_selected_delegation_when_encoding_a_forwarding_hint,
-  NDN_ERROR_An_Interest_may_not_have_a_link_object_when_encoding_a_forwarding_hint
+  NDN_ERROR_An_Interest_may_not_have_a_link_object_when_encoding_a_forwarding_hint,
+  NDN_ERROR_Unrecognized_critical_TLV_type_code,
+  NDN_ERROR_Name_component_otherTypeCode_must_be_non_negative
 } ndn_Error;
 
 /**

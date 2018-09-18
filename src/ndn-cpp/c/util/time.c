@@ -33,11 +33,21 @@
 #include <stdio.h>
 #include "time.h"
 
+#if defined(_WIN32)
 ndn_MillisecondsSince1970
 ndn_getNowMilliseconds()
 {
   return millis();
 }
+
+// Note: configure.ac requires gettimeofday, but check anyway.
+#elif NDN_CPP_HAVE_GETTIMEOFDAY
+ndn_MillisecondsSince1970
+ndn_getNowMilliseconds()
+{
+  return millis();
+}
+#endif
 
 ndn_Error
 ndn_toIsoString

@@ -35,9 +35,22 @@ InterestLite::InterestLite
 }
 
 bool
+InterestLite::getCanBePrefix() const
+{
+  return ndn_Interest_getCanBePrefix(this) != 0;
+}
+
+bool
 InterestLite::getMustBeFresh() const
 {
   return ndn_Interest_getMustBeFresh(this) != 0;
+}
+
+InterestLite&
+InterestLite::setCanBePrefix(bool canBePrefix)
+{
+  ndn_Interest_setCanBePrefix(this, canBePrefix ? 1 : 0);
+  return *this;
 }
 
 InterestLite&

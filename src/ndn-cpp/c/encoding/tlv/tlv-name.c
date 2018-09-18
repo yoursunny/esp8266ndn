@@ -24,8 +24,17 @@ ndn_Error
 ndn_encodeTlvNameComponent
   (const struct ndn_NameComponent *component, struct ndn_TlvEncoder *encoder)
 {
-  unsigned int type = ndn_NameComponent_isImplicitSha256Digest(component) ?
-    ndn_Tlv_ImplicitSha256DigestComponent : ndn_Tlv_NameComponent;
+  unsigned int type;
+  if (component->type == ndn_NameComponentType_OTHER_CODE) {
+    if (component->otherTypeCode < 0)
+      return NDN_ERROR_Name_component_otherTypeCode_must_be_non_negative;
+
+    type = (unsigned int)component->otherTypeCode;
+  }
+  else
+    // The enum values are the same as the TLV type codes.
+    type = (unsigned int)component->type;
+
   return ndn_TlvEncoder_writeBlobTlv(encoder, type, &component->value);
 }
 
@@ -47,8 +56,15 @@ ndn_decodeTlvNameComponent
     return error;
   if (type == ndn_Tlv_ImplicitSha256DigestComponent)
     component->type = ndn_NameComponentType_IMPLICIT_SHA256_DIGEST;
-  else
+  else if (type == ndn_Tlv_ParametersSha256DigestComponent)
+    component->type = ndn_NameComponentType_PARAMETERS_SHA256_DIGEST;
+  else if (type == ndn_Tlv_NameComponent)
     component->type = ndn_NameComponentType_GENERIC;
+  else {
+    // Unrecognized type code.
+    component->type = ndn_NameComponentType_OTHER_CODE;
+    component->otherTypeCode = (int)type;
+  }
 
   return NDN_ERROR_success;
 }
@@ -62,9 +78,18 @@ ndn_encodeTlvName
   size_t i;
   ndn_Error error;
 
-  for (i = 0; i < name->nComponents; ++i)
-    nameValueLength += ndn_TlvEncoder_sizeOfBlobTlv
-      (name->components[i].type, &name->components[i].value);
+  for (i = 0; i < name->nComponents; ++i) {
+    const struct ndn_NameComponent *component = &name->components[i];
+    // Get the type the same as in ndn_encodeTlvNameComponent.
+    unsigned int type;
+    if (component->type == ndn_NameComponentType_OTHER_CODE)
+      type = (unsigned int)component->otherTypeCode;
+    else
+      // The enum values are the same as the TLV type codes.
+      type = (unsigned int)component->type;
+
+    nameValueLength += ndn_TlvEncoder_sizeOfBlobTlv(type, &component->value);
+  }
 
   if ((error = ndn_TlvEncoder_writeTypeAndLength(encoder, ndn_Tlv_Name, nameValueLength)))
     return error;

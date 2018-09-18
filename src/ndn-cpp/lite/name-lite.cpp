@@ -29,14 +29,19 @@ NameLite::Component::Component()
   ndn_NameComponent_initialize(this, 0, 0);
 }
 
-NameLite::Component::Component(const uint8_t* value, size_t valueLength)
+NameLite::Component::Component
+  (const uint8_t* value, size_t valueLength, ndn_NameComponentType type,
+   int otherTypeCode)
 {
   ndn_NameComponent_initialize(this, value, valueLength);
+  ndn_NameComponent_setType(this, type, otherTypeCode);
 }
 
-NameLite::Component::Component(const BlobLite& value)
+NameLite::Component::Component
+  (const BlobLite& value, ndn_NameComponentType type, int otherTypeCode)
 {
   ndn_NameComponent_initialize(this, value.buf(), value.size());
+  ndn_NameComponent_setType(this, type, otherTypeCode);
 }
 
 bool
@@ -79,6 +84,12 @@ bool
 NameLite::Component::isImplicitSha256Digest() const
 {
   return ndn_NameComponent_isImplicitSha256Digest(this) != 0;
+}
+
+bool
+NameLite::Component::isParametersSha256Digest() const
+{
+  return ndn_NameComponent_isParametersSha256Digest(this) != 0;
 }
 
 uint64_t
@@ -151,10 +162,16 @@ NameLite::Component::compare(const NameLite::Component& other) const
 
 ndn_Error
 NameLite::Component::setFromNumber
-  (uint64_t number, uint8_t* buffer, size_t bufferLength)
+  (uint64_t number, uint8_t* buffer, size_t bufferLength,
+   ndn_NameComponentType type, int otherTypeCode)
 {
-  return ndn_NameComponent_setFromNumber
-  (this, number, buffer, bufferLength);
+  ndn_Error error;
+  if ((error =ndn_NameComponent_setFromNumber
+       (this, number, buffer, bufferLength)))
+    return error;
+
+  ndn_NameComponent_setType(this, type, otherTypeCode);
+  return NDN_ERROR_success;
 }
 
 ndn_Error
@@ -209,6 +226,13 @@ NameLite::Component::setImplicitSha256Digest
   return ndn_NameComponent_setImplicitSha256Digest(this, digest, digestLength);
 }
 
+ndn_Error
+NameLite::Component::setParametersSha256Digest
+  (const uint8_t* digest, size_t digestLength)
+{
+  return ndn_NameComponent_setParametersSha256Digest(this, digest, digestLength);
+}
+
 NameLite::NameLite(ndn_NameComponent* components, size_t maxComponents)
 {
   ndn_Name_initialize(this, components, maxComponents);
@@ -230,9 +254,16 @@ void
 NameLite::clear() { ndn_Name_clear(this); }
 
 ndn_Error
-NameLite::append(const uint8_t* value, size_t valueLength)
+NameLite::append
+  (const uint8_t* value, size_t valueLength, ndn_NameComponentType type,
+   int otherTypeCode)
 {
-  return ndn_Name_appendComponent(this, value, valueLength);
+  ndn_Error error;
+  if ((error = ndn_Name_appendComponent(this, value, valueLength)))
+    return error;
+
+  ndn_NameComponent_setType(&components[nComponents - 1], type, otherTypeCode);
+  return NDN_ERROR_success;
 }
 
 ndn_Error
@@ -248,7 +279,17 @@ NameLite::append(const NameLite& name)
 }
 
 ndn_Error
-NameLite::append(const char *value) { return ndn_Name_appendString(this, value); }
+NameLite::append
+  (const char *value, ndn_NameComponentType type,
+   int otherTypeCode)
+{
+  ndn_Error error;
+  if ((error = ndn_Name_appendString(this, value)))
+    return error;
+
+  ndn_NameComponent_setType(&components[nComponents - 1], type, otherTypeCode);
+  return NDN_ERROR_success;
+}
 
 ndn_Error
 NameLite::appendSegment(uint64_t segment, uint8_t* buffer, size_t bufferLength)
@@ -306,6 +347,12 @@ ndn_Error
 NameLite::appendImplicitSha256Digest(const uint8_t* digest, size_t digestLength)
 {
   return ndn_Name_appendImplicitSha256Digest(this, digest, digestLength);
+}
+
+ndn_Error
+NameLite::appendParametersSha256Digest(const uint8_t* digest, size_t digestLength)
+{
+  return ndn_Name_appendParametersSha256Digest(this, digest, digestLength);
 }
 
 ndn_Error

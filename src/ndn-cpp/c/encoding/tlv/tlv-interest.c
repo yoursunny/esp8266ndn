@@ -293,8 +293,54 @@ decodeSelectors(struct ndn_Interest *interest, struct ndn_TlvDecoder *decoder)
   return NDN_ERROR_success;
 }
 
+/**
+ * Do the work of decodeTlvInterest to decode strictly as format v0.2.
+ */
+static ndn_Error
+ndn_decodeTlvInterestV02
+  (struct ndn_Interest *interest, size_t *signedPortionBeginOffset,
+   size_t *signedPortionEndOffset, struct ndn_TlvDecoder *decoder);
+
+/**
+ * Decode input as an Interest in NDN-TLV format v0.3 and set the fields of
+ * the Interest object. This private method is called if the main
+ * decodeTlvInterest fails to decode as v0.2. This ignores HopLimit and
+ * Parameters, and interprets CanBePrefix using MaxSuffixComponents.
+ */
+static ndn_Error
+ndn_decodeTlvInterestV03
+  (struct ndn_Interest *interest, size_t *signedPortionBeginOffset,
+   size_t *signedPortionEndOffset, struct ndn_TlvDecoder *decoder);
+
 ndn_Error
 ndn_decodeTlvInterest
+  (struct ndn_Interest *interest, size_t *signedPortionBeginOffset,
+   size_t *signedPortionEndOffset, struct ndn_TlvDecoder *decoder)
+{
+  ndn_Error errorV03;
+  size_t saveOffset;
+
+  saveOffset = decoder->offset;
+
+  errorV03 = ndn_decodeTlvInterestV02
+    (interest, signedPortionBeginOffset, signedPortionEndOffset, decoder);
+  if (errorV03 == NDN_ERROR_success)
+    return NDN_ERROR_success;
+
+  // Failed to decode as format v0.2. Restore offset and try to decode as v0.3.
+  ndn_TlvDecoder_seek(decoder, saveOffset);
+  if (ndn_decodeTlvInterestV03
+      (interest, signedPortionBeginOffset, signedPortionEndOffset, decoder)
+      == NDN_ERROR_success)
+    return NDN_ERROR_success;
+
+  // Ignore the exception decoding as format v0.3 and throw the exception
+  // from trying to decode as format as format v0.2.
+  return errorV03;
+}
+
+static ndn_Error
+ndn_decodeTlvInterestV02
   (struct ndn_Interest *interest, size_t *signedPortionBeginOffset,
    size_t *signedPortionEndOffset, struct ndn_TlvDecoder *decoder)
 {
@@ -320,6 +366,9 @@ ndn_decodeTlvInterest
     // Set selectors to none.
     interest->minSuffixComponents = -1;
     interest->maxSuffixComponents = -1;
+    ndn_KeyLocator_initialize
+      (&interest->keyLocator, interest->keyLocator.keyName.components,
+       interest->keyLocator.keyName.maxComponents);
     interest->exclude.nEntries = 0;
     interest->childSelector = -1;
     interest->mustBeFresh = 0;
@@ -362,6 +411,73 @@ ndn_decodeTlvInterest
     return error;
   if (interest->selectedDelegationIndex >= 0 && !interest->linkWireEncoding.value)
     return NDN_ERROR_Interest_has_a_selected_delegation_but_no_link_object;
+
+  if ((error = ndn_TlvDecoder_finishNestedTlvs(decoder, endOffset)))
+    return error;
+
+  return NDN_ERROR_success;
+}
+
+static ndn_Error
+ndn_decodeTlvInterestV03
+  (struct ndn_Interest *interest, size_t *signedPortionBeginOffset,
+   size_t *signedPortionEndOffset, struct ndn_TlvDecoder *decoder)
+{
+  ndn_Error error;
+  size_t endOffset;
+  int canBePrefix, mustBeFresh;
+  struct ndn_Blob dummyBlob;
+
+  if ((error = ndn_TlvDecoder_readNestedTlvsStart
+       (decoder, ndn_Tlv_Interest, &endOffset)))
+    return error;
+
+  if ((error = ndn_decodeTlvName
+       (&interest->name, signedPortionBeginOffset, signedPortionEndOffset,
+        decoder)))
+    return error;
+
+  if ((error = ndn_TlvDecoder_readBooleanTlv
+       (decoder, ndn_Tlv_CanBePrefix, endOffset, &canBePrefix)))
+    return error;
+  ndn_Interest_setCanBePrefix(interest, canBePrefix);
+
+  if ((error = ndn_TlvDecoder_readBooleanTlv
+       (decoder, ndn_Tlv_MustBeFresh, endOffset, &mustBeFresh)))
+    return error;
+  ndn_Interest_setMustBeFresh(interest, mustBeFresh);
+
+  // Get the encoded sequence of delegations as is.
+  if ((error = ndn_TlvDecoder_readOptionalBlobTlv
+       (decoder, ndn_Tlv_ForwardingHint, endOffset,
+        &interest->forwardingHintWireEncoding)))
+    return error;
+
+  if ((error = ndn_TlvDecoder_readOptionalBlobTlv
+       (decoder, ndn_Tlv_Nonce, endOffset, &interest->nonce)))
+    return error;
+
+  if ((error = ndn_TlvDecoder_readOptionalNonNegativeIntegerTlvAsDouble
+       (decoder, ndn_Tlv_InterestLifetime, endOffset, &interest->interestLifetimeMilliseconds)))
+    return error;
+
+  // Clear the unused fields.
+  interest->minSuffixComponents = -1;
+  ndn_KeyLocator_initialize
+    (&interest->keyLocator, interest->keyLocator.keyName.components,
+     interest->keyLocator.keyName.maxComponents);
+  interest->exclude.nEntries = 0;
+  interest->childSelector = -1;
+  ndn_Blob_initialize(&interest->linkWireEncoding, 0, 0);
+  interest->selectedDelegationIndex = -1;
+
+  // Ignore the HopLimit and Parameters.
+  if ((error = ndn_TlvDecoder_readOptionalBlobTlv
+       (decoder, ndn_Tlv_HopLimit, endOffset, &dummyBlob)))
+    return error;
+  if ((error = ndn_TlvDecoder_readOptionalBlobTlv
+       (decoder, ndn_Tlv_Parameters, endOffset, &dummyBlob)))
+    return error;
 
   if ((error = ndn_TlvDecoder_finishNestedTlvs(decoder, endOffset)))
     return error;

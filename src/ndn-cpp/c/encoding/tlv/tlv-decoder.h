@@ -149,27 +149,57 @@ ndn_TlvDecoder_readNestedTlvsStart(struct ndn_TlvDecoder *self, unsigned int exp
  * @param self A pointer to the ndn_TlvDecoder struct.
  * @param endOffset The offset of the end of the parent TLV, returned by
  * ndn_TlvDecoder_readNestedTlvsStart.
+ * @param skipCritical If 0 and the unrecognized type code to skip is critical,
+ * return an error. If non-zero, then skip the unrecognized type code without
+ * error.
  * @return 0 for success, else an error code if the TLV length does not equal
- * the total length of nested TLVs
+ * the total length of nested TLVs, or if skipCritical is false and the
+ * unrecognized type code to skip is critical.
  */
 ndn_Error
 ndn_TlvDecoder_skipRemainingNestedTlvs
-  (struct ndn_TlvDecoder *self, size_t endOffset);
+  (struct ndn_TlvDecoder *self, size_t endOffset, int skipCritical);
 
 /**
  * Call this after reading all nested TLVs to skip any remaining unrecognized
  * TLVs and to check if the offset after the final nested TLV matches the
- * endOffset returned by ndn_TlvDecoder_readNestedTlvsStart.
+ * endOffset returned by ndn_TlvDecoder_readNestedTlvsStart. Update the offset
+ * as needed if skipping TLVs. If the unrecognized type code to skip is critical,
+ * return an error code. (To not return an error code, use
+ * ndn_TlvDecoder_finishNestedTlvsSkipCrtitical.)
  * @param self A pointer to the ndn_TlvDecoder struct.
- * @param endOffset The offset of the end of the parent TLV, returned by ndn_TlvDecoder_readNestedTlvsStart.
- * @return 0 for success, else an error code if the TLV length does not equal the total length of nested TLVs
+ * @param endOffset The offset of the end of the parent TLV, returned by
+ * ndn_TlvDecoder_readNestedTlvsStart.
+ * @return 0 for success, else an error code if the TLV length does not equal
+ * the total length of nested TLVs, or if the unrecognized type code to skip is
+ * critical.
  */
 static __inline ndn_Error
 ndn_TlvDecoder_finishNestedTlvs(struct ndn_TlvDecoder *self, size_t endOffset)
 {
   // Check the simple, expected case inline.
   if (self->offset != endOffset)
-    return ndn_TlvDecoder_skipRemainingNestedTlvs(self, endOffset);
+    return ndn_TlvDecoder_skipRemainingNestedTlvs(self, endOffset, 0);
+
+  return NDN_ERROR_success;
+}
+
+/**
+ * Do the same as ndn_TlvDecoder_finishNestedTlvs, except skip unrecognized type
+ * codes without error.
+ * @param self A pointer to the ndn_TlvDecoder struct.
+ * @param endOffset The offset of the end of the parent TLV, returned by
+ * ndn_TlvDecoder_readNestedTlvsStart.
+ * @return 0 for success, else an error code if the TLV length does not equal
+ * the total length of nested TLVs.
+ */
+static __inline ndn_Error
+ndn_TlvDecoder_finishNestedTlvsSkipCritical
+  (struct ndn_TlvDecoder *self, size_t endOffset)
+{
+  // Check the simple, expected case inline.
+  if (self->offset != endOffset)
+    return ndn_TlvDecoder_skipRemainingNestedTlvs(self, endOffset, 1);
 
   return NDN_ERROR_success;
 }

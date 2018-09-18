@@ -110,7 +110,7 @@ ndn_decodeTlvLpPacket
       int canIgnore =
         (fieldType >= ndn_Tlv_LpPacket_IGNORE_MIN &&
          fieldType <= ndn_Tlv_LpPacket_IGNORE_MAX &&
-         (fieldType & 0x01) == 1);
+         (fieldType & 0x03) == 0);
       if (!canIgnore)
         return NDN_ERROR_did_not_get_the_expected_TLV_type;
 

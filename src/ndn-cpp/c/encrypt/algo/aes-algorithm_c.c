@@ -31,7 +31,7 @@ ndn_AesAlgorithm_decrypt128Cbc
    size_t initialVectorLength, const uint8_t *encryptedData,
    size_t encryptedDataLength, uint8_t *plainData, size_t *plainDataLength)
 {
-  EVP_CIPHER_CTX ctx;
+  EVP_CIPHER_CTX *ctx;
   int outLength1, outLength2;
 
   if (keyLength != ndn_AES_128_BLOCK_SIZE)
@@ -39,17 +39,21 @@ ndn_AesAlgorithm_decrypt128Cbc
   if (initialVectorLength != ndn_AES_128_BLOCK_SIZE)
     return NDN_ERROR_Incorrect_initial_vector_size;
 
+  ctx = EVP_CIPHER_CTX_new();
+  if (!ctx)
+    return NDN_ERROR_Error_in_decrypt_operation;
+
   EVP_DecryptInit
-    (&ctx, EVP_aes_128_cbc(), (const unsigned char*)key,
+    (ctx, EVP_aes_128_cbc(), (const unsigned char*)key,
      (const unsigned char*)initialVector);
 
   EVP_DecryptUpdate
-    (&ctx, (unsigned char*)plainData, &outLength1,
+    (ctx, (unsigned char*)plainData, &outLength1,
      (const unsigned char*)encryptedData, encryptedDataLength);
   EVP_DecryptFinal
-    (&ctx, (unsigned char*)plainData + outLength1, &outLength2);
+    (ctx, (unsigned char*)plainData + outLength1, &outLength2);
 
-  EVP_CIPHER_CTX_cleanup(&ctx);
+  EVP_CIPHER_CTX_free(ctx);
   *plainDataLength = outLength1 + outLength2;
 
   return NDN_ERROR_success;
@@ -60,21 +64,25 @@ ndn_AesAlgorithm_decrypt128Ecb
   (const uint8_t *key, size_t keyLength, const uint8_t *encryptedData,
    size_t encryptedDataLength, uint8_t *plainData, size_t *plainDataLength)
 {
-  EVP_CIPHER_CTX ctx;
+  EVP_CIPHER_CTX *ctx;
   int outLength1, outLength2;
 
   if (keyLength != ndn_AES_128_BLOCK_SIZE)
     return NDN_ERROR_Incorrect_key_size;
 
-  EVP_DecryptInit(&ctx, EVP_aes_128_ecb(), (const unsigned char*)key, 0);
+  ctx = EVP_CIPHER_CTX_new();
+  if (!ctx)
+    return NDN_ERROR_Error_in_decrypt_operation;
+
+  EVP_DecryptInit(ctx, EVP_aes_128_ecb(), (const unsigned char*)key, 0);
 
   EVP_DecryptUpdate
-    (&ctx, (unsigned char*)plainData, &outLength1,
+    (ctx, (unsigned char*)plainData, &outLength1,
      (const unsigned char*)encryptedData, encryptedDataLength);
   EVP_DecryptFinal
-    (&ctx, (unsigned char*)plainData + outLength1, &outLength2);
+    (ctx, (unsigned char*)plainData + outLength1, &outLength2);
 
-  EVP_CIPHER_CTX_cleanup(&ctx);
+  EVP_CIPHER_CTX_free(ctx);
   *plainDataLength = outLength1 + outLength2;
 
   return NDN_ERROR_success;
@@ -86,7 +94,7 @@ ndn_AesAlgorithm_encrypt128Cbc
    size_t initialVectorLength, const uint8_t *plainData,
    size_t plainDataLength, uint8_t *encryptedData, size_t *encryptedDataLength)
 {
-  EVP_CIPHER_CTX ctx;
+  EVP_CIPHER_CTX *ctx;
   int outLength1, outLength2;
 
   if (keyLength != ndn_AES_128_BLOCK_SIZE)
@@ -94,17 +102,21 @@ ndn_AesAlgorithm_encrypt128Cbc
   if (initialVectorLength != ndn_AES_128_BLOCK_SIZE)
     return NDN_ERROR_Incorrect_initial_vector_size;
 
+  ctx = EVP_CIPHER_CTX_new();
+  if (!ctx)
+    return NDN_ERROR_Error_in_encrypt_operation;
+
   EVP_EncryptInit
-      (&ctx, EVP_aes_128_cbc(), (const unsigned char*)key,
+      (ctx, EVP_aes_128_cbc(), (const unsigned char*)key,
        (const unsigned char*)initialVector);
 
   EVP_EncryptUpdate
-    (&ctx, (unsigned char*)encryptedData, &outLength1,
+    (ctx, (unsigned char*)encryptedData, &outLength1,
      (const unsigned char*)plainData, plainDataLength);
   EVP_EncryptFinal
-    (&ctx, (unsigned char*)encryptedData + outLength1, &outLength2);
+    (ctx, (unsigned char*)encryptedData + outLength1, &outLength2);
 
-  EVP_CIPHER_CTX_cleanup(&ctx);
+  EVP_CIPHER_CTX_free(ctx);
   *encryptedDataLength = outLength1 + outLength2;
 
   return NDN_ERROR_success;
@@ -115,21 +127,25 @@ ndn_AesAlgorithm_encrypt128Ecb
   (const uint8_t *key, size_t keyLength, const uint8_t *plainData,
    size_t plainDataLength, uint8_t *encryptedData, size_t *encryptedDataLength)
 {
-  EVP_CIPHER_CTX ctx;
+  EVP_CIPHER_CTX *ctx;
   int outLength1, outLength2;
 
   if (keyLength != ndn_AES_128_BLOCK_SIZE)
     return NDN_ERROR_Incorrect_key_size;
 
-  EVP_EncryptInit(&ctx, EVP_aes_128_ecb(), (const unsigned char*)key, 0);
+  ctx = EVP_CIPHER_CTX_new();
+  if (!ctx)
+    return NDN_ERROR_Error_in_encrypt_operation;
+
+  EVP_EncryptInit(ctx, EVP_aes_128_ecb(), (const unsigned char*)key, 0);
 
   EVP_EncryptUpdate
-    (&ctx, (unsigned char*)encryptedData, &outLength1,
+    (ctx, (unsigned char*)encryptedData, &outLength1,
      (const unsigned char*)plainData, plainDataLength);
   EVP_EncryptFinal
-    (&ctx, (unsigned char*)encryptedData + outLength1, &outLength2);
+    (ctx, (unsigned char*)encryptedData + outLength1, &outLength2);
 
-  EVP_CIPHER_CTX_cleanup(&ctx);
+  EVP_CIPHER_CTX_free(ctx);
   *encryptedDataLength = outLength1 + outLength2;
 
   return NDN_ERROR_success;
