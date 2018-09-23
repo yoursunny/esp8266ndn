@@ -87,3 +87,11 @@ testF(UriFixture, Uri_percent)
   uri.toUpperCase();
   assertEqual(this->toString(), uri);
 }
+
+testF(UriFixture, Uri_typedComps)
+{
+  auto input = F("/64=.../255=A/65535=%2B-");
+  assertTrue(this->parse(input));
+  assertEqual(name.size(), 3U);
+  assertEqual(this->toString(), input);
+}

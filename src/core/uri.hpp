@@ -6,21 +6,23 @@
 
 namespace ndn {
 
-/** \brief parse name from ndn: URI
+/** \brief Parse name from ndn: URI.
  *  \param[out] name the name
  *  \param[inout] uri null-terminated URI; will be overwritten as buffer for name components
  *  \return whether success
+ *  \warning This function may accept certain invalid URIs.
  */
 bool
 parseNameFromUri(NameLite& name, char* uri);
 
-/** \brief parse name component from URI segment
+/** \brief Parse name component from URI segment.
  *  \param[inout] uri null-terminated URI segment; will be overwritten as buffer for name component
+ *  \warning This function may accept certain invalid URIs.
  */
 NameLite::Component
 parseNameComponentFromUri(char* uri);
 
-/** \brief allows a Name to be printed as URI
+/** \brief Print a Name as URI.
  */
 class PrintUri : public Printable
 {

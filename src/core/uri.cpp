@@ -23,9 +23,24 @@ parseNameFromUri(NameLite& name, char* uri)
 NameLite::Component
 parseNameComponentFromUri(char* uri)
 {
+  ndn_NameComponentType type = ndn_NameComponentType_GENERIC;
+  int otherTypeCode = -1;
+  char* equalSign = strchr(uri, '=');
+  if (equalSign != nullptr) {
+    uint32_t tlvType = static_cast<uint32_t>(strtoul(uri, nullptr, 10));
+    if (tlvType < 32) {
+      type = static_cast<ndn_NameComponentType>(tlvType);
+    }
+    else {
+      type = ndn_NameComponentType_OTHER_CODE;
+      otherTypeCode = tlvType;
+    }
+    uri = equalSign + 1;
+  }
+
   size_t len = strlen(uri);
   if (len >= 3 && strspn(uri, ".") == len) {
-    return NameLite::Component(reinterpret_cast<uint8_t*>(uri), len - 3);
+    return NameLite::Component(reinterpret_cast<uint8_t*>(uri), len - 3, type, otherTypeCode);
   }
 
   size_t opos = 0;
@@ -35,14 +50,14 @@ parseNameComponentFromUri(char* uri)
       uri[i] = uri[i + 1];
       uri[i + 1] = uri[i + 2];
       uri[i + 2] = '\0';
-      uri[opos++] = static_cast<char>(strtol(&uri[i], nullptr, 16));
+      uri[opos++] = static_cast<char>(strtoul(&uri[i], nullptr, 16));
       i += 2;
     }
     else {
       uri[opos++] = ch;
     }
   }
-  return NameLite::Component(reinterpret_cast<uint8_t*>(uri), opos);
+  return NameLite::Component(reinterpret_cast<uint8_t*>(uri), opos, type, otherTypeCode);
 }
 
 PrintUri::PrintUri(const NameLite& name)
@@ -68,6 +83,15 @@ PrintUri::printTo(Print& p) const
 size_t
 PrintUri::printTo(Print& p, const NameLite::Component& comp) const
 {
+  uint32_t type = comp.getType();
+  if (type == ndn_NameComponentType_OTHER_CODE) {
+    type = comp.getOtherTypeCode();
+  }
+  if (type != ndn_NameComponentType_GENERIC) {
+    p.print(type);
+    p.print('=');
+  }
+
   const BlobLite& blob = comp.getValue();
   const uint8_t* buf = blob.buf();
   size_t sz = blob.size();
