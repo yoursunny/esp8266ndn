@@ -26,6 +26,13 @@ public:
     return os;
   }
 
+  void
+  teardown() override
+  {
+    std::vector<char> empty;
+    m_buf.swap(empty);
+  }
+
 public:
   ndn::NameWCB<4> name;
 

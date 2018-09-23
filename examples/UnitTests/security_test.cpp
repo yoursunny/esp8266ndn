@@ -1,6 +1,6 @@
 #include "test-common.hpp"
 
-class KeyFixtureBase
+class KeyFixture : public TestOnce
 {
 public:
   static std::pair<const uint8_t*, size_t>
@@ -50,15 +50,18 @@ public:
     sig[pos] += 1;
   }
 
+  void
+  teardown() override
+  {
+    std::vector<uint8_t> empty;
+    sig.swap(empty);
+  }
+
 public:
   std::vector<uint8_t> sig;
 };
 
-class KeyFixtureOnce : public TestOnce, public KeyFixtureBase
-{
-};
-
-testF(KeyFixtureOnce, DigestKey_basic)
+testF(KeyFixture, DigestKey_basic)
 {
   ndn::DigestKey key;
   assertEqual(key.getMaxSigLength(), ndn_SHA256_DIGEST_SIZE);
@@ -72,7 +75,7 @@ testF(KeyFixtureOnce, DigestKey_basic)
   assertFalse(this->verify(key));
 }
 
-testF(KeyFixtureOnce, HmacKey_basic)
+testF(KeyFixture, HmacKey_basic)
 {
   ndn::HmacKey key(reinterpret_cast<const uint8_t*>("secret"), 6);
   assertEqual(key.getMaxSigLength(), ndn_SHA256_DIGEST_SIZE);
@@ -96,7 +99,7 @@ const uint8_t EcKey_basic_PUB[] PROGMEM {   0x04,
   0x86, 0x22, 0xB5, 0x29, 0x94, 0xE1, 0x96, 0x8C, 0x3A, 0x5E, 0xC6, 0x79, 0x49, 0x2E, 0x3F, 0xF8,
   0x86, 0x56, 0xAF, 0x15, 0xEB, 0x7B, 0x82, 0x73, 0xAA, 0xB7, 0x8F, 0x34, 0xEA, 0x42, 0x35, 0xFD,
 };
-testF(KeyFixtureOnce, EcKey_basic)
+testF(KeyFixture, EcKey_basic)
 {
   ndn::NameWCB<1> name;
   name.append("key");
@@ -117,7 +120,7 @@ testF(KeyFixtureOnce, EcKey_basic)
   assertFalse(this->verify(pub));
 }
 
-testF(KeyFixtureOnce, EcKey_generate)
+testF(KeyFixture, EcKey_generate)
 {
   ndn::NameWCB<1> name;
   name.append("key");
