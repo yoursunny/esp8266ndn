@@ -5,7 +5,7 @@
 
 using namespace aunit;
 
-static String
+inline String
 toHexString(const uint8_t* input, size_t len)
 {
   StreamString os;
