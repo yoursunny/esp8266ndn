@@ -2,7 +2,6 @@
 #define ESP8266NDN_PING_CLIENT_HPP
 
 #include "../core/face.hpp"
-#include "../core/esp32-1734.hpp"
 
 namespace ndn {
 
