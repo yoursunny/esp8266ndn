@@ -4,7 +4,7 @@
 #if defined(ESP8266)
 #include "ec-impl-bearssl.hpp"
 #else
-#include "ec-impl-microecc.hpp"
+#include "ec-impl-mbedtls.hpp"
 #endif
 
 #if defined(ESP8266)

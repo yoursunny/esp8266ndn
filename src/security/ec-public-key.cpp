@@ -2,6 +2,9 @@
 #include "detail/ec-impl.hpp"
 #include "../ndn-cpp/lite/util/crypto-lite.hpp"
 
+#include <cstring>
+#include <pgmspace.h>
+
 namespace ndn {
 
 EcPublicKey::EcPublicKey() = default;
