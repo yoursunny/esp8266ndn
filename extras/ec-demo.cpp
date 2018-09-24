@@ -65,13 +65,12 @@ int main() {
 
   // extract key bits with OpenSSL
   FILE* openssl = popen(("openssl pkcs8 -inform DER -in " + pkcs8File + " -passin pass:" + password + " | openssl ec -noout -text 2>/dev/null; rm -f " + pkcs8File).data(), "r");
-  uint8_t pvtkeyBits[32], pubkeyBits[64];
+  uint8_t pvtkeyBits[32], pubkeyBits[65];
   char posTest[2];
   if (!(fscanf(openssl, "Private-Key: (256 bit) priv: ") == 0 &&
         readKeyBits(openssl, pvtkeyBits, sizeof(pvtkeyBits)) &&
-        fscanf(openssl, " pu%1[b]: 04:", posTest) == 1 &&
-        readKeyBits(openssl, pubkeyBits, sizeof(pubkeyBits)) &&
-        fscanf(openssl, " ASN1 OI%1[D]:", posTest) == 1)) {
+        fscanf(openssl, " pu%1[b]: ", posTest) == 1 &&
+        readKeyBits(openssl, pubkeyBits, sizeof(pubkeyBits)))) {
     return 3;
   }
 
