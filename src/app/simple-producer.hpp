@@ -6,7 +6,6 @@
 namespace ndn {
 
 /** \brief Allow developing a simple producer using procedural programming.
- *  \note This API is not yet finalized and may change without notice.
  */
 class SimpleProducer : public PacketHandler
 {

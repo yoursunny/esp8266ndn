@@ -6,7 +6,6 @@
 namespace ndn {
 
 /** \brief Allow developing a simple consumer using procedural programming.
- *  \note This API is not yet finalized and may change without notice.
  */
 class SimpleConsumer : public PacketHandler
 {
