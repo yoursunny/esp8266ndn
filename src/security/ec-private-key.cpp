@@ -10,12 +10,6 @@ EcPrivateKey::EcPrivateKey(const NameLite& keyName)
 {
 }
 
-EcPrivateKey::EcPrivateKey(const uint8_t bits[32], const NameLite& keyName)
-  : EcPrivateKey(keyName)
-{
-  this->import(bits);
-}
-
 EcPrivateKey::~EcPrivateKey() = default;
 
 bool

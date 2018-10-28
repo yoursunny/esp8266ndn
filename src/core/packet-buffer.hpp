@@ -55,14 +55,6 @@ public:
   PacketType
   getPktType() const;
 
-  /** \deprecated use getPktType()
-   */
-  int
-  getPacketType() const __attribute__((deprecated))
-  {
-    return static_cast<int>(this->getPktType());
-  }
-
   /** \brief get parsed Interest
    *  \pre getPacketType() == PacketType::INTEREST || getPacketType() == PacketType::NACK
    */

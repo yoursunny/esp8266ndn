@@ -21,13 +21,6 @@ public:
   explicit
   EcPrivateKey(const NameLite& keyName);
 
-  /** \brief Construct EC private key from key bits.
-   *  \param bits uncompressed points in standard format;
-   *              may come from PROGMEM, will be copied
-   *  \deprecated use \c import function
-   */
-  EcPrivateKey(const uint8_t bits[32], const NameLite& keyName) __attribute__((deprecated));
-
   ~EcPrivateKey();
 
   /** \brief Import key bits.

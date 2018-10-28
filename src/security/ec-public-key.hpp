@@ -16,14 +16,6 @@ class EcPublicKey : public PublicKey
 public:
   EcPublicKey();
 
-  /** \brief Construct EC public key from key bits.
-   *  \param bits uncompressed points in standard format without leading 0x04 prefix;
-   *              may come from PROGMEM, will be copied
-   *  \deprecated use \c import function
-   */
-  explicit
-  EcPublicKey(const uint8_t bits[64]) __attribute__((deprecated));
-
   ~EcPublicKey();
 
   /** \brief Import key bits.
