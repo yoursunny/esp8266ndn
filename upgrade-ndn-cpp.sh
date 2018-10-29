@@ -48,7 +48,7 @@ sed -i '/#define round/ c\#define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.
 sed -i '/#ifdef ARDUINO/ c\#if 0' lite/util/crypto-lite.cpp
 
 # fix ndn_getNowMilliseconds
-sed -i -e '1 i\#include <Arduino.h>' -e '/^ndn_getNowMilliseconds/ p' -e '/^ndn_getNowMilliseconds/ a\{\n  return millis();\n}' -e '/^ndn_getNowMilliseconds/,/}/ d' c/util/time.c
+sed -i -e '1 i\#include <Arduino.h>\n#define NDN_CPP_HAVE_TIME_H 1\n#define NDN_CPP_HAVE_GMTIME_SUPPORT 1' -e '/^ndn_getNowMilliseconds/ p' -e '/^ndn_getNowMilliseconds/ a\{\n  return millis();\n}' -e '/^ndn_getNowMilliseconds/,/}/ d' -e 's/timegm/mktime/' c/util/time.c
 
 # create ndn-cpp-all.hpp
 (

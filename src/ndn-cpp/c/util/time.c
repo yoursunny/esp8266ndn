@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#define NDN_CPP_HAVE_TIME_H 1
+#define NDN_CPP_HAVE_GMTIME_SUPPORT 1
 /**
  * Copyright (C) 2013-2018 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -109,7 +111,7 @@ ndn_fromIsoString(const char* isoString, ndn_MillisecondsSince1970 *milliseconds
   tm1.tm_mon -= 1;
   tm1.tm_sec = 0;
 
-  *milliseconds = (timegm(&tm1) + seconds) * 1000.0;
+  *milliseconds = (mktime(&tm1) + seconds) * 1000.0;
   return NDN_ERROR_success;
 #else
   return NDN_ERROR_Time_functions_are_not_supported_by_the_standard_library;

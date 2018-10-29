@@ -2,6 +2,7 @@
 #define ESP8266NDN_EC_PUBLIC_KEY_HPP
 
 #include "public-key.hpp"
+#include "../ndn-cpp/lite/data-lite.hpp"
 #include <memory>
 
 namespace ndn {
@@ -24,6 +25,12 @@ public:
    */
   bool
   import(const uint8_t bits[65]);
+
+  /** \brief Import key from certificate.
+   *  \param data NDN Certificate V2 data
+   */
+  bool
+  importCert(const DataLite& data);
 
   bool
   verify(const uint8_t* input, size_t inputLen, const uint8_t* sig, size_t sigLen) const final;
