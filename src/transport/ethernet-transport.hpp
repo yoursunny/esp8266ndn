@@ -1,6 +1,8 @@
 #ifndef ESP8266NDN_ETHERNET_TRANSPORT_HPP
 #define ESP8266NDN_ETHERNET_TRANSPORT_HPP
 
+#if defined(ESP8266) || defined(ESP32)
+
 #include "transport.hpp"
 
 extern "C" {
@@ -83,5 +85,7 @@ private:
 };
 
 } // namespace ndn
+
+#endif // ESP8266NDN_UDP_TRANSPORT_HPP
 
 #endif // ESP8266NDN_ETHERNET_TRANSPORT_HPP

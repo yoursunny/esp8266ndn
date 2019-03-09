@@ -1,3 +1,5 @@
+#if defined(ESP8266) || defined(ESP32)
+
 #include "udp-transport.hpp"
 #include "../core/logger.hpp"
 
@@ -155,3 +157,5 @@ UdpTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 }
 
 } // namespace ndn
+
+#endif // defined(ESP8266) || defined(ESP32)

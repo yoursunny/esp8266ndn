@@ -4,6 +4,7 @@
 #include "logging.hpp"
 #include "detail/Streaming.h"
 #include "detail/PriUint64.h"
+#include "detail/fix-maxmin.hpp"
 
 #define DBG(module, ...) \
   do { \

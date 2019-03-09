@@ -1,5 +1,6 @@
 #include "simple-consumer.hpp"
 #include <Arduino.h>
+#include "../core/detail/fix-maxmin.hpp"
 
 namespace ndn {
 

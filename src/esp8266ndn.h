@@ -1,6 +1,8 @@
 #ifndef ESP8266NDN_H
 #define ESP8266NDN_H
 
+#include "core/detail/fix-maxmin.hpp"
+
 #include "ndn-cpp/ndn-cpp-all.hpp"
 
 #include "app/autoconfig.hpp"

@@ -31,7 +31,6 @@
 #endif
 
 #if !NDN_CPP_HAVE_ROUND
-#define round(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 #endif
 
 #ifdef __cplusplus

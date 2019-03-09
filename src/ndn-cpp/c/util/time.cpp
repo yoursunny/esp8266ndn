@@ -1,4 +1,5 @@
 #include <Arduino.h>
+extern "C" {
 #define NDN_CPP_HAVE_TIME_H 1
 #define NDN_CPP_HAVE_GMTIME_SUPPORT 1
 /**
@@ -117,3 +118,4 @@ ndn_fromIsoString(const char* isoString, ndn_MillisecondsSince1970 *milliseconds
   return NDN_ERROR_Time_functions_are_not_supported_by_the_standard_library;
 #endif
 }
+} // extern "C"

@@ -2,9 +2,11 @@
 #include "../core/logger.hpp"
 
 #if defined(ESP8266)
+#define HAVE_HTTPCLIENT
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #elif defined(ESP32)
+#define HAVE_HTTPCLIENT
 #include <WiFi.h>
 #include <HTTPClient.h>
 #endif
@@ -16,6 +18,7 @@ namespace ndn {
 IPAddress
 queryFchService(String serviceUri)
 {
+#ifdef HAVE_HTTPCLIENT
   HTTPClient http;
   http.begin(serviceUri);
   int httpCode = http.GET();
@@ -35,6 +38,9 @@ queryFchService(String serviceUri)
 
   AUTOCONFIG_DBG("DNS resolved to: " << ip);
   return ip;
+#else // HAVE_HTTPCLIENT
+  return INADDR_NONE;
+#endif // HAVE_HTTPCLIENT
 }
 
 } // namespace ndn

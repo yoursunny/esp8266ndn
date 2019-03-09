@@ -1,5 +1,6 @@
 #include "../../ndn-cpp/c/util/crypto.h"
 #include <Arduino.h>
+#include "../../core/detail/fix-maxmin.hpp"
 
 ndn_Error
 ndn_generateRandomBytes(uint8_t* buffer, size_t bufferLength)

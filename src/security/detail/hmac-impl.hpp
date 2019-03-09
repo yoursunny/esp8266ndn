@@ -6,7 +6,7 @@
 #elif defined(ESP32)
 #include "hmac-impl-mbedtls.hpp"
 #else
-#error "unknown platform"
+#include "hmac-impl-none.hpp"
 #endif
 
 #endif // ESP8266NDN_HMAC_IMPL_HPP

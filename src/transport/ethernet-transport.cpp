@@ -1,3 +1,5 @@
+#if defined(ESP8266) || defined(ESP32)
+
 #include "ethernet-transport.hpp"
 #include "../core/logger.hpp"
 
@@ -272,3 +274,5 @@ EthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 }
 
 } // namespace ndn
+
+#endif // ESP8266NDN_UDP_TRANSPORT_HPP

@@ -4,7 +4,12 @@
 
 #include <algorithm>
 #include <cstring>
+
+#ifdef ARDUINO_ARCH_NRF52
+#include <avr/pgmspace.h>
+#else
 #include <pgmspace.h>
+#endif
 
 namespace ndn {
 
