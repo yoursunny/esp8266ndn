@@ -1,11 +1,20 @@
-#ifndef ESP8266NDN_HMAC_IMPL_BEARSSL_HPP
-#define ESP8266NDN_HMAC_IMPL_BEARSSL_HPP
+#ifndef ESP8266NDN_SHA256_IMPL_BEARSSL_HPP
+#define ESP8266NDN_SHA256_IMPL_BEARSSL_HPP
 
 #include <bearssl/bearssl_hash.h>
 #include <bearssl/bearssl_hmac.h>
 
 namespace ndn {
 namespace detail {
+
+static void
+sha256(const uint8_t* input, size_t len, uint8_t* result)
+{
+  br_sha256_context ctx;
+  br_sha256_init(&ctx);
+  br_sha256_update(&ctx, input, len);
+  br_sha256_out(&ctx, result);
+}
 
 class HmacImpl
 {
@@ -31,4 +40,4 @@ private:
 } // namespace detail
 } // namespace ndn
 
-#endif // ESP8266NDN_HMAC_IMPL_BEARSSL_HPP
+#endif // ESP8266NDN_SHA256_IMPL_BEARSSL_HPP

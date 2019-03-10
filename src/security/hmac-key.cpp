@@ -1,6 +1,6 @@
 #include "hmac-key.hpp"
 #include "detail/crypto-memory.hpp"
-#include "detail/hmac-impl.hpp"
+#include "detail/sha256-impl.hpp"
 #include "../ndn-cpp/lite/util/crypto-lite.hpp"
 
 namespace ndn {

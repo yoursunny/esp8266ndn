@@ -1,3 +1,4 @@
+#include "sha256-impl.hpp"
 #include "../../ndn-cpp/c/util/crypto.h"
 #include <Arduino.h>
 #include "../../core/detail/fix-maxmin.hpp"
@@ -5,44 +6,15 @@
 ndn_Error
 ndn_generateRandomBytes(uint8_t* buffer, size_t bufferLength)
 {
+  // TODO on nRF52 this is not hardware RNG
   for (size_t i = 0; i < bufferLength; ++i) {
     buffer[i] = random(256); // use hardware RNG
   }
   return NDN_ERROR_success;
 }
 
-#if defined(ESP8266)
-
-#include <bearssl/bearssl_hash.h>
-
 void
 ndn_digestSha256(const uint8_t* data, size_t dataLength, uint8_t* digest)
 {
-  br_sha256_context ctx;
-  br_sha256_init(&ctx);
-  br_sha256_update(&ctx, data, dataLength);
-  br_sha256_out(&ctx, digest);
+  ndn::detail::sha256(data, dataLength, digest);
 }
-
-#elif defined(ESP32)
-
-#include <mbedtls/sha256.h>
-
-void
-ndn_digestSha256(const uint8_t* data, size_t dataLength, uint8_t* digest)
-{
-  mbedtls_sha256_ret(data, dataLength, digest, 0);
-}
-
-#else
-
-#include <cstring>
-#include "../../ndn-cpp/c/common.h"
-
-void
-ndn_digestSha256(const uint8_t* data, size_t dataLength, uint8_t* digest)
-{
-    memset(digest, 0xDD, ndn_SHA256_DIGEST_SIZE);
-}
-
-#endif

@@ -1,11 +1,17 @@
-#ifndef ESP8266NDN_HMAC_IMPL_MBEDTLS_HPP
-#define ESP8266NDN_HMAC_IMPL_MBEDTLS_HPP
+#ifndef ESP8266NDN_SHA256_IMPL_MBEDTLS_HPP
+#define ESP8266NDN_SHA256_IMPL_MBEDTLS_HPP
 
 #include <mbedtls/md.h>
 #include <mbedtls/sha256.h>
 
 namespace ndn {
 namespace detail {
+
+static void
+sha256(const uint8_t* input, size_t len, uint8_t* result)
+{
+  mbedtls_sha256_ret(input, len, result, 0);
+}
 
 class HmacImpl
 {
@@ -38,4 +44,4 @@ private:
 } // namespace detail
 } // namespace ndn
 
-#endif // ESP8266NDN_HMAC_IMPL_MBEDTLS_HPP
+#endif // ESP8266NDN_SHA256_IMPL_MBEDTLS_HPP

@@ -2,11 +2,11 @@
 #define ESP8266NDN_HMAC_IMPL_HPP
 
 #if defined(ESP8266)
-#include "hmac-impl-bearssl.hpp"
+#include "sha256-impl-bearssl.hpp"
 #elif defined(ESP32)
-#include "hmac-impl-mbedtls.hpp"
+#include "sha256-impl-mbedtls.hpp"
 #else
-#include "hmac-impl-none.hpp"
+#include "sha256-impl-none.hpp"
 #endif
 
 #endif // ESP8266NDN_HMAC_IMPL_HPP
