@@ -34,4 +34,15 @@ ndn_digestSha256(const uint8_t* data, size_t dataLength, uint8_t* digest)
   mbedtls_sha256_ret(data, dataLength, digest, 0);
 }
 
+#else
+
+#include <cstring>
+#include "../../ndn-cpp/c/common.h"
+
+void
+ndn_digestSha256(const uint8_t* data, size_t dataLength, uint8_t* digest)
+{
+    memset(digest, 0xDD, ndn_SHA256_DIGEST_SIZE);
+}
+
 #endif

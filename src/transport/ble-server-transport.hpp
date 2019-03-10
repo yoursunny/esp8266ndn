@@ -1,10 +1,10 @@
-#ifdef ESP32
 #ifndef ESP8266NDN_BLE_SERVER_TRANSPORT_HPP
 #define ESP8266NDN_BLE_SERVER_TRANSPORT_HPP
 
 #include "transport.hpp"
 
 class BLEServer;
+class BLEService;
 class BLECharacteristic;
 
 namespace ndn {
@@ -16,7 +16,7 @@ class BleServerTransport : public Transport
 public:
   BleServerTransport();
 
-  void
+  bool
   begin(const char* deviceName);
 
   size_t
@@ -27,6 +27,7 @@ public:
 
 private:
   BLEServer* m_server;
+  BLEService* m_service;
   BLECharacteristic* m_rx;
   BLECharacteristic* m_tx;
 };
@@ -34,4 +35,3 @@ private:
 } // namespace ndn
 
 #endif // ESP8266NDN_BLE_SERVER_TRANSPORT_HPP
-#endif // ESP32
