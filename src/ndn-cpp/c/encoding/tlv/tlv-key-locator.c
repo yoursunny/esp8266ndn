@@ -27,7 +27,7 @@ ndn_encodeTlvKeyLocatorValue(const void *context, struct ndn_TlvEncoder *encoder
   struct ndn_KeyLocator *keyLocator = (struct ndn_KeyLocator *)context;
   ndn_Error error;
 
-  if ((int)keyLocator->type < 0)
+  if (keyLocator->type == (ndn_KeyLocatorType)-1)
     return NDN_ERROR_success;
 
   if (keyLocator->type == ndn_KeyLocatorType_KEYNAME) {

@@ -51,6 +51,9 @@ sed -i '/#ifdef ARDUINO/ c\#if 0' lite/util/crypto-lite.cpp
 sed -i -e '1 i\#include <Arduino.h>\nextern "C" {\n#define NDN_CPP_HAVE_TIME_H 1\n#define NDN_CPP_HAVE_GMTIME_SUPPORT 1' -e '/^ndn_getNowMilliseconds/ p' -e '/^ndn_getNowMilliseconds/ a\{\n  return millis();\n}' -e '/^ndn_getNowMilliseconds/,/}/ d' -e 's/timegm/mktime/' -e '$ a} // extern "C"' c/util/time.c
 mv c/util/time.c c/util/time.cpp
 
+# fix keyLocator->type
+sed -i -e 's/(int)keyLocator->type < 0/keyLocator->type == (ndn_KeyLocatorType)-1/' c/encoding/tlv/tlv-key-locator.c
+
 # create ndn-cpp-all.hpp
 (
   echo '#ifndef ESP8266NDN_NDN_CPP_ALL_HPP'
