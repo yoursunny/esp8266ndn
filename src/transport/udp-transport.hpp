@@ -5,6 +5,10 @@
 
 #include "transport.hpp"
 
+#if defined(ESP8266)
+// cause WiFiUDP.h to use ESP8266WiFi instead of Arduino WiFi library
+#include <ESP8266WiFi.h>
+#endif
 #include <WiFiUdp.h>
 
 namespace ndn {

@@ -1,4 +1,3 @@
-#ifdef ESP32
 // extras/BlePingClient.py is a client that can connect to this ndnping server.
 
 #include <esp8266ndn.h>
@@ -54,17 +53,3 @@ loop()
   g_face.loop();
   delay(100);
 }
-
-#else // ESP32
-
-void
-setup()
-{
-}
-
-void
-loop()
-{
-}
-
-#endif // ESP32
