@@ -19,14 +19,14 @@ IPAddress
 queryFchService(String serviceUri)
 {
 #ifdef HAVE_HTTPCLIENT
+  WiFiClient tcp;
   HTTPClient http;
-  http.begin(serviceUri);
+  http.begin(tcp, serviceUri);
   int httpCode = http.GET();
   if (httpCode != HTTP_CODE_OK) {
     AUTOCONFIG_DBG(serviceUri << " error: " << httpCode);
     return INADDR_NONE;
   }
-
   String response = http.getString();
   AUTOCONFIG_DBG(serviceUri << " response: " << response);
 
@@ -35,7 +35,6 @@ queryFchService(String serviceUri)
     AUTOCONFIG_DBG("DNS error");
     return INADDR_NONE;
   }
-
   AUTOCONFIG_DBG("DNS resolved to: " << ip);
   return ip;
 #else // HAVE_HTTPCLIENT
