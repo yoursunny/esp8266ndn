@@ -66,6 +66,10 @@ public:
   send(const uint8_t* pkt, size_t len, uint64_t endpointId) override;
 
 private:
+  bool
+  begin(netif* netif);
+
+private:
   class Impl;
   class Queue;
 
@@ -86,6 +90,6 @@ private:
 
 } // namespace ndn
 
-#endif // ESP8266NDN_UDP_TRANSPORT_HPP
+#endif // defined(ESP8266) || defined(ESP32)
 
 #endif // ESP8266NDN_ETHERNET_TRANSPORT_HPP

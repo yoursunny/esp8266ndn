@@ -139,37 +139,19 @@ EthernetTransport::EthernetTransport()
 bool
 EthernetTransport::begin(const char ifname[2], uint8_t ifnum)
 {
-  if (LWIP_VERSION_MAJOR != 1) {
-    ETHTRANSPORT_DBG(F("packet interception on lwip ") << LWIP_VERSION_MAJOR << "." <<
-                          LWIP_VERSION_MINOR << F(" is not tested and may not work"));
-  }
-  if (m_netif != nullptr) {
-    ETHTRANSPORT_DBG(F("this instance is active"));
-    return false;
-  }
-  if (g_ethTransport != nullptr) {
-    ETHTRANSPORT_DBG(F("another instance is active"));
-    return false;
-  }
-
+  netif* found = nullptr;
   for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
     if (netif->name[0] == ifname[0] && netif->name[1] == ifname[1] &&
         netif->num == ifnum) {
-      m_netif = netif;
+      found = netif;
       break;
     }
   }
-  if (m_netif == nullptr) {
+  if (found == nullptr) {
     ETHTRANSPORT_DBG(F("netif ") << ifname[0] << ifname[1] << ifnum << F(" not found"));
     return false;
   }
-
-  m_queue = new Queue();
-  g_ethTransport = this;
-  m_oldInput = reinterpret_cast<void*>(m_netif->input);
-  m_netif->input = EthernetTransport::Impl::input;
-  ETHTRANSPORT_DBG(F("enabled on ") << ifname[0] << ifname[1] << ifnum);
-  return true;
+  return begin(found);
 }
 
 bool
@@ -180,12 +162,38 @@ EthernetTransport::begin()
 #else
   for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
     if (netif->name[0] == 's' && netif->name[1] == 't') {
-      return begin(netif->name, netif->num);
+      return begin(netif);
     }
   }
-#endif
   ETHTRANSPORT_DBG(F("no available netif"));
   return false;
+#endif
+}
+
+bool
+EthernetTransport::begin(netif* netif)
+{
+#ifdef ESP8266
+  if (LWIP_VERSION_MAJOR != 1) {
+    ETHTRANSPORT_DBG(F("packet interception on ESP8266 lwip2 is untested and may not work"));
+  }
+#endif // ESP8266
+  if (m_netif != nullptr) {
+    ETHTRANSPORT_DBG(F("this instance is active"));
+    return false;
+  }
+  if (g_ethTransport != nullptr) {
+    ETHTRANSPORT_DBG(F("another instance is active"));
+    return false;
+  }
+
+  m_netif = netif;
+  m_queue = new Queue();
+  g_ethTransport = this;
+  m_oldInput = reinterpret_cast<void*>(m_netif->input);
+  m_netif->input = EthernetTransport::Impl::input;
+  ETHTRANSPORT_DBG(F("enabled on ") << netif->name[0] << netif->name[1] << netif->num);
+  return true;
 }
 
 void
@@ -252,14 +260,14 @@ EthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 
   eth_hdr* eth = reinterpret_cast<eth_hdr*>(p->payload);
   if (endpointId == 0) {
-    ETHADDR32_COPY(&eth->dest, "\x01\x00\x5E\x00\x17\xAA");
+    memcpy(&eth->dest, "\x01\x00\x5E\x00\x17\xAA", sizeof(eth->dest));
   }
   else {
     EndpointId endpoint;
     endpoint.endpointId = endpointId;
-    ETHADDR32_COPY(&eth->dest, endpoint.addr);
+    memcpy(&eth->dest, endpoint.addr, sizeof(eth->dest));
   }
-  ETHADDR16_COPY(&eth->src, m_netif->hwaddr);
+  memcpy(&eth->src, m_netif->hwaddr, sizeof(eth->src));
   eth->type = PP_HTONS(0x8624);
   memcpy(reinterpret_cast<uint8_t*>(p->payload) + sizeof(eth_hdr), pkt, len);
 
