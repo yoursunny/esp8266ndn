@@ -39,7 +39,7 @@ setup()
       delete oldPb;
     }
   }
-  g_transport.begin("ESP32-BLE-NDN");
+  g_transport.begin("esp8266ndn");
   g_face.enableTracing(Serial);
   g_face.setSigningKey(g_pvtkey);
 

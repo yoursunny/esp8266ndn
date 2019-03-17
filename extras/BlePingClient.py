@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from bluepy import btle
-import pyndn
+import pyndn as ndn
 import struct
 import time
 
@@ -10,7 +10,7 @@ UUID_RX = 'cc5abb89-a541-46d8-a351-2f95a6a81f49'
 UUID_TX = '972f9527-0d83-4261-b95d-b1b2fc73bde4'
 
 
-class BleClientTransport(pyndn.transport.Transport):
+class BleClientTransport(ndn.transport.Transport):
     def isLocal(self, connectionInfo):
         return False
 
@@ -27,7 +27,7 @@ class BleClientTransport(pyndn.transport.Transport):
                 self.data = data
 
     def connect(self, connectionInfo, elementListener, onConnected):
-        self.p = btle.Peripheral(connectionInfo)
+        self.p = btle.Peripheral(connectionInfo[0], connectionInfo[1])
         self.p.setMTU(517)
         self.delegate = BleClientTransport.MyDelegate()
         self.p.setDelegate(self.delegate)
@@ -62,7 +62,7 @@ class BleClientTransport(pyndn.transport.Transport):
 class PingClient(object):
     def __init__(self, face, prefix, interval):
         self.face = face
-        self.prefix = pyndn.Name(prefix)
+        self.prefix = ndn.Name(prefix)
         self.interval = interval
         self.lastTime = 0
         self.nSent = 0
@@ -70,7 +70,7 @@ class PingClient(object):
 
     def sendInterest(self):
         self.lastTime = time.time()
-        name = pyndn.Name(self.prefix)
+        name = ndn.Name(self.prefix)
         name.appendTimestamp(int(self.lastTime * 1000))
         self.lastName = name
         print('<I %s' % (name,))
@@ -78,13 +78,14 @@ class PingClient(object):
         self.nSent += 1
 
     def processData(self, interest, data):
+        self.nRecv += 1
+        satisfyRatio = float(self.nRecv)/float(self.nSent)*100
         if interest.getName() != self.lastName:
-            rtt = 'late'
+            print('>D %s late %0.1f%%' % (data.getName(), satisfyRatio))
         else:
             rtt = time.time() - self.lastTime
-        self.nRecv += 1
-        print('>D %s %0.1fms %0.1f%%' % (data.getName(), rtt *
-                                         1000, float(self.nRecv)/float(self.nSent)*100))
+            print('>D %s %0.1fms %0.1f%%' %
+                  (data.getName(), rtt * 1000, satisfyRatio))
 
     def run(self):
         while True:
@@ -98,11 +99,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='ndnping over Bluetooth Low Energy.')
     parser.add_argument('--addr', type=str, required=True, help='BLE address')
+    parser.add_argument('--addr-type-random', action='store_true',
+                        help='set address type to "random" instead of "public"')
     parser.add_argument('--prefix', type=str,
                         default='/example/esp32/ble/ping', help='NDN prefix')
     parser.add_argument('--interval', type=int,
                         default=1000, help='interval (ms)')
     args = parser.parse_args()
-    face = pyndn.Face(BleClientTransport(), args.addr)
+
+    transport = BleClientTransport()
+    ci = (args.addr, btle.ADDR_TYPE_RANDOM if args.addr_type_random else btle.ADDR_TYPE_PUBLIC)
+    face = ndn.Face(transport, ci)
     client = PingClient(face, args.prefix, float(args.interval) / 1000)
     client.run()
