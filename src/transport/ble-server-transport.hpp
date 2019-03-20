@@ -3,11 +3,9 @@
 
 #include "transport.hpp"
 
-class BLEServer;
-class BLEService;
-class BLECharacteristic;
-
 namespace ndn {
+
+class BleServiceImpl;
 
 /** \brief a transport that acts as a Bluetooth Low Energy server
  */
@@ -26,10 +24,7 @@ public:
   send(const uint8_t* pkt, size_t len, uint64_t endpointId) final;
 
 private:
-  BLEServer* m_server;
-  BLEService* m_service;
-  BLECharacteristic* m_rx;
-  BLECharacteristic* m_tx;
+  BleServiceImpl* m_impl;
 };
 
 } // namespace ndn
