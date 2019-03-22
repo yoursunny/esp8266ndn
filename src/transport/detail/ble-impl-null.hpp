@@ -5,7 +5,7 @@
 
 namespace ndn {
 
-class BleServiceImpl;
+class BleClientImpl;
 
 class BleDeviceImplClass
 {
@@ -19,11 +19,11 @@ public:
   String
   getAddr()
   {
-    return F("00:00:00:00:00:00");
+    return F("(no-BLE)");
   }
 
   int
-  advertiseService(BleServiceImpl* service)
+  startScanConnect(BleClientImpl& client)
   {
     return __LINE__;
   }
@@ -34,12 +34,14 @@ extern BleDeviceImplClass BleDeviceImpl;
 class BleServiceImpl
 {
 public:
-  BleServiceImpl()
+  int
+  begin()
   {
+    return __LINE__;
   }
 
   int
-  begin()
+  advertise()
   {
     return __LINE__;
   }
@@ -50,9 +52,32 @@ public:
     return 0;
   }
 
-  void
+  bool
   send(const uint8_t* pkt, size_t len)
   {
+    return false;
+  }
+};
+
+class BleClientImpl
+{
+public:
+  bool
+  begin()
+  {
+    return false;
+  }
+
+  size_t
+  receive(uint8_t* buf, size_t bufSize)
+  {
+    return 0;
+  }
+
+  bool
+  send(const uint8_t* pkt, size_t len)
+  {
+    return false;
   }
 };
 

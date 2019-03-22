@@ -2,6 +2,7 @@
 #define ESP8266NDN_BLE_SERVER_TRANSPORT_HPP
 
 #include "transport.hpp"
+#include <memory>
 
 namespace ndn {
 
@@ -14,6 +15,8 @@ class BleServerTransport : public Transport
 public:
   BleServerTransport();
 
+  ~BleServerTransport();
+
   bool
   begin(const char* deviceName);
 
@@ -24,7 +27,7 @@ public:
   send(const uint8_t* pkt, size_t len, uint64_t endpointId) final;
 
 private:
-  BleServiceImpl* m_impl;
+  std::unique_ptr<BleServiceImpl> m_impl;
 };
 
 } // namespace ndn

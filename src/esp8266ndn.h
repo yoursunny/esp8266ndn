@@ -25,6 +25,7 @@
 #include "security/private-key.hpp"
 #include "security/public-key.hpp"
 
+#include "transport/ble-client-transport.hpp"
 #include "transport/ble-server-transport.hpp"
 #include "transport/ethernet-transport.hpp"
 #include "transport/lite-frag.hpp"

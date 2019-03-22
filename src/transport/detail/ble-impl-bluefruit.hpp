@@ -3,10 +3,11 @@
 
 #include "ble-uuid.hpp"
 #include <bluefruit.h>
+#include "../../core/detail/fix-maxmin.hpp"
 
 namespace ndn {
 
-class BleServiceImpl;
+class BleClientImpl;
 
 class BleDeviceImplClass
 {
@@ -15,6 +16,7 @@ public:
   init(const char* deviceName, bool enableServer, int nClients)
   {
     Bluefruit.configPrphConn(BLE_GATT_ATT_MTU_MAX, BLE_GAP_EVENT_LENGTH_DEFAULT, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+    Bluefruit.configCentralConn(BLE_GATT_ATT_MTU_MAX, BLE_GAP_EVENT_LENGTH_DEFAULT, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
     VERIFY_STATUS(Bluefruit.begin(static_cast<int>(enableServer), nClients), __LINE__);
     Bluefruit.setName(deviceName);
     Bluefruit.setTxPower(4);
@@ -35,7 +37,10 @@ public:
   }
 
   int
-  advertiseService(BleServiceImpl* service);
+  startScanConnect(BleClientImpl& client)
+  {
+    return __LINE__;
+  }
 };
 
 extern BleDeviceImplClass BleDeviceImpl;
@@ -72,6 +77,18 @@ public:
     return 0;
   }
 
+  int
+  advertise()
+  {
+    Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+    Bluefruit.Advertising.addService(*this);
+    Bluefruit.Advertising.restartOnDisconnect(true);
+    if (!Bluefruit.Advertising.start()) {
+      return __LINE__;
+    }
+    return 0;
+  }
+
   size_t
   receive(uint8_t* buf, size_t bufSize)
   {
@@ -80,11 +97,12 @@ public:
     return len;
   }
 
-  void
+  bool
   send(const uint8_t* pkt, size_t len)
   {
     m_tx.write(pkt, len);
     m_tx.notify(pkt, len);
+    return true;
   }
 
 private:
@@ -92,17 +110,27 @@ private:
   BLECharacteristic m_tx;
 };
 
-inline int
-BleDeviceImplClass::advertiseService(BleServiceImpl* service)
+class BleClientImpl
 {
-  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addService(*service);
-  Bluefruit.Advertising.restartOnDisconnect(true);
-  if (!Bluefruit.Advertising.start()) {
-    return __LINE__;
+public:
+  bool
+  begin()
+  {
+    return false;
   }
-  return 0;
-}
+
+  size_t
+  receive(uint8_t* buf, size_t bufSize)
+  {
+    return 0;
+  }
+
+  bool
+  send(const uint8_t* pkt, size_t len)
+  {
+    return false;
+  }
+};
 
 } // namespace ndn
 
