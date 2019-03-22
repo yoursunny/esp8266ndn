@@ -9,6 +9,7 @@
   BLEUUID(const_cast<uint8_t*>(array), sizeof(array), false)
 
 namespace ndn {
+namespace detail {
 
 class BleClientImpl;
 
@@ -251,6 +252,7 @@ BleDeviceImplClass::scanCb(BLEScanResults results)
   }
 }
 
+} // namespace detail
 } // namespace ndn
 
 #endif // ESP8266NDN_BLE_IMPL_ESP32_HPP

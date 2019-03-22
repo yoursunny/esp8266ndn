@@ -5,8 +5,9 @@
 #include <memory>
 
 namespace ndn {
-
+namespace detail {
 class BleServiceImpl;
+} // namespace detail
 
 /** \brief a transport that acts as a Bluetooth Low Energy server
  */
@@ -27,7 +28,7 @@ public:
   send(const uint8_t* pkt, size_t len, uint64_t endpointId) final;
 
 private:
-  std::unique_ptr<BleServiceImpl> m_impl;
+  std::unique_ptr<detail::BleServiceImpl> m_impl;
 };
 
 } // namespace ndn

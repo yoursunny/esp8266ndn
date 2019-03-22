@@ -4,6 +4,7 @@
 #include <WString.h>
 
 namespace ndn {
+namespace detail {
 
 class BleClientImpl;
 
@@ -81,6 +82,7 @@ public:
   }
 };
 
+} // namespace detail
 } // namespace ndn
 
 #endif // ESP8266NDN_BLE_IMPL_NULL_HPP

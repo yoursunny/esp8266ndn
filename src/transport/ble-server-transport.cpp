@@ -13,13 +13,13 @@ BleServerTransport::~BleServerTransport() = default;
 bool
 BleServerTransport::begin(const char* deviceName)
 {
-  int err = BleDeviceImpl.init(deviceName, true, 0);
+  int err = detail::BleDeviceImpl.init(deviceName, true, 0);
   if (err != 0) {
     BLESERVERTRANSPORT_DBG(F("device init error ") << err);
     return false;
   }
 
-  m_impl.reset(new BleServiceImpl());
+  m_impl.reset(new detail::BleServiceImpl());
   err = m_impl->begin();
   if (err != 0) {
     BLESERVERTRANSPORT_DBG(F("service begin error ") << err);
@@ -34,7 +34,7 @@ BleServerTransport::begin(const char* deviceName)
     return false;
   }
 
-  BLESERVERTRANSPORT_DBG(F("Server ready at ") << BleDeviceImpl.getAddr());
+  BLESERVERTRANSPORT_DBG(F("Server ready at ") << detail::BleDeviceImpl.getAddr());
   return true;
 }
 

@@ -13,20 +13,20 @@ BleClientTransport::~BleClientTransport() = default;
 bool
 BleClientTransport::begin()
 {
-  int err = BleDeviceImpl.init("esp8266ndn-client", false, 1);
+  int err = detail::BleDeviceImpl.init("esp8266ndn-client", false, 1);
   if (err != 0) {
     BLECLIENTTRANSPORT_DBG(F("device init error ") << err);
     return false;
   }
 
-  m_impl.reset(new BleClientImpl());
+  m_impl.reset(new detail::BleClientImpl());
   if (!m_impl->begin()) {
     BLECLIENTTRANSPORT_DBG(F("client begin failure"));
     m_impl.reset();
     return false;
   }
 
-  err = BleDeviceImpl.startScanConnect(*m_impl);
+  err = detail::BleDeviceImpl.startScanConnect(*m_impl);
   if (err != 0) {
     BLECLIENTTRANSPORT_DBG(F("device scan error ") << err);
     m_impl.reset();
