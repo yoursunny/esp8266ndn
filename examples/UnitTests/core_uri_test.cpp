@@ -21,9 +21,9 @@ public:
   String
   toString() const
   {
-    StreamString os;
+    StringPrint os;
     os.print(ndn::PrintUri{name});
-    return os;
+    return os.str;
   }
 
   void
