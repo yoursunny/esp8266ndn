@@ -4,10 +4,10 @@
 #if defined(ESP8266) || defined(ESP32)
 
 #include "transport.hpp"
+#include <memory>
 
 extern "C" {
 struct netif;
-struct pbuf;
 }
 class Print;
 
@@ -37,6 +37,8 @@ public:
   listNetifs(Print& os);
 
   EthernetTransport();
+
+  ~EthernetTransport();
 
   /** \brief Start intercepting NDN packets on a network interface.
    *  \return whether success
@@ -71,21 +73,7 @@ private:
 
 private:
   class Impl;
-  class Queue;
-
-  netif* m_netif;
-  void* m_oldInput;
-
-  /** \brief The receive queue.
-   *
-   *  This transport places intercepted packets in RX queue to be receive()'ed
-   *  later, instead of posting them via a callback, for two reasons:
-   *  (1) netif_input_fn must not block network stack for too long.
-   *  (2) ESP32 executes netif_input_fn in CPU0 and the Arduino main loop in
-   *      CPU1. Using the RX queue keeps the application in CPU1, so it does
-   *      not have to deal with multi-threading.
-   */
-  Queue* m_queue;
+  std::unique_ptr<Impl> m_impl;
 };
 
 } // namespace ndn

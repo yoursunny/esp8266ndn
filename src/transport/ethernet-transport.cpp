@@ -1,6 +1,7 @@
 #if defined(ESP8266) || defined(ESP32)
 
 #include "ethernet-transport.hpp"
+#include "detail/queue.hpp"
 #include "../core/logger.hpp"
 
 #include <lwip/init.h>
@@ -9,108 +10,49 @@
 #include <netif/etharp.h>
 #include <IPAddress.h>
 
-#if defined(ESP8266)
-#include <array>
-#elif defined(ESP32)
-#include <freertos/queue.h>
-#endif
-
 #define ETHTRANSPORT_DBG(...) DBG(EthernetTransport, __VA_ARGS__)
 
 namespace ndn {
-
-#if defined(ESP8266)
-class EthernetTransport::Queue
-{
-public:
-  Queue()
-    : m_head(0)
-    , m_tail(0)
-  {
-  }
-
-  bool
-  push(pbuf* p)
-  {
-    int newTail = (m_tail + 1) % m_arr.size();
-    if (newTail == m_head) {
-      return false;
-    }
-
-    m_arr[m_tail] = p;
-    m_tail = newTail;
-    return true;
-  }
-
-  pbuf*
-  pop()
-  {
-    if (m_head == m_tail) {
-      return nullptr;
-    }
-    pbuf* p = m_arr[m_head];
-    m_arr[m_head] = nullptr;
-    m_head = (m_head + 1) % m_arr.size();
-    return p;
-  }
-
-private:
-  std::array<pbuf*, ETHTRANSPORT_RX_QUEUE_LEN> m_arr;
-  int m_head;
-  int m_tail;
-};
-#elif defined(ESP32)
-class EthernetTransport::Queue
-{
-public:
-  Queue()
-  {
-    m_queue = xQueueCreate(ETHTRANSPORT_RX_QUEUE_LEN, sizeof(pbuf*));
-  }
-
-  ~Queue()
-  {
-    vQueueDelete(m_queue);
-  }
-
-  bool
-  push(pbuf* p)
-  {
-    BaseType_t res = xQueueSend(m_queue, &p, 0);
-    return res == pdTRUE;
-  }
-
-  pbuf*
-  pop()
-  {
-    pbuf* p;
-    if (!xQueueReceive(m_queue, &p, 0)) {
-      p = nullptr;
-    }
-    return p;
-  }
-
-private:
-  QueueHandle_t m_queue;
-};
-#endif
 
 static EthernetTransport* g_ethTransport = nullptr;
 
 class EthernetTransport::Impl
 {
 public:
-  static err_t
-  input(pbuf* p, netif* inp);
-};
+  explicit
+  Impl(netif* nif)
+    : nif(nif)
+    , oldInput(nif->input)
+  {
+    nif->input = EthernetTransport::Impl::input;
+  }
 
-err_t
-EthernetTransport::Impl::input(pbuf* p, netif* inp)
-{
-  const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(p->payload);
-  if (g_ethTransport != nullptr && g_ethTransport->m_netif == inp &&
-      p->len >= sizeof(eth_hdr) && eth->type == PP_HTONS(0x8624)) {
-    bool ok = g_ethTransport->m_queue->push(p);
+  ~Impl()
+  {
+    nif->input = this->oldInput;
+    bool ok;
+    pbuf* p;
+    while (std::tie(p, ok) = queue.pop(), ok) {
+      pbuf_free(p);
+    }
+  }
+
+  static err_t
+  input(pbuf* p, netif* inp)
+  {
+    if (g_ethTransport == nullptr) {
+      ETHTRANSPORT_DBG(F("inactive"));
+      pbuf_free(p);
+      return ERR_OK;
+    }
+
+    Impl& self = *g_ethTransport->m_impl;
+    const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(p->payload);
+    if (self.nif != inp || p->len < sizeof(eth_hdr) || eth->type != PP_HTONS(0x8624)) {
+      return self.oldInput(p, inp);
+    }
+
+    bool ok = self.queue.push(p);
     if (!ok) {
       ETHTRANSPORT_DBG(F("RX queue is full"));
       pbuf_free(p);
@@ -118,32 +60,43 @@ EthernetTransport::Impl::input(pbuf* p, netif* inp)
     return ERR_OK;
   }
 
-  return reinterpret_cast<netif_input_fn>(g_ethTransport->m_oldInput)(p, inp);
-}
+public:
+  netif* nif = nullptr;
+  netif_input_fn oldInput = nullptr;
+
+  /** \brief The receive queue.
+   *
+   *  This transport places intercepted packets in RX queue to be receive()'ed
+   *  later, instead of posting them via a callback, for two reasons:
+   *  (1) netif_input_fn must not block network stack for too long.
+   *  (2) ESP32 executes netif_input_fn in CPU0 and the Arduino main loop in
+   *      CPU1. Using the RX queue keeps the application in CPU1, so it does
+   *      not have to deal with multi-threading.
+   */
+  detail::SafeQueue<pbuf*, ETHTRANSPORT_RX_QUEUE_LEN> queue;
+};
 
 void
 EthernetTransport::listNetifs(Print& os)
 {
-  for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
-    os << netif->name[0] << netif->name[1] << netif->num
-       << ' ' << IPAddress(*reinterpret_cast<const uint32_t*>(&netif->ip_addr)) << endl;
+  for (netif* nif = netif_list; nif != nullptr; nif = nif->next) {
+    os << nif->name[0] << nif->name[1] << nif->num
+       << ' ' << IPAddress(*reinterpret_cast<const uint32_t*>(&nif->ip_addr)) << endl;
   }
 }
 
-EthernetTransport::EthernetTransport()
-  : m_netif(nullptr)
-  , m_oldInput(nullptr)
-{
-}
+EthernetTransport::EthernetTransport() = default;
+
+EthernetTransport::~EthernetTransport() = default;
 
 bool
 EthernetTransport::begin(const char ifname[2], uint8_t ifnum)
 {
   netif* found = nullptr;
-  for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
-    if (netif->name[0] == ifname[0] && netif->name[1] == ifname[1] &&
-        netif->num == ifnum) {
-      found = netif;
+  for (netif* nif = netif_list; nif != nullptr; nif = nif->next) {
+    if (nif->name[0] == ifname[0] && nif->name[1] == ifname[1] &&
+        nif->num == ifnum) {
+      found = nif;
       break;
     }
   }
@@ -160,9 +113,9 @@ EthernetTransport::begin()
 #if defined(ESP8266) && LWIP_VERSION_MAJOR == 1
   return begin("ew", 0);
 #else
-  for (netif* netif = netif_list; netif != nullptr; netif = netif->next) {
-    if (netif->name[0] == 's' && netif->name[1] == 't') {
-      return begin(netif);
+  for (netif* nif = netif_list; nif != nullptr; nif = nif->next) {
+    if (nif->name[0] == 's' && nif->name[1] == 't') {
+      return begin(nif);
     }
   }
   ETHTRANSPORT_DBG(F("no available netif"));
@@ -171,52 +124,43 @@ EthernetTransport::begin()
 }
 
 bool
-EthernetTransport::begin(netif* netif)
+EthernetTransport::begin(netif* nif)
 {
 #ifdef ESP8266
   if (LWIP_VERSION_MAJOR != 1) {
     ETHTRANSPORT_DBG(F("packet interception on ESP8266 lwip2 is untested and may not work"));
   }
 #endif // ESP8266
-  if (m_netif != nullptr) {
-    ETHTRANSPORT_DBG(F("this instance is active"));
-    return false;
-  }
   if (g_ethTransport != nullptr) {
-    ETHTRANSPORT_DBG(F("another instance is active"));
+    ETHTRANSPORT_DBG(F("an instance is active"));
     return false;
   }
 
-  m_netif = netif;
-  m_queue = new Queue();
   g_ethTransport = this;
-  m_oldInput = reinterpret_cast<void*>(m_netif->input);
-  m_netif->input = EthernetTransport::Impl::input;
-  ETHTRANSPORT_DBG(F("enabled on ") << netif->name[0] << netif->name[1] << netif->num);
+  m_impl.reset(new Impl(nif));
+  ETHTRANSPORT_DBG(F("enabled on ") << nif->name[0] << nif->name[1] << nif->num);
   return true;
 }
 
 void
 EthernetTransport::end()
 {
-  m_netif->input = reinterpret_cast<netif_input_fn>(m_oldInput);
+  m_impl.reset();
   g_ethTransport = nullptr;
-  pbuf* p;
-  while ((p = m_queue->pop()) != nullptr) {
-    pbuf_free(p);
-  }
-  delete m_queue;
-  m_oldInput = nullptr;
-  m_netif = nullptr;
   ETHTRANSPORT_DBG(F("disabled"));
 }
 
 size_t
 EthernetTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId)
 {
+  if (m_impl == nullptr) {
+    return 0;
+  }
+
   size_t pktSize = 0;
   pbuf* p;
-  while ((p = m_queue->pop()) != nullptr) {
+  bool ok;
+  while (std::tie(p, ok) = m_impl->queue.pop(), ok) {
     if (p->next != nullptr) {
       ETHTRANSPORT_DBG(F("unhandled: chained packet"));
       pbuf_free(p);
@@ -247,6 +191,10 @@ EthernetTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId)
 ndn_Error
 EthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 {
+  if (m_impl == nullptr) {
+    return NDN_ERROR_SocketTransport_socket_is_not_open;
+  }
+
   uint16_t payloadLen = max(static_cast<uint16_t>(len), static_cast<uint16_t>(46));
   uint16_t frameSize = sizeof(eth_hdr) + payloadLen;
   pbuf* p = pbuf_alloc(PBUF_RAW, frameSize, PBUF_RAM);
@@ -254,9 +202,6 @@ EthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
     return NDN_ERROR_DynamicUInt8Array_realloc_failed;
   }
   p->len = p->tot_len = frameSize;
-  if (frameSize > payloadLen) {
-    memset(p->payload, 0, frameSize);
-  }
 
   eth_hdr* eth = reinterpret_cast<eth_hdr*>(p->payload);
   if (endpointId == 0) {
@@ -267,11 +212,14 @@ EthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
     endpoint.endpointId = endpointId;
     memcpy(&eth->dest, endpoint.addr, sizeof(eth->dest));
   }
-  memcpy(&eth->src, m_netif->hwaddr, sizeof(eth->src));
+  memcpy(&eth->src, m_impl->nif->hwaddr, sizeof(eth->src));
   eth->type = PP_HTONS(0x8624);
   memcpy(reinterpret_cast<uint8_t*>(p->payload) + sizeof(eth_hdr), pkt, len);
+  if (len < payloadLen) {
+    memset(reinterpret_cast<uint8_t*>(p->payload) + sizeof(eth_hdr) + len, 0, payloadLen - len);
+  }
 
-  err_t e = m_netif->linkoutput(m_netif, p);
+  err_t e = m_impl->nif->linkoutput(m_impl->nif, p);
   pbuf_free(p);
   if (e != ERR_OK) {
     ETHTRANSPORT_DBG(F("linkoutput error ") << _DEC(e));
@@ -283,4 +231,4 @@ EthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 
 } // namespace ndn
 
-#endif // ESP8266NDN_UDP_TRANSPORT_HPP
+#endif // defined(ESP8266) || defined(ESP32)
