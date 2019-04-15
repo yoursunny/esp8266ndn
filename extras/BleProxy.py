@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from bluepy import btle
-import pyndn
+import pyndn as ndn
 import struct
 import time
 
@@ -10,7 +10,7 @@ UUID_RX = 'cc5abb89-a541-46d8-a351-2f95a6a81f49'
 UUID_TX = '972f9527-0d83-4261-b95d-b1b2fc73bde4'
 
 
-class BleClientTransport(pyndn.transport.Transport):
+class BleClientTransport(ndn.transport.Transport):
     def isLocal(self, connectionInfo):
         return False
 
@@ -74,19 +74,12 @@ if __name__ == '__main__':
     parser.add_argument('--addr', type=str, required=True, help='BLE address')
     parser.add_argument('--addr-type-random', action='store_true',
                         help='set address type to "random" instead of "public"')
-    parser.add_argument('--uuid16', action='store_true',
-                        help='use 16-bit UUIDs instead of 128-bit UUIDs')
     args = parser.parse_args()
-
-    if args.uuid16:
-        UUID_SVC = 'FF00'
-        UUID_RX = 'FF01'
-        UUID_TX = 'FF02'
 
     transport0 = BleClientTransport()
     ci0 = (args.addr, btle.ADDR_TYPE_RANDOM if args.addr_type_random else btle.ADDR_TYPE_PUBLIC)
-    transport1 = pyndn.transport.UnixTransport()
-    ci1 = pyndn.transport.UnixTransport.ConnectionInfo("/var/run/nfd.sock")
+    transport1 = ndn.transport.UnixTransport()
+    ci1 = ndn.transport.UnixTransport.ConnectionInfo("/var/run/nfd.sock")
 
     transport0.connect(ci0, BridgeRecipient(transport1), None)
     transport1.connect(ci1, BridgeRecipient(transport0), None)
