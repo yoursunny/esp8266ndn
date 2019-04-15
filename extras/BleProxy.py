@@ -67,6 +67,37 @@ class BridgeRecipient(object):
         self.other.send(element)
 
 
+class RegisterPrefixHelper(object):
+    def __init__(self, transport, ci):
+        self.face = ndn.Face(transport, ci)
+        keyChain = ndn.security.KeyChain('pib-memory:', 'tpm-memory:')
+        keyChain.createIdentityV2(ndn.Name('/tmp'))
+        self.face.setCommandSigningInfo(
+            keyChain, keyChain.getDefaultCertificateName())
+
+    def registerPrefixes(self, prefixes):
+        self.rem = len(prefixes)
+        for prefix in prefixes:
+            self.face.registerPrefix(
+                ndn.Name(prefix), None, self.onRegisterFailed, self.onRegisterSuccess)
+        while self.rem > 0:
+            self.face.processEvents()
+            time.sleep(0.1)
+        return self.rem == 0
+
+    def onRegisterFailed(self, prefix):
+        self.rem = -1
+
+    def onRegisterSuccess(self, prefix, registeredPrefixId):
+        self.rem -= 1
+
+
+def swapElementListener(transport, el):
+    if transport.__class__ != ndn.UnixTransport:
+        raise TypeError("unknown transport type")
+    transport._elementReader._elementListener = el
+
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(
@@ -74,6 +105,8 @@ if __name__ == '__main__':
     parser.add_argument('--addr', type=str, required=True, help='BLE address')
     parser.add_argument('--addr-type-random', action='store_true',
                         help='set address type to "random" instead of "public"')
+    parser.add_argument('--prefix', action='append', type=str,
+                        help='register a prefix toward BLE device')
     args = parser.parse_args()
 
     transport0 = BleClientTransport()
@@ -81,8 +114,13 @@ if __name__ == '__main__':
     transport1 = ndn.transport.UnixTransport()
     ci1 = ndn.transport.UnixTransport.ConnectionInfo("/var/run/nfd.sock")
 
+    if args.prefix is None:
+        transport1.connect(ci1, BridgeRecipient(transport0), None)
+    else:
+        RegisterPrefixHelper(transport1, ci1).registerPrefixes(args.prefix)
+        swapElementListener(transport1, BridgeRecipient(transport0))
+
     transport0.connect(ci0, BridgeRecipient(transport1), None)
-    transport1.connect(ci1, BridgeRecipient(transport0), None)
 
     while True:
         transport0.processEvents()
