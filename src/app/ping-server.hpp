@@ -23,8 +23,6 @@ public:
    */
   PingServer(Face& face, const NameLite& prefix);
 
-  ~PingServer();
-
   /** \brief let responses go to endpointId zero instead of incoming endpointId
    */
   void
@@ -57,7 +55,6 @@ private:
   processInterest(const InterestLite& interest, uint64_t endpointId) override;
 
 private:
-  Face& m_face;
   const NameLite& m_prefix;
   ProbeCallback m_probeCb;
   void* m_probeCbArg;

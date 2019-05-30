@@ -36,14 +36,11 @@ public:
 
   SimpleProducer(Face& face, const NameLite& prefix, const InterestHandler& handler);
 
-  ~SimpleProducer();
-
 private:
   bool
   processInterest(const InterestLite& interest, uint64_t endpointId) override;
 
 private:
-  Face& m_face;
   const NameLite& m_prefix;
   InterestHandler m_handler;
 };

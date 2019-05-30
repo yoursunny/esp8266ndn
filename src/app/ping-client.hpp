@@ -86,7 +86,6 @@ private:
   processNack(const NetworkNackLite& nackHeader, const InterestLite& interest, uint64_t endpointId) override;
 
 private:
-  Face& m_face;
   InterestLite& m_interest;
   uint8_t m_seqBuf[9]; ///< buffer for sequence number component
   const Interval m_pingInterval;

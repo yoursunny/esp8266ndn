@@ -45,7 +45,7 @@ public:
   /** \brief add a callback handler
    *  \param prio priority, smaller number means higher priority.
    */
-  void
+  bool
   addHandler(PacketHandler* h, int8_t prio = 0);
 
   /** \brief remove a callback handler

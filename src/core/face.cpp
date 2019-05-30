@@ -92,10 +92,15 @@ Face::~Face()
   }
 }
 
-void
+bool
 Face::addHandler(PacketHandler* h, int8_t prio)
 {
+  if (h->m_face != nullptr) {
+    return false;
+  }
+  h->m_face = this;
   h->m_prio = prio;
+
   if (m_handler == nullptr || m_handler->m_prio >= prio) {
     h->m_next = m_handler;
     m_handler = h;
@@ -108,11 +113,17 @@ Face::addHandler(PacketHandler* h, int8_t prio)
     h->m_next = cur->m_next;
     cur->m_next = h;
   }
+  return true;
 }
 
 bool
 Face::removeHandler(PacketHandler* h)
 {
+  if (h->m_face != this) {
+    return false;
+  }
+  h->m_face = nullptr;
+
   for (PacketHandler** cur = &m_handler; *cur != nullptr; cur = &(*cur)->m_next) {
     if (*cur == h) {
       *cur = h->m_next;

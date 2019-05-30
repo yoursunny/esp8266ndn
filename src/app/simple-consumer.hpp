@@ -62,7 +62,6 @@ public:
   InterestLite& interest;
 
 private:
-  Face& m_face;
   int m_timeoutDuration;
   unsigned long m_timeoutAt;
   Result m_result;

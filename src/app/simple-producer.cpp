@@ -23,16 +23,10 @@ SimpleProducer::Context::sendNack(const NetworkNackLite& nack) const
 }
 
 SimpleProducer::SimpleProducer(Face& face, const NameLite& prefix, const InterestHandler& handler)
-  : m_face(face)
+  : PacketHandler(face)
   , m_prefix(prefix)
   , m_handler(handler)
 {
-  m_face.addHandler(this);
-}
-
-SimpleProducer::~SimpleProducer()
-{
-  m_face.removeHandler(this);
 }
 
 bool
@@ -42,7 +36,7 @@ SimpleProducer::processInterest(const InterestLite& interest, uint64_t endpointI
     return false;
   }
 
-  Context ctx(m_face, interest, endpointId);
+  Context ctx(*getFace(), interest, endpointId);
   return m_handler(ctx, interest);
 }
 

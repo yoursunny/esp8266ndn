@@ -31,7 +31,7 @@ determineTimeout(int pingTimeout, const InterestLite& interest)
 }
 
 PingClient::PingClient(Face& face, InterestLite& interest, Interval pingInterval, int pingTimeout)
-  : m_face(face)
+  : PacketHandler(face)
   , m_interest(interest)
   , m_pingInterval(pingInterval)
   , m_pingTimeout(determineTimeout(pingTimeout, interest))
@@ -43,13 +43,6 @@ PingClient::PingClient(Face& face, InterestLite& interest, Interval pingInterval
   if (m_pingInterval.min <= m_pingTimeout) {
     PINGCLIENT_DBG(F("ERROR: minimum interval should be greater than timeout"));
   }
-
-  m_face.addHandler(this);
-}
-
-PingClient::~PingClient()
-{
-  m_face.removeHandler(this);
 }
 
 uint32_t
@@ -131,7 +124,7 @@ PingClient::probe()
   name.appendSequenceNumber(seq, m_seqBuf, sizeof(m_seqBuf));
 
   PINGCLIENT_DBG(F("probe seq=") << _HEX(seq));
-  m_face.sendInterest(m_interest);
+  getFace()->sendInterest(m_interest);
 
   m_isPending = true;
   m_lastProbe = millis();

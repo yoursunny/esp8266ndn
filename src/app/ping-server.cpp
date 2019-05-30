@@ -8,17 +8,11 @@
 namespace ndn {
 
 PingServer::PingServer(Face& face, const NameLite& prefix)
-  : m_face(face)
+  : PacketHandler(face)
   , m_prefix(prefix)
   , m_probeCb(nullptr)
   , m_wantEndpointIdZero(false)
 {
-  m_face.addHandler(this);
-}
-
-PingServer::~PingServer()
-{
-  m_face.removeHandler(this);
 }
 
 bool
@@ -44,7 +38,7 @@ PingServer::processInterest(const InterestLite& interest, uint64_t endpointId)
   }
 
   data.setContent(BlobLite(payload, payloadSize));
-  m_face.sendData(data, m_wantEndpointIdZero ? 0 : endpointId);
+  getFace()->sendData(data, m_wantEndpointIdZero ? 0 : endpointId);
   return true;
 }
 
