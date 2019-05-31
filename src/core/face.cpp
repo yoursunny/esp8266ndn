@@ -101,18 +101,11 @@ Face::addHandler(PacketHandler* h, int8_t prio)
   h->m_face = this;
   h->m_prio = prio;
 
-  if (m_handler == nullptr || m_handler->m_prio >= prio) {
-    h->m_next = m_handler;
-    m_handler = h;
+  PacketHandler** next = &m_handler;
+  for (; *next != nullptr && (*next)->m_prio < prio; next = &(*next)->m_next) {
   }
-  else {
-    PacketHandler* cur = m_handler;
-    while (cur->m_next != nullptr && cur->m_next->m_prio < prio) {
-      cur = cur->m_next;
-    }
-    h->m_next = cur->m_next;
-    cur->m_next = h;
-  }
+  h->m_next = *next;
+  *next = h;
   return true;
 }
 

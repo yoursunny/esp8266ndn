@@ -8,6 +8,7 @@
 #include "app/autoconfig.hpp"
 #include "app/ping-client.hpp"
 #include "app/ping-server.hpp"
+#include "app/rdr-dataset-server.hpp"
 #include "app/simple-consumer.hpp"
 #include "app/simple-producer.hpp"
 
