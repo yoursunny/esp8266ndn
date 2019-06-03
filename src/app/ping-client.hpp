@@ -41,8 +41,6 @@ public:
    */
   PingClient(Face& face, InterestLite& interest, Interval pingInterval, int pingTimeout = -1);
 
-  ~PingClient();
-
   /** \brief loop the client
    */
   void

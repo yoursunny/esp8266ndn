@@ -18,7 +18,7 @@ public:
   {
     Bluefruit.configPrphConn(BLE_GATT_ATT_MTU_MAX, BLE_GAP_EVENT_LENGTH_DEFAULT, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
     Bluefruit.configCentralConn(BLE_GATT_ATT_MTU_MAX, BLE_GAP_EVENT_LENGTH_DEFAULT, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
-    VERIFY_STATUS(Bluefruit.begin(static_cast<int>(enableServer), nClients), __LINE__);
+    VERIFY(Bluefruit.begin(static_cast<int>(enableServer), nClients), __LINE__);
     Bluefruit.setName(deviceName);
     Bluefruit.setTxPower(4);
     return 0;
@@ -28,7 +28,7 @@ public:
   getAddr()
   {
     uint8_t mac[6]; // reversed
-    uint8_t addrType = Bluefruit.Gap.getAddr(mac);
+    uint8_t addrType = Bluefruit.getAddr(mac);
     char addr[18];
     snprintf(addr, sizeof(addr), "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
     if (addrType == BLE_GAP_ADDR_TYPE_RANDOM_STATIC) {
@@ -61,7 +61,7 @@ public:
   {
     VERIFY_STATUS(this->BLEService::begin(), __LINE__);
 
-    uint16_t mtu = Bluefruit.Gap.getMaxMtuByConnCfg(CONN_CFG_PERIPHERAL);
+    uint16_t mtu = Bluefruit.getMaxMtu(CONN_CFG_PERIPHERAL);
 
     m_rx.setProperties(CHR_PROPS_WRITE | CHR_PROPS_NOTIFY);
     m_rx.setPermission(SECMODE_OPEN, SECMODE_OPEN);

@@ -17,7 +17,8 @@ env:
       CORECOMMIT=7df50a97d17b0953ea01cad0355410a66bd8b8b4 \
       BOARD='--board espressif:esp32:heltec_wifi_kit_32 --pref custom_FlashFreq=heltec_wifi_kit_32_80'
     - PLATFORM=nrf52 \
-      BOARD='--board adafruit:nrf52:feather52832 --pref custom_softdevice=feather52832_s132v6'
+      BOARD='--board adafruit:nrf52:feather52832 --pref custom_softdevice=feather52832_s132v6' \
+      NRF52VERSION=0.10.1
 
 before_install:
   - sudo iptables -A INPUT -p udp -m udp --dport 5353 -j DROP # https://github.com/per1234/arduino-ci-script/issues/1
@@ -38,7 +39,7 @@ install:
   - |
     if [[ $PLATFORM == nrf52 ]]; then
       arduino --pref "boardsmanager.additional.urls=https://www.adafruit.com/package_adafruit_index.json" --save-prefs
-      arduino --install-boards adafruit:nrf52
+      arduino --install-boards adafruit:nrf52:$NRF52VERSION
       sudo pip3 install -U pip
       sudo pip3 install adafruit-nrfutil
     elif [[ $PLATFORM =~ ^esp ]]; then
