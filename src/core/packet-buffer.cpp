@@ -11,7 +11,8 @@
 namespace ndn {
 
 PacketBuffer::PacketBuffer(const Options& options)
-  : m_buf(nullptr)
+  : endpointId(0)
+  , m_buf(nullptr)
   , m_netPkt(nullptr)
   , m_nameComps(nullptr)
   , m_keyNameComps(nullptr)
@@ -36,6 +37,7 @@ PacketBuffer::~PacketBuffer()
 std::tuple<uint8_t*, size_t>
 PacketBuffer::useBuffer()
 {
+  endpointId = 0;
   m_netPkt = nullptr;
   m_netPktLen = 0;
   m_signedBegin = 0;

@@ -18,7 +18,7 @@ Transport::loop()
   bool ok = false;
   for (std::tie(pb, ok) = m_rxQueueOut.pop(); ok; std::tie(pb, ok) = m_rxQueueOut.pop()) {
     --m_nRxBufs;
-    m_rxCb(m_rxCbArg, pb, 0); // XXX need endpointId
+    m_rxCb(m_rxCbArg, pb);
   }
 }
 
@@ -55,7 +55,7 @@ Transport::beforeReceive()
 }
 
 void
-Transport::afterReceive(PacketBuffer* pb, size_t pktSize, uint64_t endpointId, bool isAsync)
+Transport::afterReceive(PacketBuffer* pb, size_t pktSize, bool isAsync)
 {
   if (pktSize == 0 || m_rxCb == nullptr) {
     pushReceiveBuffer(pb);
@@ -64,7 +64,7 @@ Transport::afterReceive(PacketBuffer* pb, size_t pktSize, uint64_t endpointId, b
 
   ndn_Error e = pb->parse(pktSize);
   if (e != NDN_ERROR_success) {
-    TRANSPORT_DBG("packet parse error " << e << " endpoint=" << endpointId);
+    TRANSPORT_DBG("packet parse error " << e << " endpoint=" << pb->endpointId);
     pushReceiveBuffer(pb);
     return;
   }
@@ -77,13 +77,14 @@ Transport::afterReceive(PacketBuffer* pb, size_t pktSize, uint64_t endpointId, b
   }
   else {
     --m_nRxBufs;
-    m_rxCb(m_rxCbArg, pb, endpointId);
+    m_rxCb(m_rxCbArg, pb);
   }
 }
 
 void
 PollModeTransport::loop()
 {
+  Transport::loop();
   PacketBuffer* pb = beforeReceive();
   if (pb == nullptr) {
     return;
@@ -91,9 +92,8 @@ PollModeTransport::loop()
   uint8_t* buf = nullptr;
   size_t bufSize = 0;
   std::tie(buf, bufSize) = pb->useBuffer();
-  uint64_t endpointId = 0;
-  size_t pktSize = receive(buf, bufSize, endpointId);
-  afterReceive(pb, pktSize, endpointId, false);
+  size_t pktSize = receive(buf, bufSize, pb->endpointId);
+  afterReceive(pb, pktSize, false);
 }
 
 } // namespace ndn

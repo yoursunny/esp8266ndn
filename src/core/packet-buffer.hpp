@@ -107,6 +107,9 @@ private:
   VerifyResult
   verifySig(const PublicKey& pubKey, const ndn::BlobLite& sig) const;
 
+public:
+  uint64_t endpointId;
+
 private:
   uint8_t* m_buf;
   const uint8_t* m_netPkt;

@@ -154,10 +154,10 @@ public:
 
 private:
   static void
-  transportReceive(void* self, PacketBuffer* pb, uint64_t endpointId);
+  transportReceive(void* self, PacketBuffer* pb);
 
   void
-  receive(PacketBuffer* pb, uint64_t endpointId);
+  receive(PacketBuffer* pb);
 
   /** \brief send an Interest, possibly after signing
    */

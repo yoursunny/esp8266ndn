@@ -20,7 +20,7 @@ public:
   virtual void
   loop();
 
-  typedef void (*ReceiveCallback)(void* arg, PacketBuffer* pb, uint64_t endpointId);
+  typedef void (*ReceiveCallback)(void* arg, PacketBuffer* pb);
 
   /** \brief set a callback to be invoked when a packet is received
    */
@@ -59,7 +59,7 @@ protected:
    *  \param isAsync if true, ReceiveCallback cannot be invoked within this function
    */
   void
-  afterReceive(PacketBuffer* pb, size_t pktSize, uint64_t endpointId, bool isAsync);
+  afterReceive(PacketBuffer* pb, size_t pktSize, bool isAsync);
 
   void
   invokeRxCb();

@@ -11,7 +11,6 @@ SimpleConsumer::SimpleConsumer(Face& face, InterestLite& interest, int timeout)
   , m_timeoutAt(0)
   , m_result(Result::NONE)
   , m_pb(nullptr)
-  , m_endpointId(0)
 {
 }
 
@@ -80,6 +79,15 @@ SimpleConsumer::getNack() const
   return m_pb->getNack();
 }
 
+uint64_t
+SimpleConsumer::getEndpointId() const
+{
+  if (m_pb == nullptr) {
+    return 0;
+  }
+  return m_pb->endpointId;
+}
+
 bool
 SimpleConsumer::processData(const DataLite& data, uint64_t endpointId)
 {
@@ -89,7 +97,7 @@ SimpleConsumer::processData(const DataLite& data, uint64_t endpointId)
 
   m_result = Result::DATA;
   m_pb = getFace()->swapPacketBuffer(m_pb);
-  m_endpointId = endpointId;
+  m_pb->endpointId = endpointId;
   return true;
 }
 
@@ -102,7 +110,7 @@ SimpleConsumer::processNack(const NetworkNackLite& nackHeader, const InterestLit
 
   m_result = Result::NACK;
   m_pb = getFace()->swapPacketBuffer(m_pb);
-  m_endpointId = endpointId;
+  m_pb->endpointId = endpointId;
   return true;
 }
 

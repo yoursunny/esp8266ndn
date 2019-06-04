@@ -168,13 +168,13 @@ Face::loop(int packetLimit)
 }
 
 void
-Face::transportReceive(void* self, PacketBuffer* pb, uint64_t endpointId)
+Face::transportReceive(void* self, PacketBuffer* pb)
 {
-  static_cast<Face*>(self)->receive(pb, endpointId);
+  static_cast<Face*>(self)->receive(pb);
 }
 
 void
-Face::receive(PacketBuffer* pb, uint64_t endpointId)
+Face::receive(PacketBuffer* pb)
 {
   m_pb = pb;
   switch (m_pb->getPktType()) {
@@ -182,13 +182,13 @@ Face::receive(PacketBuffer* pb, uint64_t endpointId)
       bool isAccepted = false;
       const InterestLite& interest = *m_pb->getInterest();
       for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
-        isAccepted = h->processInterest(interest, endpointId);
+        isAccepted = h->processInterest(interest, m_pb->endpointId);
       }
       if (!isAccepted) {
         if (m_wantNack) {
           ndn::NetworkNackLite nack;
           nack.setReason(ndn_NetworkNackReason_NO_ROUTE);
-          this->sendNack(nack, interest, endpointId);
+          this->sendNack(nack, interest, m_pb->endpointId);
         }
         else {
           FACE_DBG(F("received Interest, no handler"));
@@ -200,7 +200,7 @@ Face::receive(PacketBuffer* pb, uint64_t endpointId)
       bool isAccepted = false;
       const DataLite& data = *m_pb->getData();
       for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
-        isAccepted = h->processData(data, endpointId);
+        isAccepted = h->processData(data, m_pb->endpointId);
       }
       if (!isAccepted) {
         FACE_DBG(F("received Data, no handler"));
@@ -212,7 +212,7 @@ Face::receive(PacketBuffer* pb, uint64_t endpointId)
       const NetworkNackLite& nackHeader = *m_pb->getNack();
       const InterestLite& interest = *m_pb->getInterest();
       for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
-        isAccepted = h->processNack(nackHeader, interest, endpointId);
+        isAccepted = h->processNack(nackHeader, interest, m_pb->endpointId);
       }
       if (!isAccepted) {
         FACE_DBG(F("received Nack, no handler"));

@@ -40,10 +40,7 @@ public:
   getNack() const;
 
   uint64_t
-  getEndpointId() const
-  {
-    return m_endpointId;
-  }
+  getEndpointId() const;
 
   bool
   verify(const PublicKey& pubKey) const;
@@ -66,7 +63,6 @@ private:
   unsigned long m_timeoutAt;
   Result m_result;
   PacketBuffer* m_pb;
-  uint64_t m_endpointId;
 };
 
 } // namespace ndn
