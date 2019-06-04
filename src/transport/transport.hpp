@@ -2,6 +2,7 @@
 #define ESP8266NDN_TRANSPORT_HPP
 
 #include "../core/packet-buffer.hpp"
+#include "detail/queue.hpp"
 
 namespace ndn {
 
@@ -29,7 +30,10 @@ public:
   /** \brief return number of receive buffers
    */
   size_t
-  countReceiveBuffer() const;
+  countReceiveBuffer() const
+  {
+    return m_nRxBufs;
+  }
 
   /** \brief add a receive buffer
    */
@@ -50,15 +54,23 @@ protected:
   PacketBuffer*
   beforeReceive();
 
-  /** \brief notify a packet has been received
+  /** \brief notify a packet has been received, or return an empty buffer
+   *  \param pktSize if zero, pb is returned as empty buffer
+   *  \param isAsync if true, ReceiveCallback cannot be invoked within this function
    */
   void
-  afterReceive(PacketBuffer* pb, size_t pktSize, uint64_t endpointId);
+  afterReceive(PacketBuffer* pb, size_t pktSize, uint64_t endpointId, bool isAsync);
+
+  void
+  invokeRxCb();
 
 private:
   ReceiveCallback m_rxCb = nullptr;
   void* m_rxCbArg = nullptr;
-  PacketBuffer* m_pb = nullptr;
+  size_t m_nRxBufs = 0;
+  static constexpr int s_rxQueueCap = 4;
+  detail::SafeQueue<PacketBuffer*, s_rxQueueCap> m_rxQueueIn;
+  detail::SafeQueue<PacketBuffer*, s_rxQueueCap> m_rxQueueOut;
 };
 
 /** \brief a PollModeTransport converts poll-mode RX to push-mode RX
