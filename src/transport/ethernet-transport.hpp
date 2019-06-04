@@ -19,7 +19,7 @@ static const int ETHTRANSPORT_RX_QUEUE_LEN = 4;
 
 /** \brief a transport that communicates over Ethernet
  */
-class EthernetTransport : public Transport
+class EthernetTransport : public PollModeTransport
 {
 public:
   /** \brief interpretation of endpointId

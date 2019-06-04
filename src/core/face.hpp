@@ -98,10 +98,14 @@ public:
   PacketBuffer*
   swapPacketBuffer(PacketBuffer* pb);
 
-  /** \brief receive and process up to \p packetLimit packets
+  /** \brief receive and process packets
    */
   void
-  loop(int packetLimit = 4);
+  loop();
+
+  [[deprecated]]
+  void
+  loop(int packetLimit);
 
   /** \brief verify the signature on current Interest against given public key
    *
@@ -149,8 +153,11 @@ public:
   sendNack(const NetworkNackLite& nack, const InterestLite& interest, uint64_t endpointId = 0);
 
 private:
-  ndn_Error
-  receive(uint64_t& endpointId);
+  static void
+  transportReceive(void* self, PacketBuffer* pb, uint64_t endpointId);
+
+  void
+  receive(PacketBuffer* pb, uint64_t endpointId);
 
   /** \brief send an Interest, possibly after signing
    */

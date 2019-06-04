@@ -20,7 +20,7 @@ namespace ndn {
  *  \endcode
  */
 template<typename Lora>
-class LoraTransport : public Transport
+class LoraTransport : public PollModeTransport
 {
 public:
   explicit

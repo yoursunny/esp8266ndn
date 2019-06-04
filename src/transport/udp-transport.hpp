@@ -15,7 +15,7 @@ namespace ndn {
 
 /** \brief a transport that communicates over UDP tunnel to a remote router
  */
-class UdpTransport : public Transport
+class UdpTransport : public PollModeTransport
 {
 public:
   /** \brief interpretation of endpointId

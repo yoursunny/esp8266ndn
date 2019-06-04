@@ -8,11 +8,11 @@ namespace ndn {
 /** \brief a transport wrapper that supports NDN-Lite Fragmentation protocol
  *  \sa https://github.com/named-data-iot/ndn-lite-wiki/blob/0b9b7fa7c2fef81f24030b69d7b256c36fb30f91/Overview.md#features
  */
-class LiteFrag : public Transport
+class LiteFrag : public PollModeTransport
 {
 public:
   explicit
-  LiteFrag(Transport& inner);
+  LiteFrag(PollModeTransport& inner);
 
   ~LiteFrag();
 
@@ -46,7 +46,7 @@ private:
   reassemble(uint8_t* buf, size_t bufSize);
 
 public:
-  Transport& inner;
+  PollModeTransport& inner;
 
 private:
   uint8_t* m_rbuf;

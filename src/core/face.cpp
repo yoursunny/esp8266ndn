@@ -83,6 +83,7 @@ Face::Face(Transport& transport)
   , m_sigBuf(0)
   , m_signingKey(nullptr)
 {
+  m_transport.onReceive(&Face::transportReceive, this);
 }
 
 Face::~Face()
@@ -147,81 +148,78 @@ Face::swapPacketBuffer(PacketBuffer* pb)
 }
 
 void
-Face::loop(int packetLimit)
+Face::loop()
 {
-  while (--packetLimit >= 0) {
-    if (m_pb == nullptr) {
-      m_pb = new PacketBuffer({});
-    }
-    uint64_t endpointId;
-    ndn_Error e = this->receive(endpointId);
-    if (e) {
-      FACE_DBG(F("receive error ") << _DEC(e));
-    }
-    else {
-      switch (m_pb->getPktType()) {
-        case PacketType::NONE:
-          return; // no more packets
-        case PacketType::INTEREST: {
-          bool isAccepted = false;
-          const InterestLite& interest = *m_pb->getInterest();
-          for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
-            isAccepted = h->processInterest(interest, endpointId);
-          }
-          if (!isAccepted) {
-            if (m_wantNack) {
-              ndn::NetworkNackLite nack;
-              nack.setReason(ndn_NetworkNackReason_NO_ROUTE);
-              this->sendNack(nack, interest, endpointId);
-            }
-            else {
-              FACE_DBG(F("received Interest, no handler"));
-            }
-          }
-          break;
-        }
-        case PacketType::DATA: {
-          bool isAccepted = false;
-          const DataLite& data = *m_pb->getData();
-          for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
-            isAccepted = h->processData(data, endpointId);
-          }
-          if (!isAccepted) {
-            FACE_DBG(F("received Data, no handler"));
-          }
-          break;
-        }
-        case PacketType::NACK: {
-          bool isAccepted = false;
-          const NetworkNackLite& nackHeader = *m_pb->getNack();
-          const InterestLite& interest = *m_pb->getInterest();
-          for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
-            isAccepted = h->processNack(nackHeader, interest, endpointId);
-          }
-          if (!isAccepted) {
-            FACE_DBG(F("received Nack, no handler"));
-          }
-          break;
-        }
-      }
-    }
-    yield();
+  if (m_pb != nullptr) {
+    m_transport.pushReceiveBuffer(m_pb);
+    m_pb = nullptr;
   }
+  if (m_transport.countReceiveBuffer() < 1) {
+    // TODO provide receive buffer earlier
+    m_transport.pushReceiveBuffer(new PacketBuffer({}));
+  }
+  m_transport.loop();
 }
 
-ndn_Error
-Face::receive(uint64_t& endpointId)
+void
+Face::loop(int packetLimit)
 {
-  uint8_t* buf;
-  size_t bufSize;
-  std::tie(buf, bufSize) = m_pb->useBuffer();
+  loop();
+}
 
-  size_t pktSize = m_transport.receive(buf, bufSize, endpointId);
-  if (pktSize == 0) {
-    return NDN_ERROR_success;
+void
+Face::transportReceive(void* self, PacketBuffer* pb, uint64_t endpointId)
+{
+  static_cast<Face*>(self)->receive(pb, endpointId);
+}
+
+void
+Face::receive(PacketBuffer* pb, uint64_t endpointId)
+{
+  m_pb = pb;
+  switch (m_pb->getPktType()) {
+    case PacketType::INTEREST: {
+      bool isAccepted = false;
+      const InterestLite& interest = *m_pb->getInterest();
+      for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
+        isAccepted = h->processInterest(interest, endpointId);
+      }
+      if (!isAccepted) {
+        if (m_wantNack) {
+          ndn::NetworkNackLite nack;
+          nack.setReason(ndn_NetworkNackReason_NO_ROUTE);
+          this->sendNack(nack, interest, endpointId);
+        }
+        else {
+          FACE_DBG(F("received Interest, no handler"));
+        }
+      }
+      break;
+    }
+    case PacketType::DATA: {
+      bool isAccepted = false;
+      const DataLite& data = *m_pb->getData();
+      for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
+        isAccepted = h->processData(data, endpointId);
+      }
+      if (!isAccepted) {
+        FACE_DBG(F("received Data, no handler"));
+      }
+      break;
+    }
+    case PacketType::NACK: {
+      bool isAccepted = false;
+      const NetworkNackLite& nackHeader = *m_pb->getNack();
+      const InterestLite& interest = *m_pb->getInterest();
+      for (PacketHandler* h = m_handler; h != nullptr && !isAccepted; h = h->m_next) {
+        isAccepted = h->processNack(nackHeader, interest, endpointId);
+      }
+      if (!isAccepted) {
+        FACE_DBG(F("received Nack, no handler"));
+      }
+      break;
+    }
   }
-
-  return m_pb->parse(pktSize);
 }
 
 bool

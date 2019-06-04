@@ -11,7 +11,7 @@ class BleClientImpl;
 
 /** \brief a transport that acts as a Bluetooth Low Energy client
  */
-class BleClientTransport : public Transport
+class BleClientTransport : public PollModeTransport
 {
 public:
   BleClientTransport();

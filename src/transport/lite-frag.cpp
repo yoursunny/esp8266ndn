@@ -19,7 +19,7 @@ enum {
   LiteFragHdr_b0_SEQ_MASK = 0x1F,
 };
 
-LiteFrag::LiteFrag(Transport& inner)
+LiteFrag::LiteFrag(PollModeTransport& inner)
   : inner(inner)
   , m_rbuf(nullptr)
   , m_rbufSize(0)

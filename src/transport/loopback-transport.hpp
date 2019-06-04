@@ -13,7 +13,7 @@ namespace ndn {
  *
  *  This transport can store one packet. Additional received packets are lost.
  */
-class LoopbackTransport : public Transport
+class LoopbackTransport : public PollModeTransport
 {
 public:
   LoopbackTransport();

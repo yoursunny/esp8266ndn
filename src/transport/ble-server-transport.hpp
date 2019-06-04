@@ -11,7 +11,7 @@ class BleServiceImpl;
 
 /** \brief a transport that acts as a Bluetooth Low Energy server
  */
-class BleServerTransport : public Transport
+class BleServerTransport : public PollModeTransport
 {
 public:
   BleServerTransport();
