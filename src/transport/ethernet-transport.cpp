@@ -1,7 +1,6 @@
 #if defined(ESP8266) || defined(ESP32)
 
 #include "ethernet-transport.hpp"
-#include "detail/queue.hpp"
 #include "../core/logger.hpp"
 
 #include <lwip/init.h>
@@ -30,11 +29,6 @@ public:
   ~Impl()
   {
     nif->input = this->oldInput;
-    bool ok;
-    pbuf* p;
-    while (std::tie(p, ok) = queue.pop(), ok) {
-      pbuf_free(p);
-    }
   }
 
   static err_t
@@ -52,28 +46,47 @@ public:
       return self.oldInput(p, inp);
     }
 
-    bool ok = self.queue.push(p);
-    if (!ok) {
-      ETHTRANSPORT_DBG(F("RX queue is full"));
-      pbuf_free(p);
-    }
+    self.receive(p);
+    pbuf_free(p);
     return ERR_OK;
+  }
+
+  void
+  receive(pbuf* p)
+  {
+    if (p->next != nullptr) {
+      ETHTRANSPORT_DBG(F("unhandled: chained packet"));
+      return;
+    }
+
+    PacketBuffer* pb = g_ethTransport->beforeReceive();
+    if (pb == nullptr) {
+      return;
+    }
+
+    uint8_t* buf = nullptr;
+    size_t bufSize = 0;
+    std::tie(buf, bufSize) = pb->useBuffer();
+    if (p->tot_len > bufSize) {
+      ETHTRANSPORT_DBG(F("insufficient receive buffer: tot_len=") << _DEC(p->tot_len));
+      g_ethTransport->afterReceive(pb, 0, true);
+      return;
+    }
+
+    const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(p->payload);
+    EthernetTransport::EndpointId endpoint = {0};
+    memcpy(endpoint.addr, &eth->src, 6);
+    endpoint.isMulticast = 0x01 & (*reinterpret_cast<const uint8_t*>(&eth->dest));
+    pb->endpointId = endpoint.endpointId;
+
+    size_t pktSize = p->tot_len - sizeof(eth_hdr);
+    memcpy(buf, reinterpret_cast<const uint8_t*>(p->payload) + sizeof(eth_hdr), pktSize);
+    g_ethTransport->afterReceive(pb, pktSize, true);
   }
 
 public:
   netif* nif = nullptr;
   netif_input_fn oldInput = nullptr;
-
-  /** \brief The receive queue.
-   *
-   *  This transport places intercepted packets in RX queue to be receive()'ed
-   *  later, instead of posting them via a callback, for two reasons:
-   *  (1) netif_input_fn must not block network stack for too long.
-   *  (2) ESP32 executes netif_input_fn in CPU0 and the Arduino main loop in
-   *      CPU1. Using the RX queue keeps the application in CPU1, so it does
-   *      not have to deal with multi-threading.
-   */
-  detail::SafeQueue<pbuf*, ETHTRANSPORT_RX_QUEUE_LEN> queue;
 };
 
 void
@@ -148,44 +161,6 @@ EthernetTransport::end()
   m_impl.reset();
   g_ethTransport = nullptr;
   ETHTRANSPORT_DBG(F("disabled"));
-}
-
-size_t
-EthernetTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId)
-{
-  if (m_impl == nullptr) {
-    return 0;
-  }
-
-  size_t pktSize = 0;
-  pbuf* p;
-  bool ok;
-  while (std::tie(p, ok) = m_impl->queue.pop(), ok) {
-    if (p->next != nullptr) {
-      ETHTRANSPORT_DBG(F("unhandled: chained packet"));
-      pbuf_free(p);
-      continue;
-    }
-
-    if (p->tot_len > bufSize) {
-      ETHTRANSPORT_DBG(F("insufficient receive buffer: tot_len=") << _DEC(p->tot_len));
-      pbuf_free(p);
-      continue;
-    }
-
-    const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(p->payload);
-    EndpointId endpoint = {0};
-    memcpy(endpoint.addr, &eth->src, 6);
-    endpoint.isMulticast = 0x01 & (*reinterpret_cast<const uint8_t*>(&eth->dest));
-    endpointId = endpoint.endpointId;
-
-    pktSize = p->tot_len - sizeof(eth_hdr);
-    memcpy(buf, reinterpret_cast<const uint8_t*>(p->payload) + sizeof(eth_hdr), pktSize);
-
-    pbuf_free(p);
-    break;
-  }
-  return pktSize;
 }
 
 ndn_Error

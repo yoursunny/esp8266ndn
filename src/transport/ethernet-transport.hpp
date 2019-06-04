@@ -13,13 +13,9 @@ class Print;
 
 namespace ndn {
 
-/** \brief Receive queue length of EthernetTransport.
- */
-static const int ETHTRANSPORT_RX_QUEUE_LEN = 4;
-
 /** \brief a transport that communicates over Ethernet
  */
-class EthernetTransport : public PollModeTransport
+class EthernetTransport : public Transport
 {
 public:
   /** \brief interpretation of endpointId
@@ -38,7 +34,7 @@ public:
 
   EthernetTransport();
 
-  ~EthernetTransport();
+  ~EthernetTransport() override;
 
   /** \brief Start intercepting NDN packets on a network interface.
    *  \return whether success
@@ -54,12 +50,6 @@ public:
 
   void
   end();
-
-  /** \begin receive a packet
-   *  \param[out] endpointId identity of remote endpoint and whether packet was multicast
-   */
-  size_t
-  receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId) final;
 
   /** \begin transmit a packet
    *  \param endpointId identity of remote endpoint, zero for sending to multicast group
