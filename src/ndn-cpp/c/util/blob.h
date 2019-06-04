@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2018 Regents of the University of California.
+ * Copyright (C) 2013-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -48,6 +48,17 @@ static __inline void
 ndn_Blob_setFromBlob(struct ndn_Blob *self, const struct ndn_Blob *other)
 {
   *self = *other;
+}
+
+/**
+ * Get the number of bytes in the buffer.
+ * @param self A pointer to this ndn_Blob struct.
+ * @return The number of bytes in the buffer, or 0 if the buffer pointer is null.
+ */
+static __inline size_t
+ndn_Blob_size(const struct ndn_Blob *self)
+{
+  return !self->value ? 0 : self->length;
 }
 
 /**

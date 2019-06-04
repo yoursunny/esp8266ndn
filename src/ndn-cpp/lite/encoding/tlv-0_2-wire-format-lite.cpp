@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2018 Regents of the University of California.
+ * Copyright (C) 2015-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -192,6 +192,24 @@ Tlv0_2WireFormatLite::decodeEncryptedContent
    size_t inputLength)
 {
   return ndn_Tlv0_2WireFormat_decodeEncryptedContent
+    (&encryptedContent, input, inputLength);
+}
+
+ndn_Error
+Tlv0_2WireFormatLite::encodeEncryptedContentV2
+  (const EncryptedContentLite& encryptedContent,
+   DynamicUInt8ArrayLite& output, size_t* encodingLength)
+{
+  return ndn_Tlv0_2WireFormat_encodeEncryptedContentV2
+    (&encryptedContent, &output, encodingLength);
+}
+
+ndn_Error
+Tlv0_2WireFormatLite::decodeEncryptedContentV2
+  (EncryptedContentLite& encryptedContent, const uint8_t* input,
+   size_t inputLength)
+{
+  return ndn_Tlv0_2WireFormat_decodeEncryptedContentV2
     (&encryptedContent, input, inputLength);
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016-2018 Regents of the University of California.
+ * Copyright (C) 2016-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ extern "C" {
 #endif
 
 /**
- * Encode encryptedContent as an NDN-TLV EncryptedContent.
+ * Encode the EncryptedContent v1 in NDN-TLV.
  * @param encryptedContent A pointer to the ndn_EncryptedContent struct to
  * encode.
  * @param encoder A pointer to the ndn_TlvEncoder struct which receives the
@@ -43,8 +43,8 @@ ndn_encodeTlvEncryptedContent
    struct ndn_TlvEncoder *encoder);
 
 /**
- * Expect the next element to be a TLV EncryptedContent and decode into the
- * ndn_EncryptedContent struct.
+ * Expect the next element to be an EncryptedContent v1 in NDN-TLV and decode
+ * into the ndn_EncryptedContent struct.
  * @param encryptedContent A pointer to the ndn_EncryptedContent struct.
  * @param decoder A pointer to the ndn_TlvDecoder struct.
  * @return 0 for success, else an error code, including if the next element is
@@ -52,6 +52,34 @@ ndn_encodeTlvEncryptedContent
  */
 ndn_Error
 ndn_decodeTlvEncryptedContent
+  (struct ndn_EncryptedContent *encryptedContent, struct ndn_TlvDecoder *decoder);
+
+/**
+ * Encode the EncryptedContent v2 (used in Name-based Access Control v2) in
+ * NDN-TLV.
+ * See https://github.com/named-data/name-based-access-control/blob/new/docs/spec.rst .
+ * @param encryptedContent A pointer to the ndn_EncryptedContent struct to
+ * encode.
+ * @param encoder A pointer to the ndn_TlvEncoder struct which receives the
+ * encoding.
+ * @return 0 for success, else an error code.
+ */
+ndn_Error
+ndn_encodeTlvEncryptedContentV2
+  (const struct ndn_EncryptedContent *encryptedContent,
+   struct ndn_TlvEncoder *encoder);
+
+/**
+ * Expect the next element to be an EncryptedContent v2 (used in Name-based
+ * Access Control v2) in NDN-TLV and decode into the ndn_EncryptedContent struct.
+ * See https://github.com/named-data/name-based-access-control/blob/new/docs/spec.rst .
+ * @param encryptedContent A pointer to the ndn_EncryptedContent struct.
+ * @param decoder A pointer to the ndn_TlvDecoder struct.
+ * @return 0 for success, else an error code, including if the next element is
+ * not EncryptedContent.
+ */
+ndn_Error
+ndn_decodeTlvEncryptedContentV2
   (struct ndn_EncryptedContent *encryptedContent, struct ndn_TlvDecoder *decoder);
 
 #ifdef __cplusplus

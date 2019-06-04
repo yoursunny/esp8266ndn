@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2016-2018 Regents of the University of California.
+ * Copyright (C) 2016-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  * @author: From ndn-group-encrypt src/encrypted-content https://github.com/named-data/ndn-group-encrypt
  *
@@ -79,6 +79,13 @@ public:
   getPayload() const { return BlobLite::downCast(payload); }
 
   /**
+   * Get the encrypted payload key.
+   * @return The encrypted payload key. If not specified, isNull() is true.
+   */
+  const BlobLite&
+  getPayloadKey() const { return BlobLite::downCast(payloadKey); }
+
+  /**
    * Set the algorithm type.
    * @param algorithmType The algorithm type. If not specified, set to -1.
    * @return This EncryptedContentLite so that you can chain calls to update
@@ -118,6 +125,26 @@ public:
     BlobLite::downCast(this->payload) = payload;
     return *this;
   }
+
+  /**
+   * Set the encrypted payload key.
+   * @param payload The encrypted payload key. If not specified, set to the
+   * default BlobLite() where isNull() is true.
+   * @return This EncryptedContentLite so that you can chain calls to update
+   * values.
+   */
+  EncryptedContentLite&
+  setPayloadKey(const BlobLite& payloadKey)
+  {
+    BlobLite::downCast(this->payloadKey) = payloadKey;
+    return *this;
+  }
+
+  /**
+   * Set the fields the values for none as in the constructor.
+   */
+  void
+  clear();
 
   /**
    * Set this encryptedContent to have the values from the other encryptedContent.

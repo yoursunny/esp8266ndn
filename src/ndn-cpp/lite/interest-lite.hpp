@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2018 Regents of the University of California.
+ * Copyright (C) 2015-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -97,7 +97,7 @@ public:
 
   /**
    * Return true if the content must be fresh. The default is true.
-   * @return true if must be fresh, otherwise false.
+   * @return True if must be fresh, otherwise false.
    */
   bool
   getMustBeFresh() const;
@@ -117,6 +117,19 @@ public:
   getForwardingHintWireEncoding() const
   {
     return BlobLite::downCast(forwardingHintWireEncoding);
+  }
+
+  /**
+   * Check if the application parameters are specified.
+   * @return True if the application parameters are specified, false if not.
+   */
+  bool
+  hasApplicationParameters() const;
+
+  const BlobLite&
+  getApplicationParameters() const
+  {
+    return BlobLite::downCast(applicationParameters);
   }
 
   const BlobLite&
@@ -230,6 +243,19 @@ public:
   {
     BlobLite::downCast(this->forwardingHintWireEncoding) =
       forwardingHintWireEncoding;
+    return *this;
+  }
+
+  /**
+   * Set the application parameters.
+   * @param parameters The application parameters value. This does not copy the
+   * bytes of the application parameters.
+   * @return This InterestLite so that you can chain calls to update values.
+   */
+  InterestLite&
+  setApplicationParameters(const BlobLite& applicationParameters)
+  {
+    BlobLite::downCast(this->applicationParameters) = applicationParameters;
     return *this;
   }
 

@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2016-2018 Regents of the University of California.
+ * Copyright (C) 2016-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -63,6 +63,15 @@ public:
    */
   static ndn_Error
   generateRandomBytes(uint8_t* buffer, size_t bufferLength);
+
+  /**
+   * Generate a random value from 0.0 to 1.0.
+   * @param value Set value to the random value.
+   * @return 0 for success, else NDN_ERROR_Error_in_generate_operation for an
+   * error including if the random number generator is not seeded.
+   */
+  static ndn_Error
+  generateRandomFloat(float& value);
 
   /**
    * Compute the HMAC with sha-256 of data, as defined in
@@ -156,6 +165,77 @@ public:
     return verifyDigestSha256Signature
       (signature.buf(), signature.size(), data.buf(), data.size());
   }
+
+  /**
+   * Compute the PBKDF2 with HMAC SHA1 of the password.
+   * @param password The input password, which should have characters in the range
+   * of 1 to 127.
+   * @param passwordLength The length of password.
+   * @param salt The 8-byte salt.
+   * @param saltLength The length of salt, which should be 8.
+   * @param nIterations  The number of iterations of the hashing algorithm.
+   * @param resultLength The number of bytes of the result array.
+   * @param result A pointer to a buffer of size resultLength to receive the
+   * result.
+   */
+  static void
+  computePbkdf2WithHmacSha1
+    (const uint8_t* password, size_t passwordLength, const uint8_t* salt,
+     size_t saltLength, int nIterations, size_t resultLength, uint8_t* result);
+
+  /**
+   * Compute the PBKDF2 with HMAC SHA1 of the password.
+   * @param password The input password, which should have characters in the range
+   * of 1 to 127.
+   * @param salt The 8-byte salt.
+   * @param nIterations  The number of iterations of the hashing algorithm.
+   * @param resultLength The number of bytes of the result array.
+   * @param result A pointer to a buffer of size resultLength to receive the
+   * result.
+   */
+  static void
+  computePbkdf2WithHmacSha1
+    (const BlobLite& password, const BlobLite& salt, int nIterations,
+     size_t resultLength, uint8_t *result)
+  {
+    computePbkdf2WithHmacSha1
+      (password.buf(), password.size(), salt.buf(), salt.size(), nIterations,
+       resultLength, result);
+  }
+
+  /**
+   * Compute the MurmurHash3 of the data.
+   * @param nHashSeed The hash seed.
+   * @param dataToHash A pointer to the input byte array to hash.
+   * @param dataToHashLength The length of the data to hash.
+   * @return The hash value.
+   */
+  static uint32_t
+  murmurHash3
+    (uint32_t nHashSeed, const uint8_t* dataToHash, size_t dataToHashLength);
+
+  /**
+   * Compute the MurmurHash3 of the data.
+   * @param nHashSeed The hash seed.
+   * @param dataToHash A pointer to the input byte array to hash.
+   * @param dataToHashLength The length of the data to hash.
+   * @return The hash value.
+   */
+  static uint32_t
+  murmurHash3
+    (uint32_t nHashSeed, const char* dataToHash, size_t dataToHashLength)
+  {
+    return murmurHash3(nHashSeed, (const uint8_t*)dataToHash, dataToHashLength);
+  }
+
+  /**
+   * Compute the MurmurHash3 of the integer value.
+   * @param nHashSeed The hash seed.
+   * @param value The integer value, interpreted as a 4-byte array.
+   * @return The hash value.
+   */
+  static uint32_t
+  murmurHash3(uint32_t nHashSeed, uint32_t value);
 };
 
 }

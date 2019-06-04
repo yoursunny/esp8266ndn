@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2018 Regents of the University of California.
+ * Copyright (C) 2014-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  * Derived from tlv.hpp by Alexander Afanasyev <alexander.afanasyev@ucla.edu>
  *
@@ -58,7 +58,7 @@ enum {
   ndn_Tlv_SelectedDelegation = 32,
   ndn_Tlv_CanBePrefix =      33,
   ndn_Tlv_HopLimit =         34,
-  ndn_Tlv_Parameters =       35
+  ndn_Tlv_ApplicationParameters = 35
 };
 
 enum {
@@ -84,10 +84,17 @@ enum {
   ndn_Tlv_ControlParameters_ControlParameters =   104,
   ndn_Tlv_ControlParameters_FaceId =              105,
   ndn_Tlv_ControlParameters_Uri =                 114,
+  ndn_Tlv_ControlParameters_LocalUri =            129,
   ndn_Tlv_ControlParameters_LocalControlFeature = 110,
   ndn_Tlv_ControlParameters_Origin =              111,
   ndn_Tlv_ControlParameters_Cost =                106,
+  ndn_Tlv_ControlParameters_Capacity =            131,
+  ndn_Tlv_ControlParameters_Count =               132,
+  ndn_Tlv_ControlParameters_BaseCongestionMarkingInterval = 135,
+  ndn_Tlv_ControlParameters_DefaultCongestionThreshold = 136,
+  ndn_Tlv_ControlParameters_Mtu =                 137,
   ndn_Tlv_ControlParameters_Flags =               108,
+  ndn_Tlv_ControlParameters_Mask =                112,
   ndn_Tlv_ControlParameters_Strategy =            107,
   ndn_Tlv_ControlParameters_ExpirationPeriod =    109
 };
@@ -118,7 +125,13 @@ enum {
   ndn_Tlv_Encrypt_EncryptedContent =    130,
   ndn_Tlv_Encrypt_EncryptionAlgorithm = 131,
   ndn_Tlv_Encrypt_EncryptedPayload =    132,
-  ndn_Tlv_Encrypt_InitialVector =       133
+  ndn_Tlv_Encrypt_InitialVector =       133,
+  ndn_Tlv_Encrypt_EncryptedPayloadKey = 134
+};
+
+enum {
+  ndn_Tlv_SafeBag_SafeBag = 128,
+  ndn_Tlv_SafeBag_EncryptedKeyBag = 129
 };
 
 // For RepetitiveInterval.

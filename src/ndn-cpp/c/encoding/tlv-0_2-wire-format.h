@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2018 Regents of the University of California.
+ * Copyright (C) 2015-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -310,7 +310,7 @@ ndn_Tlv0_2WireFormat_decodeDelegationSet_Delegation
    size_t inputLength, size_t *encodingLength);
 
 /**
- * Encode encryptedContent as an NDN-TLV EncryptedContent.
+ * Encode the EncryptedContent v1 in NDN-TLV.
  * @param encryptedContent A pointer to the ndn_EncryptedContent struct to encode.
  * @param output A pointer to a ndn_DynamicUInt8Array struct which receives the
  * encoded output.  If the output->realloc function pointer is null, its array
@@ -325,8 +325,8 @@ ndn_Tlv0_2WireFormat_encodeEncryptedContent
    struct ndn_DynamicUInt8Array *output, size_t *encodingLength);
 
 /**
- * Decode input as an NDN-TLV EncryptedContent and set the fields in the
- * EncryptedContent struct.
+ * Decode input as an EncryptedContent v1 in NDN-TLV and set the fields of the
+ * encryptedContent struct.
  * @param encryptedContent A pointer to the encrypted content struct whose
  * fields are updated.
  * @param input A pointer to the input buffer to decode.
@@ -335,6 +335,38 @@ ndn_Tlv0_2WireFormat_encodeEncryptedContent
  */
 ndn_Error
 ndn_Tlv0_2WireFormat_decodeEncryptedContent
+  (struct ndn_EncryptedContent *encryptedContent, const uint8_t *input,
+   size_t inputLength);
+
+/**
+ * Encode the EncryptedContent v2 (used in Name-based Access Control v2) in
+ * NDN-TLV.
+ * See https://github.com/named-data/name-based-access-control/blob/new/docs/spec.rst .
+ * @param encryptedContent A pointer to the ndn_EncryptedContent struct to encode.
+ * @param output A pointer to a ndn_DynamicUInt8Array struct which receives the
+ * encoded output.  If the output->realloc function pointer is null, its array
+ * must be large enough to receive the entire encoding.
+ * @param encodingLength Set encodingLength to the length of the encoded output,
+ * starting from offset.
+ * @return 0 for success, else an error code.
+ */
+ndn_Error
+ndn_Tlv0_2WireFormat_encodeEncryptedContentV2
+  (const struct ndn_EncryptedContent *encryptedContent,
+   struct ndn_DynamicUInt8Array *output, size_t *encodingLength);
+
+/**
+ * Decode input as an EncryptedContent v2 (used in Name-based Access Control v2)
+ * in NDN-TLV and set the fields of the encryptedContent struct.
+ * See https://github.com/named-data/name-based-access-control/blob/new/docs/spec.rst .
+ * @param encryptedContent A pointer to the encrypted content struct whose
+ * fields are updated.
+ * @param input A pointer to the input buffer to decode.
+ * @param inputLength The number of bytes in input.
+ * @return 0 for success, else an error code.
+ */
+ndn_Error
+ndn_Tlv0_2WireFormat_decodeEncryptedContentV2
   (struct ndn_EncryptedContent *encryptedContent, const uint8_t *input,
    size_t inputLength);
 

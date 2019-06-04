@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2018 Regents of the University of California.
+ * Copyright (C) 2013-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -135,6 +135,7 @@ static __inline void ndn_Interest_initialize
   ndn_Blob_initialize(&self->nonce, 0, 0);
   ndn_KeyLocator_initialize(&self->keyLocator, keyNameComponents, maxKeyNameComponents);
   ndn_Blob_initialize(&self->forwardingHintWireEncoding, 0, 0);
+  ndn_Blob_initialize(&self->applicationParameters, 0, 0);
   ndn_Blob_initialize(&self->linkWireEncoding, 0, 0);
   self->selectedDelegationIndex = -1;
 }
@@ -142,7 +143,7 @@ static __inline void ndn_Interest_initialize
 /**
  * Get the CanBePrefix flag. If not specified, the default is true.
  * @param self A pointer to the ndn_Interest struct.
- * @return 1 if the Interest name can be a prefix, otherwise 0.
+ * @return Nonzero if the Interest name can be a prefix, otherwise 0.
  */
 static __inline int ndn_Interest_getCanBePrefix(const struct ndn_Interest *self)
 {
@@ -154,11 +155,22 @@ static __inline int ndn_Interest_getCanBePrefix(const struct ndn_Interest *self)
 /**
  * Get the MustBeFresh flag.
  * @param self A pointer to the ndn_Interest struct.
- * @return 1 if must be fresh, otherwise 0.
+ * @return Nonzero if must be fresh, otherwise 0.
  */
 static __inline int ndn_Interest_getMustBeFresh(const struct ndn_Interest *self)
 {
   return self->mustBeFresh;
+}
+
+/**
+ * Check if the application parameters are specified.
+ * @param self A pointer to the ndn_Interest struct.
+ * @return Nonzero if the application parameters are specified, 0 if not.
+ */
+static __inline int ndn_Interest_hasApplicationParameters
+  (const struct ndn_Interest *self)
+{
+  return ndn_Blob_size(&self->applicationParameters) > 0;
 }
 
 /**
@@ -218,6 +230,7 @@ ndn_Interest_setFromInterest
        (&self->keyLocator, &other->keyLocator)))
     return error;
   ndn_Blob_setFromBlob(&self->forwardingHintWireEncoding, &other->forwardingHintWireEncoding);
+  ndn_Blob_setFromBlob(&self->applicationParameters, &other->applicationParameters);
   ndn_Blob_setFromBlob(&self->linkWireEncoding, &other->linkWireEncoding);
   self->selectedDelegationIndex = other->selectedDelegationIndex;
 

@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2016-2018 Regents of the University of California.
+ * Copyright (C) 2016-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,6 +38,17 @@ AesAlgorithmLite::decrypt128Cbc
 }
 
 ndn_Error
+AesAlgorithmLite::decrypt256Cbc
+  (const uint8_t* key, size_t keyLength, const uint8_t* initialVector,
+   size_t initialVectorLength, const uint8_t* encryptedData,
+   size_t encryptedDataLength, uint8_t* plainData, size_t& plainDataLength)
+{
+  return ndn_AesAlgorithm_decrypt256Cbc
+    (key, keyLength, initialVector, initialVectorLength, encryptedData,
+     encryptedDataLength, plainData, &plainDataLength);
+}
+
+ndn_Error
 AesAlgorithmLite::decrypt128Ecb
   (const uint8_t* key, size_t keyLength, const uint8_t* encryptedData,
    size_t encryptedDataLength, uint8_t* plainData, size_t& plainDataLength)
@@ -54,6 +65,17 @@ AesAlgorithmLite::encrypt128Cbc
    size_t plainDataLength, uint8_t* encryptedData, size_t& encryptedDataLength)
 {
   return ndn_AesAlgorithm_encrypt128Cbc
+    (key, keyLength, initialVector, initialVectorLength, plainData,
+     plainDataLength, encryptedData, &encryptedDataLength);
+}
+
+ndn_Error
+AesAlgorithmLite::encrypt256Cbc
+  (const uint8_t* key, size_t keyLength, const uint8_t* initialVector,
+   size_t initialVectorLength, const uint8_t* plainData,
+   size_t plainDataLength, uint8_t* encryptedData, size_t& encryptedDataLength)
+{
+  return ndn_AesAlgorithm_encrypt256Cbc
     (key, keyLength, initialVector, initialVectorLength, plainData,
      plainDataLength, encryptedData, &encryptedDataLength);
 }

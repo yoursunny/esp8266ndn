@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2016-2018 Regents of the University of California.
+ * Copyright (C) 2016-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,6 +29,9 @@ EncryptedContentLite::EncryptedContentLite
 {
   ndn_EncryptedContent_initialize(this, keyNameComponents, maxKeyNameComponents);
 }
+
+void
+EncryptedContentLite::clear() { ndn_EncryptedContent_clear(this); }
 
 ndn_Error
 EncryptedContentLite::set(const EncryptedContentLite& other)

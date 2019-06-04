@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2018 Regents of the University of California.
+ * Copyright (C) 2013-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -70,6 +70,7 @@ struct ndn_Interest {
   struct ndn_Blob nonce;    /**< The blob whose value is a pointer to a pre-allocated buffer.  0 for none */
   struct ndn_Blob forwardingHintWireEncoding; /**< The blob whose value is a pointer to a pre-allocated buffer
                                                of the encoded sequence of delegation set (with no outer TLV).  0 for none */
+  struct ndn_Blob applicationParameters; /**< A Blob with a pointer to the application parameters. */
   struct ndn_Blob linkWireEncoding; /**< The link whose value is a pointer to a pre-allocated buffer.  0 for none */
   int selectedDelegationIndex; /**< -1 for none */
 };

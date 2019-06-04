@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2018 Regents of the University of California.
+ * Copyright (C) 2013-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -567,7 +567,7 @@ ndn_Error ndn_Name_appendNameComponent
 ndn_Error ndn_Name_appendName(struct ndn_Name *self, const struct ndn_Name *name);
 
 /**
- * Append aGENERIC component to this name with the bytes in the given blob.
+ * Append a GENERIC component to this name with the bytes in the given blob.
  * @param self pointer to the ndn_Name struct.
  * @param value An ndn_Blob with the bytes of the component.  This does not copy the bytes.
  * @return 0 for success, or an error code if there is no more room in the components array (nComponents is already maxComponents).

@@ -3,7 +3,7 @@ extern "C" {
 #define NDN_CPP_HAVE_TIME_H 1
 #define NDN_CPP_HAVE_GMTIME_SUPPORT 1
 /**
- * Copyright (C) 2013-2018 Regents of the University of California.
+ * Copyright (C) 2013-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify

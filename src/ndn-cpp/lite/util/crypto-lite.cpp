@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2018 Regents of the University of California.
+ * Copyright (C) 2015-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -55,6 +55,18 @@ CryptoLite::generateRandomBytes(uint8_t *buffer, size_t bufferLength)
   return ndn_generateRandomBytes(buffer, bufferLength);
 }
 
+ndn_Error
+CryptoLite::generateRandomFloat(float& value)
+{
+  ndn_Error error;
+  uint32_t random;
+  if ((error = generateRandomBytes((uint8_t*)&random, sizeof(random))))
+    return error;
+
+  value = ((float)random) / 0xffffffff;
+  return NDN_ERROR_success;
+}
+
 #if NDN_CPP_HAVE_LIBCRYPTO
 
 void
@@ -74,6 +86,16 @@ CryptoLite::verifyHmacWithSha256Signature
     (key, keyLength, signature, signatureLength, data, dataLength) != 0;
 }
 
+void
+CryptoLite::computePbkdf2WithHmacSha1
+  (const uint8_t* password, size_t passwordLength, const uint8_t* salt,
+   size_t saltLength, int nIterations, size_t resultLength, uint8_t* result)
+{
+  ndn_computePbkdf2WithHmacSha1
+    (password, passwordLength, salt, saltLength, nIterations, resultLength,
+     result);
+}
+
 #endif
 
 bool
@@ -83,6 +105,19 @@ CryptoLite::verifyDigestSha256Signature
 {
   return ndn_verifyDigestSha256Signature
     (signature, signatureLength, data, dataLength) != 0;
+}
+
+uint32_t
+CryptoLite::murmurHash3
+  (uint32_t nHashSeed, const uint8_t* dataToHash, size_t dataToHashLength)
+{
+  return 0;//(nHashSeed, dataToHash, dataToHashLength);
+}
+
+uint32_t
+CryptoLite::murmurHash3(uint32_t nHashSeed, uint32_t value)
+{
+  return 0;//(nHashSeed, (const uint8_t*)&value, sizeof(uint32_t));
 }
 
 }

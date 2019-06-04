@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2018 Regents of the University of California.
+ * Copyright (C) 2015-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -55,10 +55,11 @@ public:
   buf() const { return value; }
 
   /**
-   * Return size given to the constructor.
+   * Get the number of bytes in the buffer.
+ * @return The number of bytes in the buffer, or 0 if the buffer pointer is null.
    */
   size_t
-  size() const { return length; }
+  size() const;
 
   /**
    * Check if the array pointer is null.
@@ -76,6 +77,22 @@ public:
    */
   bool
   equals(const BlobLite& other) const;
+
+  /**
+   * Compute the hash code.
+   * @return The hash code of the byte array, or 0 if isNull();
+   */
+  size_t
+  hash() const { return isNull() ? 0 : hash(buf(), size()); }
+
+  /**
+   * Compute the hash code of the byte array.
+   * @param buf A pointer to the byte array.
+   * @param size The number of bytes in buf.
+   * @return The hash code.
+   */
+  static size_t
+  hash(const uint8_t* buf, size_t size);
 
   /**
    * Downcast the reference to the ndn_Blob struct to a BlobLite.

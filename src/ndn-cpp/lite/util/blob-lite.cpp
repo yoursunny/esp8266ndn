@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2018 Regents of the University of California.
+ * Copyright (C) 2015-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -34,11 +34,27 @@ BlobLite::BlobLite(const uint8_t* buf, size_t size)
   ndn_Blob_initialize(this, buf, size);
 }
 
+size_t
+BlobLite::size() const
+{
+  return ndn_Blob_size(this);
+}
+
 bool
 BlobLite::equals(const BlobLite& other) const
 {
   return ndn_Blob_equals(this, &other) != 0;
 }
 
+size_t
+BlobLite::hash(const uint8_t* buf, size_t size)
+{
+  // Imitate Java's ByteBuffer.hashCode().)
+  size_t result = 1;
+  for (size_t i = 0; i < size; ++i)
+    result = 31 * result + (size_t)buf[i];
+
+  return result;
+}
 
 }

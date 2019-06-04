@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2018 Regents of the University of California.
+ * Copyright (C) 2015-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -268,4 +268,28 @@ ndn_Tlv0_2WireFormat_decodeEncryptedContent
   struct ndn_TlvDecoder decoder;
   ndn_TlvDecoder_initialize(&decoder, input, inputLength);
   return ndn_decodeTlvEncryptedContent(encryptedContent, &decoder);
+}
+
+ndn_Error
+ndn_Tlv0_2WireFormat_encodeEncryptedContentV2
+  (const struct ndn_EncryptedContent *encryptedContent,
+   struct ndn_DynamicUInt8Array *output, size_t *encodingLength)
+{
+  ndn_Error error;
+  struct ndn_TlvEncoder encoder;
+  ndn_TlvEncoder_initialize(&encoder, output);
+  error = ndn_encodeTlvEncryptedContentV2(encryptedContent, &encoder);
+  *encodingLength = encoder.offset;
+
+  return error;
+}
+
+ndn_Error
+ndn_Tlv0_2WireFormat_decodeEncryptedContentV2
+  (struct ndn_EncryptedContent *encryptedContent, const uint8_t *input,
+   size_t inputLength)
+{
+  struct ndn_TlvDecoder decoder;
+  ndn_TlvDecoder_initialize(&decoder, input, inputLength);
+  return ndn_decodeTlvEncryptedContentV2(encryptedContent, &decoder);
 }

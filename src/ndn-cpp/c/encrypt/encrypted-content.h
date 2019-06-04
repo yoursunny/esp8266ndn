@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016-2018 Regents of the University of California.
+ * Copyright (C) 2016-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  * @author: From ndn-group-encrypt src/encrypted-content https://github.com/named-data/ndn-group-encrypt
  *
@@ -45,6 +45,20 @@ static __inline void ndn_EncryptedContent_initialize
     (&self->keyLocator, keyNameComponents, maxKeyNameComponents);
   ndn_Blob_initialize(&self->initialVector, 0, 0);
   ndn_Blob_initialize(&self->payload, 0, 0);
+  ndn_Blob_initialize(&self->payloadKey, 0, 0);
+}
+
+/**
+ * Set the fields of the ndn_EncryptedContent struct to the values from
+ * ndn_EncryptedContent_initialize.
+ * @param self A pointer to the ndn_EncryptedContent struct.
+ */
+static __inline void ndn_EncryptedContent_clear
+  (struct ndn_EncryptedContent *self)
+{
+  ndn_EncryptedContent_initialize
+    (self, self->keyLocator.keyName.components,
+     self->keyLocator.keyName.maxComponents);
 }
 
 /**
@@ -71,6 +85,7 @@ ndn_EncryptedContent_setFromEncryptedContent
     return error;
   ndn_Blob_setFromBlob(&self->initialVector, &other->initialVector);
   ndn_Blob_setFromBlob(&self->payload, &other->payload);
+  ndn_Blob_setFromBlob(&self->payloadKey, &other->payloadKey);
 
   return NDN_ERROR_success;
 }

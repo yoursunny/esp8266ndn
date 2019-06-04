@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016-2018 Regents of the University of California.
+ * Copyright (C) 2016-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,11 +19,12 @@
  */
 
 #include "tlv-key-locator.h"
+#include "tlv-name.h"
 #include "tlv-encrypted-content.h"
 
 /**
  * This private function is called by ndn_TlvEncoder_writeNestedTlv to write the TLVs
- * in the body of the EncryptedContent value.
+ * in the body of the EncryptedContent v1 value.
  * @param context This is the ndn_EncryptedContent struct pointer which was
  * passed to writeTlv.
  * @param encoder the ndn_TlvEncoder which is calling this.
@@ -76,6 +77,8 @@ ndn_decodeTlvEncryptedContent
        (decoder, ndn_Tlv_Encrypt_EncryptedContent, &endOffset)))
     return error;
 
+  ndn_EncryptedContent_clear(encryptedContent);
+
   if ((error = ndn_decodeTlvKeyLocator
        (ndn_Tlv_KeyLocator, &encryptedContent->keyLocator, decoder)))
     return error;
@@ -92,6 +95,96 @@ ndn_decodeTlvEncryptedContent
   if ((error = ndn_TlvDecoder_readBlobTlv
        (decoder, ndn_Tlv_Encrypt_EncryptedPayload, &encryptedContent->payload)))
     return error;
+
+  if ((error = ndn_TlvDecoder_finishNestedTlvs(decoder, endOffset)))
+    return error;
+
+  return NDN_ERROR_success;
+}
+
+/**
+ * This private function is called by ndn_TlvEncoder_writeNestedTlv to write the
+ * TLVs in the body of the EncryptedContent v2 value.
+ * @param context This is the ndn_EncryptedContent struct pointer which was
+ * passed to writeTlv.
+ * @param encoder the ndn_TlvEncoder which is calling this.
+ * @return 0 for success, else an error code.
+ */
+static ndn_Error
+encodeEncryptedContentV2Value(const void *context, struct ndn_TlvEncoder *encoder)
+{
+  struct ndn_EncryptedContent *encryptedContent =
+    (struct ndn_EncryptedContent *)context;
+  size_t dummyBeginOffset, dummyEndOffset;
+  ndn_Error error;
+
+  if ((error = ndn_TlvEncoder_writeBlobTlv
+       (encoder, ndn_Tlv_Encrypt_EncryptedPayload, &encryptedContent->payload)))
+    return error;
+  if ((error = ndn_TlvEncoder_writeOptionalBlobTlv
+       (encoder, ndn_Tlv_Encrypt_InitialVector, &encryptedContent->initialVector)))
+    return error;
+  if ((error = ndn_TlvEncoder_writeOptionalBlobTlv
+       (encoder, ndn_Tlv_Encrypt_EncryptedPayloadKey,
+        &encryptedContent->payloadKey)))
+    return error;
+  if (encryptedContent->keyLocator.type == ndn_KeyLocatorType_KEYNAME) {
+    if ((error = ndn_encodeTlvName
+         (&encryptedContent->keyLocator.keyName, &dummyBeginOffset,
+          &dummyEndOffset, encoder)))
+      return error;
+  }
+
+  return NDN_ERROR_success;
+}
+
+ndn_Error
+ndn_encodeTlvEncryptedContentV2
+  (const struct ndn_EncryptedContent *encryptedContent,
+   struct ndn_TlvEncoder *encoder)
+{
+  return ndn_TlvEncoder_writeNestedTlv
+    (encoder, ndn_Tlv_Encrypt_EncryptedContent, encodeEncryptedContentV2Value,
+     encryptedContent, 0);
+}
+
+ndn_Error
+ndn_decodeTlvEncryptedContentV2
+  (struct ndn_EncryptedContent *encryptedContent, struct ndn_TlvDecoder *decoder)
+{
+  ndn_Error error;
+  size_t endOffset;
+  int gotExpectedType;
+  size_t dummyBeginOffset, dummyEndOffset;
+
+  if ((error = ndn_TlvDecoder_readNestedTlvsStart
+       (decoder, ndn_Tlv_Encrypt_EncryptedContent, &endOffset)))
+    return error;
+
+  ndn_EncryptedContent_clear(encryptedContent);
+
+  if ((error = ndn_TlvDecoder_readBlobTlv
+       (decoder, ndn_Tlv_Encrypt_EncryptedPayload, &encryptedContent->payload)))
+    return error;
+  if ((error = ndn_TlvDecoder_readOptionalBlobTlv
+       (decoder, ndn_Tlv_Encrypt_InitialVector, endOffset,
+        &encryptedContent->initialVector)))
+    return error;
+  if ((error = ndn_TlvDecoder_readOptionalBlobTlv
+       (decoder, ndn_Tlv_Encrypt_EncryptedPayloadKey, endOffset,
+        &encryptedContent->payloadKey)))
+    return error;
+
+  if ((error = ndn_TlvDecoder_peekType
+       (decoder, ndn_Tlv_Name, endOffset, &gotExpectedType)))
+    return error;
+  if (gotExpectedType) {
+    if ((error = ndn_decodeTlvName
+         (&encryptedContent->keyLocator.keyName, &dummyBeginOffset,
+          &dummyEndOffset, decoder)))
+      return error;
+    encryptedContent->keyLocator.type = ndn_KeyLocatorType_KEYNAME;
+  }
 
   if ((error = ndn_TlvDecoder_finishNestedTlvs(decoder, endOffset)))
     return error;

@@ -19,25 +19,35 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-#include "../../c/lp/congestion-mark.h"
-#include "../../lite/lp/lp-packet-lite.hpp"
-#include "../../lite/lp/congestion-mark-lite.hpp"
+#include "../../../c/encrypt/algo/des-algorithm.h"
+#include "../../../lite/encrypt/algo/des-algorithm-lite.hpp"
+
+#if NDN_CPP_HAVE_LIBCRYPTO
 
 namespace ndn {
 
-CongestionMarkLite::CongestionMarkLite()
+ndn_Error
+DesAlgorithmLite::decryptEdeCbcPkcs5Padding
+  (const uint8_t* key, size_t keyLength, const uint8_t* initialVector,
+   size_t initialVectorLength, const uint8_t* encryptedData,
+   size_t encryptedDataLength, uint8_t* plainData, size_t& plainDataLength)
 {
-  ndn_CongestionMark_initialize(this);
+  return ndn_DesAlgorithm_decryptEdeCbcPkcs5Padding
+    (key, keyLength, initialVector, initialVectorLength, encryptedData,
+     encryptedDataLength, plainData, &plainDataLength);
 }
 
-const CongestionMarkLite*
-CongestionMarkLite::getFirstHeader(const LpPacketLite& lpPacket)
+ndn_Error
+DesAlgorithmLite::encryptEdeCbcPkcs5Padding
+  (const uint8_t* key, size_t keyLength, const uint8_t* initialVector,
+   size_t initialVectorLength, const uint8_t* plainData,
+   size_t plainDataLength, uint8_t* encryptedData, size_t& encryptedDataLength)
 {
-  const ndn_CongestionMark* result = ndn_CongestionMark_getFirstHeader(&lpPacket);
-  if (result)
-    return &downCast(*result);
-  else
-    return 0;
+  return ndn_DesAlgorithm_encryptEdeCbcPkcs5Padding
+    (key, keyLength, initialVector, initialVectorLength, plainData,
+     plainDataLength, encryptedData, &encryptedDataLength);
 }
 
 }
+
+#endif // NDN_CPP_HAVE_LIBCRYPTO

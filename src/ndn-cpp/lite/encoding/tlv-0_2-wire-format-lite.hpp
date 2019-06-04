@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2018 Regents of the University of California.
+ * Copyright (C) 2015-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -313,7 +313,7 @@ public:
      size_t inputLength, size_t *encodingLength);
 
   /**
-   * Encode encryptedContent as an NDN-TLV EncryptedContent.
+   * Encode the EncryptedContent v1 in NDN-TLV.
    * @param encryptedContent The encrypted content object to encode.
    * @param output A DynamicUInt8ArrayLite object which receives the encoded
    * output.  If the output's reallocFunction is null, its array must be large
@@ -327,8 +327,8 @@ public:
      DynamicUInt8ArrayLite& output, size_t* encodingLength);
 
   /**
-   * Decode input as a TLV EncryptedContent and set the fields in the
-   * encrypted content object.
+   * Decode input as an EncryptedContent v1 in NDN-TLV and set the fields of the
+   * encryptedContent object.
    * @param encryptedContent The encrypted content object whose fields are
    * updated.
    * @param input A pointer to the input buffer to decode.
@@ -337,6 +337,37 @@ public:
    */
   static ndn_Error
   decodeEncryptedContent
+    (EncryptedContentLite& encryptedContent, const uint8_t* input,
+     size_t inputLength);
+
+  /**
+   * Encode the EncryptedContent v2 (used in Name-based Access Control v2) in
+   * NDN-TLV.
+   * See https://github.com/named-data/name-based-access-control/blob/new/docs/spec.rst .
+   * @param encryptedContent The encrypted content object to encode.
+   * @param output A DynamicUInt8ArrayLite object which receives the encoded
+   * output.  If the output's reallocFunction is null, its array must be large
+   * enough to receive the entire encoding.
+   * @param encodingLength Set encodingLength to the length of the encoded output.
+   * @return 0 for success, else an error code.
+   */
+  static ndn_Error
+  encodeEncryptedContentV2
+    (const EncryptedContentLite& encryptedContent,
+     DynamicUInt8ArrayLite& output, size_t* encodingLength);
+
+  /**
+   * Decode input as an an EncryptedContent v2 (used in Name-based Access
+   * Control v2) in NDN-TLV and set the fields of the encryptedContent object.
+   * See https://github.com/named-data/name-based-access-control/blob/new/docs/spec.rst .
+   * @param encryptedContent The encrypted content object whose fields are
+   * updated.
+   * @param input A pointer to the input buffer to decode.
+   * @param inputLength The number of bytes in input.
+   * @return 0 for success, else an error code.
+   */
+  static ndn_Error
+  decodeEncryptedContentV2
     (EncryptedContentLite& encryptedContent, const uint8_t* input,
      size_t inputLength);
 };

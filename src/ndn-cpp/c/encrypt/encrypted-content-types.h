@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016-2018 Regents of the University of California.
+ * Copyright (C) 2016-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  * @author: From ndn-group-encrypt src/encrypted-content https://github.com/named-data/ndn-group-encrypt
  *
@@ -39,6 +39,7 @@ struct ndn_EncryptedContent {
   struct ndn_KeyLocator keyLocator;
   struct ndn_Blob initialVector;
   struct ndn_Blob payload;
+  struct ndn_Blob payloadKey;
 };
 
 #ifdef __cplusplus

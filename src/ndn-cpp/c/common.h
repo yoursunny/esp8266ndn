@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2018 Regents of the University of California.
+ * Copyright (C) 2013-2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -71,10 +71,34 @@ static const size_t MAX_NDN_PACKET_SIZE = 8800;
 static const size_t ndn_SHA256_DIGEST_SIZE = 32;
 
 /**
- * The block size in bytes for the AES 128 algorithm. We define this separately
+ * The block size in bytes for the AES algorithm. We define this separately
  * so that we don't have to include the openssl header everywhere.
  */
-static const size_t ndn_AES_128_BLOCK_SIZE = 16;
+static const size_t ndn_AES_BLOCK_LENGTH = 16;
+
+/**
+ * The key size in bytes for the AES 128 algorithm. We define this separately
+ * so that we don't have to include the openssl header everywhere.
+ */
+static const size_t ndn_AES_128_KEY_LENGTH = 16;
+
+/**
+ * The key size in bytes for the AES 256 algorithm. We define this separately
+ * so that we don't have to include the openssl header everywhere.
+ */
+static const size_t ndn_AES_256_KEY_LENGTH = 32;
+
+/**
+ * The key size in bytes for the DES EDE3 algorithm. We define this separately
+ * so that we don't have to include the openssl header everywhere.
+ */
+static const size_t ndn_DES_EDE3_KEY_LENGTH = 24;
+
+/**
+ * The block size in bytes for the DES algorithm. We define this separately
+ * so that we don't have to include the openssl header everywhere.
+ */
+static const size_t ndn_DES_BLOCK_LENGTH = 8;
 
 #ifdef __cplusplus
 }

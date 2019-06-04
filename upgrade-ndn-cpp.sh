@@ -44,8 +44,8 @@ done | bash
 # delete round(x) macro
 sed -i '/#define round/ d' c/common.h
 
-# disable cryptosuite SHA256
-sed -i '/#ifdef ARDUINO/ c\#if 0' lite/util/crypto-lite.cpp
+# disable cryptosuite SHA256 and murmur-hash
+sed -i -e '/#ifdef ARDUINO/ c\#if 0' -e '/#include.*murmur/ d' -e 's~return ndn_murmurHash3~return 0;//~' lite/util/crypto-lite.cpp
 
 # fix time library
 sed -i -e '1 i\#include <Arduino.h>\nextern "C" {\n#define NDN_CPP_HAVE_TIME_H 1\n#define NDN_CPP_HAVE_GMTIME_SUPPORT 1' -e '/^ndn_getNowMilliseconds/ p' -e '/^ndn_getNowMilliseconds/ a\{\n  return millis();\n}' -e '/^ndn_getNowMilliseconds/,/}/ d' -e 's/timegm/mktime/' -e '$ a} // extern "C"' c/util/time.c
