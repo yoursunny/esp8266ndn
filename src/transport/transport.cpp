@@ -17,7 +17,6 @@ Transport::loop()
   PacketBuffer* pb = nullptr;
   bool ok = false;
   for (std::tie(pb, ok) = m_rxQueueOut.pop(); ok; std::tie(pb, ok) = m_rxQueueOut.pop()) {
-    --m_nRxBufs;
     m_rxCb(m_rxCbArg, pb);
   }
 }
@@ -29,16 +28,21 @@ Transport::onReceive(ReceiveCallback cb, void* cbarg)
   m_rxCbArg = cbarg;
 }
 
-void
+bool
+Transport::canPushReceiveBuffer() const
+{
+  return !m_rxQueueIn.isFull();
+}
+
+bool
 Transport::pushReceiveBuffer(PacketBuffer* pb)
 {
   if (m_rxQueueIn.push(pb)) {
-    ++m_nRxBufs;
+    return true;
   }
-  else {
-    TRANSPORT_DBG("rxQueueIn is full");
-    delete pb;
-  }
+  TRANSPORT_DBG("rxQueueIn is full");
+  delete pb;
+  return false;
 }
 
 PacketBuffer*
@@ -76,7 +80,6 @@ Transport::afterReceive(PacketBuffer* pb, size_t pktSize, bool isAsync)
     }
   }
   else {
-    --m_nRxBufs;
     m_rxCb(m_rxCbArg, pb);
   }
 }

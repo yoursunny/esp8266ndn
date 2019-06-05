@@ -71,30 +71,33 @@ public:
   void
   setSigningKey(const PrivateKey& pvtkey);
 
-  /** \brief access the internal receive buffer
-   *  \sa swapPacketBuffer()
+  /** \brief extract the packet buffer of current received packet
+   *
+   *  This function is only available within PacketHandler::process* functions.
+   *  When a PacketBuffer is no longer needed, it should be promptly returned via \c pushPacketBuffer.
    */
+  PacketBuffer*
+  popReceiveBuffer();
+
+  /** \brief add a receive buffer
+   */
+  void
+  pushReceiveBuffer(PacketBuffer* pb);
+
+  /** \brief allocate new receive buffers
+   *  \return number of new receive buffers
+   */
+  int
+  addReceiveBuffers(int count, const PacketBuffer::Options& options = {});
+
+  [[deprecated("use popReceiveBuffer")]]
   const PacketBuffer*
   getPacketBuffer() const
   {
     return m_pb;
   }
 
-  /** \brief assign a new receive buffer, and return the current one
-   *
-   *  Face maintains an internal packet buffer for receiving packets. That
-   *  buffer is overwritten every time \c loop() tries to receive a packet.
-   *  If the application desires to retain a receive packet, the onInterest/
-   *  onData/onNack callback may retrieve the current buffer using this
-   *  function, and cause \c loop() to use another buffer for the next receive.
-   *
-   *  This function may also be used to assign the initial packet buffer.
-   *  This is useful if a non-default PacketBuffer::Options is desired.
-   *
-   *  \param pb the new buffer; if nullptr, \c loop() will allocate a new
-   *            packet buffer with default setting.
-   *  \return the current buffer; nullptr if no internal buffer was allocated
-   */
+  [[deprecated("use popReceiveBuffer and pushReceiveBuffer")]]
   PacketBuffer*
   swapPacketBuffer(PacketBuffer* pb);
 
@@ -103,22 +106,25 @@ public:
   void
   loop();
 
-  [[deprecated]]
+  [[deprecated("use loop(); packetLimit has no effect")]]
   void
-  loop(int packetLimit);
+  loop(int packetLimit)
+  {
+    loop();
+  }
 
   /** \brief verify the signature on current Interest against given public key
    *
-   *  This function is only available within onInterest callback before calling
-   *  \c swapPacketBuffer(). Otherwise, invoke \c PacketBuffer::verify().
+   *  This function is only available within PacketHandler::processInterest before
+   *  calling \c popPacketBuffer(). Otherwise, invoke \c PacketBuffer::verify().
    */
   bool
   verifyInterest(const PublicKey& pubKey) const;
 
   /** \brief verify the signature on current Data against given public key
    *
-   *  This function is only available within onData callback before calling
-   *  \c swapPacketBuffer(). Otherwise, invoke \c PacketBuffer::verify().
+   *  This function is only available within PacketHandler::processData before
+   *  calling \c popPacketBuffer(). Otherwise, invoke \c PacketBuffer::verify().
    */
   bool
   verifyData(const PublicKey& pubKey) const;
@@ -172,11 +178,10 @@ private:
 
 private:
   Transport& m_transport;
-
-  PacketBuffer* m_pb;
-
   PacketHandler* m_handler;
   bool m_wantNack;
+  bool m_addedReceiveBuffers;
+  PacketBuffer* m_pb;
 
   class TracingHandler;
   std::unique_ptr<TracingHandler> m_tracing;

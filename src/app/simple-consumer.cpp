@@ -38,6 +38,10 @@ SimpleConsumer::sendSignedInterest()
 void
 SimpleConsumer::prepareSendInterest()
 {
+  if (m_pb != nullptr) {
+    getFace()->pushReceiveBuffer(m_pb);
+    m_pb = nullptr;
+  }
   m_result = Result::NONE;
   m_timeoutAt = millis() + m_timeoutDuration;
 }
@@ -96,8 +100,7 @@ SimpleConsumer::processData(const DataLite& data, uint64_t endpointId)
   }
 
   m_result = Result::DATA;
-  m_pb = getFace()->swapPacketBuffer(m_pb);
-  m_pb->endpointId = endpointId;
+  m_pb = getFace()->popReceiveBuffer();
   return true;
 }
 
@@ -109,8 +112,7 @@ SimpleConsumer::processNack(const NetworkNackLite& nackHeader, const InterestLit
   }
 
   m_result = Result::NACK;
-  m_pb = getFace()->swapPacketBuffer(m_pb);
-  m_pb->endpointId = endpointId;
+  m_pb = getFace()->popReceiveBuffer();
   return true;
 }
 

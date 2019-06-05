@@ -75,9 +75,10 @@ private:
 
 Face::Face(Transport& transport)
   : m_transport(transport)
-  , m_pb(nullptr)
   , m_handler(nullptr)
   , m_wantNack(true)
+  , m_addedReceiveBuffers(false)
+  , m_pb(nullptr)
   , m_outArr(m_outBuf, NDNFACE_OUTBUF_SIZE, nullptr)
   , m_sigInfoArr(m_sigInfoBuf, NDNFACE_SIGINFOBUF_SIZE, nullptr)
   , m_sigBuf(0)
@@ -140,11 +141,42 @@ Face::setSigningKey(const PrivateKey& pvtkey)
 }
 
 PacketBuffer*
+Face::popReceiveBuffer()
+{
+  PacketBuffer* pb = m_pb;
+  m_pb = nullptr;
+  return pb;
+}
+
+void
+Face::pushReceiveBuffer(PacketBuffer* pb)
+{
+  m_addedReceiveBuffers = m_transport.pushReceiveBuffer(pb) || m_addedReceiveBuffers;
+}
+
+int
+Face::addReceiveBuffers(int count, const PacketBuffer::Options& options)
+{
+  int n = 0;
+  while (n < count && m_transport.canPushReceiveBuffer()) {
+    if (m_transport.pushReceiveBuffer(new PacketBuffer(options))) {
+      m_addedReceiveBuffers = true;
+      ++n;
+    }
+    else {
+      break;
+    }
+  }
+  return n;
+}
+
+PacketBuffer*
 Face::swapPacketBuffer(PacketBuffer* pb)
 {
-  PacketBuffer* oldPb = m_pb;
-  m_pb = pb;
-  return oldPb;
+  if (pb != nullptr) {
+    pushReceiveBuffer(pb);
+  }
+  return popReceiveBuffer();
 }
 
 void
@@ -154,17 +186,10 @@ Face::loop()
     m_transport.pushReceiveBuffer(m_pb);
     m_pb = nullptr;
   }
-  if (m_transport.countReceiveBuffer() < 1) {
-    // TODO provide receive buffer earlier
-    m_transport.pushReceiveBuffer(new PacketBuffer({}));
+  if (!m_addedReceiveBuffers) {
+    addReceiveBuffers(1);
   }
   m_transport.loop();
-}
-
-void
-Face::loop(int packetLimit)
-{
-  loop();
 }
 
 void

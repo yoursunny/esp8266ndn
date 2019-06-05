@@ -60,11 +60,7 @@ setup()
     opt.maxSize = 255;
     opt.maxNameComps = 8;
     opt.maxKeyNameComps = 8;
-    auto newPb = new ndn::PacketBuffer(opt);
-    auto oldPb = g_face.swapPacketBuffer(newPb);
-    if (oldPb != nullptr) {
-      delete oldPb;
-    }
+    g_face.addReceiveBuffers(1, opt);
   }
 
   ndn::parseNameFromUri(g_sPrefix, SPREFIX);

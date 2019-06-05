@@ -33,11 +33,7 @@ setup()
     opt.maxSize = 512;
     opt.maxNameComps = 8;
     opt.maxKeyNameComps = 8;
-    auto newPb = new ndn::PacketBuffer(opt);
-    auto oldPb = g_face.swapPacketBuffer(newPb);
-    if (oldPb != nullptr) {
-      delete oldPb;
-    }
+    g_face.addReceiveBuffers(1, opt);
   }
   g_transport.begin("esp8266ndn");
   g_face.enableTracing(Serial);

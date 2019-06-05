@@ -41,6 +41,13 @@ public:
     return std::make_tuple(item, true);
   }
 
+  bool
+  isFull() const
+  {
+    int newTail = (m_tail + 1) % m_arr.size();
+    return newTail == m_head;
+  }
+
 private:
   std::array<T, CAPACITY> m_arr;
   int m_head = 0;
@@ -68,7 +75,7 @@ public:
   bool
   push(T item)
   {
-    BaseType_t res = xQueueSend(m_queue, &item, 0);
+    BaseType_t res = xQueueSendToBack(m_queue, &item, 0);
     return res == pdTRUE;
   }
 
@@ -80,6 +87,12 @@ public:
       return std::make_tuple(T(), false);
     }
     return std::make_tuple(item, true);
+  }
+
+  bool
+  isFull() const
+  {
+    return uxQueueSpacesAvailable(m_queue) == 0;
   }
 
 private:

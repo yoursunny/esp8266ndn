@@ -27,17 +27,14 @@ public:
   void
   onReceive(ReceiveCallback cb, void* cbarg);
 
-  /** \brief return number of receive buffers
+  /** \brief determine whether there's room for more receive buffers
    */
-  size_t
-  countReceiveBuffer() const
-  {
-    return m_nRxBufs;
-  }
+  bool
+  canPushReceiveBuffer() const;
 
   /** \brief add a receive buffer
    */
-  void
+  bool
   pushReceiveBuffer(PacketBuffer* pb);
 
   /** \brief send a packet
@@ -67,7 +64,7 @@ protected:
 private:
   ReceiveCallback m_rxCb = nullptr;
   void* m_rxCbArg = nullptr;
-  size_t m_nRxBufs = 0;
+
   static constexpr int s_rxQueueCap = 4;
   detail::SafeQueue<PacketBuffer*, s_rxQueueCap> m_rxQueueIn;
   detail::SafeQueue<PacketBuffer*, s_rxQueueCap> m_rxQueueOut;
