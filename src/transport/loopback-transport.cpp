@@ -5,32 +5,11 @@
 
 namespace ndn {
 
-LoopbackTransport::LoopbackTransport()
-  : m_other(nullptr)
-  , m_len(0)
-{
-}
-
 void
 LoopbackTransport::begin(LoopbackTransport& other)
 {
   m_other = &other;
   other.m_other = this;
-}
-
-size_t
-LoopbackTransport::receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId)
-{
-  if (m_len == 0) {
-    return 0;
-  }
-
-  memcpy(buf, m_pkt, min(m_len, bufSize));
-  endpointId = m_endpointId;
-
-  size_t len = m_len;
-  m_len = 0;
-  return len;
 }
 
 ndn_Error
@@ -41,15 +20,19 @@ LoopbackTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
     return NDN_ERROR_SocketTransport_socket_is_not_open;
   }
 
-  if (m_other->m_len > 0) {
+  PacketBuffer* pb = m_other->beforeReceive();
+  if (pb == nullptr) {
     LOOPBACKTRANSPORT_DBG("receiver is congested");
     return NDN_ERROR_SocketTransport_error_in_send;
   }
 
-  m_other->m_len = min(len, static_cast<size_t>(LOOPBACKTRANSPORT_PKTSIZE));
-  memcpy(m_other->m_pkt, pkt, m_other->m_len);
-  m_other->m_endpointId = endpointId;
-  return NDN_ERROR_success;
+  uint8_t* buf = nullptr;
+  size_t bufSize = 0;
+  std::tie(buf, bufSize) = pb->useBuffer();
+  size_t pktSize = std::min(len, bufSize);
+  memcpy(buf, pkt, pktSize);
+  pb->endpointId = endpointId;
+  return m_other->afterReceive(pb, pktSize, true);
 }
 
 } // namespace ndn

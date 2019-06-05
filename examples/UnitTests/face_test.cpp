@@ -40,6 +40,7 @@ private:
     auto face = new ndn::Face(*transport);
     face->setSigningKey(*key);
     face->enableTracing(Serial, tracingPrefix);
+    face->addReceiveBuffers(2);
     return face;
   }
 

@@ -58,19 +58,19 @@ Transport::beforeReceive()
   return pb;
 }
 
-void
+ndn_Error
 Transport::afterReceive(PacketBuffer* pb, size_t pktSize, bool isAsync)
 {
   if (pktSize == 0 || m_rxCb == nullptr) {
     pushReceiveBuffer(pb);
-    return;
+    return NDN_ERROR_success;
   }
 
   ndn_Error e = pb->parse(pktSize);
   if (e != NDN_ERROR_success) {
     TRANSPORT_DBG("packet parse error " << e << " endpoint=" << pb->endpointId);
     pushReceiveBuffer(pb);
-    return;
+    return e;
   }
 
   if (isAsync) {
@@ -82,6 +82,7 @@ Transport::afterReceive(PacketBuffer* pb, size_t pktSize, bool isAsync)
   else {
     m_rxCb(m_rxCbArg, pb);
   }
+  return NDN_ERROR_success;
 }
 
 void

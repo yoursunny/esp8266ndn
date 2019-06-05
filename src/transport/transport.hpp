@@ -55,7 +55,7 @@ protected:
    *  \param pktSize if zero, pb is returned as empty buffer
    *  \param isAsync if true, ReceiveCallback cannot be invoked within this function
    */
-  void
+  ndn_Error
   afterReceive(PacketBuffer* pb, size_t pktSize, bool isAsync);
 
   void
