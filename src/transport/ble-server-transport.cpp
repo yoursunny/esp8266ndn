@@ -2,7 +2,7 @@
 #include "detail/ble-impl.hpp"
 #include "../core/logger.hpp"
 
-#define BLESERVERTRANSPORT_DBG(...) DBG(BleServerTransport, __VA_ARGS__)
+#define LOG(...) LOGGER(BleServerTransport, __VA_ARGS__)
 
 namespace ndn {
 
@@ -15,26 +15,26 @@ BleServerTransport::begin(const char* deviceName)
 {
   int err = detail::BleDeviceImpl.init(deviceName, true, 0);
   if (err != 0) {
-    BLESERVERTRANSPORT_DBG(F("device init error ") << err);
+    LOG(F("device init error ") << err);
     return false;
   }
 
   m_impl.reset(new detail::BleServiceImpl());
   err = m_impl->begin();
   if (err != 0) {
-    BLESERVERTRANSPORT_DBG(F("service begin error ") << err);
+    LOG(F("service begin error ") << err);
     m_impl.reset();
     return false;
   }
 
   err = m_impl->advertise();
   if (err != 0) {
-    BLESERVERTRANSPORT_DBG(F("advertise error ") << err);
+    LOG(F("advertise error ") << err);
     m_impl.reset();
     return false;
   }
 
-  BLESERVERTRANSPORT_DBG(F("Server ready at ") << detail::BleDeviceImpl.getAddr());
+  LOG(F("Server ready at ") << detail::BleDeviceImpl.getAddr());
   return true;
 }
 

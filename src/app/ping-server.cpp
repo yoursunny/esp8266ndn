@@ -3,7 +3,7 @@
 #include "../core/uri.hpp"
 #include "../core/with-components-buffer.hpp"
 
-#define PINGSERVER_DBG(...) DBG(PingServer, __VA_ARGS__)
+#define LOG(...) LOGGER(PingServer, __VA_ARGS__)
 
 namespace ndn {
 
@@ -25,7 +25,7 @@ PingServer::processInterest(const InterestLite& interest, uint64_t endpointId)
   DataWCB<NDNPINGSERVER_NAMECOMPS_MAX, 0> data;
   data.getName().set(interest.getName());
   data.getMetaInfo().setFreshnessPeriod(0.0);
-  PINGSERVER_DBG(F("processing request ") << PrintUri(interest.getName()));
+  LOG(F("processing request ") << PrintUri(interest.getName()));
 
   uint8_t payload[NDNPINGSERVER_PAYLOAD_MAX];
   size_t payloadSize = 0;
@@ -33,7 +33,7 @@ PingServer::processInterest(const InterestLite& interest, uint64_t endpointId)
     m_probeCb(m_probeCbArg, interest, payload, &payloadSize);
   }
   if (payloadSize > NDNPINGSERVER_PAYLOAD_MAX) {
-    PINGSERVER_DBG(F("payload too large ") << payloadSize);
+    LOG(F("payload too large ") << payloadSize);
     return false;
   }
 

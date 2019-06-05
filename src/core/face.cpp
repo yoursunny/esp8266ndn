@@ -9,7 +9,7 @@
 #include "../ndn-cpp/c/encoding/tlv/tlv-encoder.h"
 #include "../ndn-cpp/lite/encoding/tlv-0_2-wire-format-lite.hpp"
 
-#define FACE_DBG(...) DBG(Face, __VA_ARGS__)
+#define LOG(...) LOGGER(Face, __VA_ARGS__)
 
 namespace ndn {
 
@@ -216,7 +216,7 @@ Face::receive(PacketBuffer* pb)
           this->sendNack(nack, interest, m_pb->endpointId);
         }
         else {
-          FACE_DBG(F("received Interest, no handler"));
+          LOG(F("received Interest, no handler"));
         }
       }
       break;
@@ -228,7 +228,7 @@ Face::receive(PacketBuffer* pb)
         isAccepted = h->processData(data, m_pb->endpointId);
       }
       if (!isAccepted) {
-        FACE_DBG(F("received Data, no handler"));
+        LOG(F("received Data, no handler"));
       }
       break;
     }
@@ -240,7 +240,7 @@ Face::receive(PacketBuffer* pb)
         isAccepted = h->processNack(nackHeader, interest, m_pb->endpointId);
       }
       if (!isAccepted) {
-        FACE_DBG(F("received Nack, no handler"));
+        LOG(F("received Nack, no handler"));
       }
       break;
     }
@@ -251,13 +251,13 @@ bool
 Face::verifyInterest(const PublicKey& pubKey) const
 {
   if (m_pb->getPktType() != PacketType::INTEREST) {
-    FACE_DBG(F("last packet is not Interest"));
+    LOG(F("last packet is not Interest"));
     return false;
   }
 
   PacketBuffer::VerifyResult res = m_pb->verify(pubKey);
   if (res) {
-    FACE_DBG(F("Interest verify error ") << _DEC(res));
+    LOG(F("Interest verify error ") << _DEC(res));
   }
   return res == PacketBuffer::VERIFY_OK;
 }
@@ -266,13 +266,13 @@ bool
 Face::verifyData(const PublicKey& pubKey) const
 {
   if (m_pb->getPktType() != PacketType::DATA) {
-    FACE_DBG(F("last packet is not Data"));
+    LOG(F("last packet is not Data"));
     return false;
   }
 
   PacketBuffer::VerifyResult res = m_pb->verify(pubKey);
   if (res) {
-    FACE_DBG(F("Data verify error ") << _DEC(res));
+    LOG(F("Data verify error ") << _DEC(res));
   }
   return res == PacketBuffer::VERIFY_OK;
 }
@@ -296,28 +296,28 @@ Face::sendSignedInterest(InterestLite& interest, uint64_t endpointId, const Priv
     pvtkey = m_signingKey;
   }
   if (pvtkey == nullptr) {
-    FACE_DBG(F("cannot sign Interest: signing key is unset"));
+    LOG(F("cannot sign Interest: signing key is unset"));
     return NDN_ERROR_Incorrect_key_size;
   }
 
   SignatureWCB<NDNFACE_KEYNAMECOMPS_MAX> signature;
   ndn_Error error = pvtkey->setSignatureInfo(signature);
   if (error) {
-    FACE_DBG(F("setSignatureInfo error: ") << _DEC(error));
+    LOG(F("setSignatureInfo error: ") << _DEC(error));
     return error;
   }
 
   size_t len;
   error = Tlv0_2WireFormatLite::encodeSignatureInfo(signature, m_sigInfoArr, &len);
   if (error) {
-    FACE_DBG(F("SignatureInfo encoding error: ") << _DEC(error));
+    LOG(F("SignatureInfo encoding error: ") << _DEC(error));
     return error;
   }
 
   interest.getName().append(m_sigInfoBuf, len);
   error = interest.getName().append(nullptr, 0);
   if (error) {
-    FACE_DBG(F("Signature appending error: ") << _DEC(error));
+    LOG(F("Signature appending error: ") << _DEC(error));
     return error;
   }
 
@@ -330,7 +330,7 @@ Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, const Privat
   size_t signedBegin, signedEnd, len;
   ndn_Error error = Tlv0_2WireFormatLite::encodeInterest(interest, &signedBegin, &signedEnd, m_outArr, &len);
   if (error) {
-    FACE_DBG(F("send Interest encoding-1 error: ") << _DEC(error));
+    LOG(F("send Interest encoding-1 error: ") << _DEC(error));
     return error;
   }
 
@@ -338,7 +338,7 @@ Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, const Privat
     int sigLen;
     error = this->signImpl(*pvtkey, m_outBuf + signedBegin, signedEnd - signedBegin, sigLen);
     if (error) {
-      FACE_DBG(F("signing error ") << _DEC(error));
+      LOG(F("signing error ") << _DEC(error));
       return error;
     }
 
@@ -347,7 +347,7 @@ Face::sendInterestImpl(InterestLite& interest, uint64_t endpointId, const Privat
     name.append(m_sigBuf.getArray(), sigLen + 2);
     error = Tlv0_2WireFormatLite::encodeInterest(interest, &signedBegin, &signedEnd, m_outArr, &len);
     if (error) {
-      FACE_DBG(F("send Interest encoding-2 error: ") << _DEC(error));
+      LOG(F("send Interest encoding-2 error: ") << _DEC(error));
       return error;
     }
   }
@@ -365,32 +365,32 @@ Face::sendData(DataLite& data, uint64_t endpointId, const PrivateKey* pvtkey)
     pvtkey = m_signingKey;
   }
   if (pvtkey == nullptr) {
-    FACE_DBG(F("cannot sign Data: signing key is unset"));
+    LOG(F("cannot sign Data: signing key is unset"));
     return NDN_ERROR_Incorrect_key_size;
   }
   ndn_Error error = pvtkey->setSignatureInfo(data.getSignature());
   if (error) {
-    FACE_DBG(F("setSignatureInfo error: ") << _DEC(error));
+    LOG(F("setSignatureInfo error: ") << _DEC(error));
     return error;
   }
 
   size_t signedBegin, signedEnd, len;
   error = Tlv0_2WireFormatLite::encodeData(data, &signedBegin, &signedEnd, m_outArr, &len);
   if (error) {
-    FACE_DBG(F("send Data encoding-1 error: ") << _DEC(error));
+    LOG(F("send Data encoding-1 error: ") << _DEC(error));
     return error;
   }
 
   int sigLen;
   error = this->signImpl(*pvtkey, m_outBuf + signedBegin, signedEnd - signedBegin, sigLen);
   if (error) {
-    FACE_DBG(F("signing error ") << _DEC(error));
+    LOG(F("signing error ") << _DEC(error));
     return error;
   }
   data.getSignature().setSignature(BlobLite(&m_sigBuf.getArray()[2], sigLen));
   error = Tlv0_2WireFormatLite::encodeData(data, &signedBegin, &signedEnd, m_outArr, &len);
   if (error) {
-    FACE_DBG(F("send Data encoding-2 error: ") << _DEC(error));
+    LOG(F("send Data encoding-2 error: ") << _DEC(error));
     return error;
   }
 
@@ -429,7 +429,7 @@ Face::sendNack(const NetworkNackLite& nack, const InterestLite& interest, uint64
   size_t signedBegin, signedEnd, interestSize;
   ndn_Error error = Tlv0_2WireFormatLite::encodeInterest(interest, &signedBegin, &signedEnd, outArr, &interestSize);
   if (error) {
-    FACE_DBG(F("send Nack encoding error: ") << _DEC(error));
+    LOG(F("send Nack encoding error: ") << _DEC(error));
     return error;
   }
 
@@ -443,7 +443,7 @@ Face::sendNack(const NetworkNackLite& nack, const InterestLite& interest, uint64
   size_t lpHeaderSize = lpPacketSize - interestSize;
 
   if (lpHeaderSize > NDNFACE_OUTNACK_HEADROOM) {
-    FACE_DBG(F("insufficient headroom"));
+    LOG(F("insufficient headroom"));
     return NDN_ERROR_cannot_store_more_header_bytes_than_the_size_of_headerBuffer;
   }
 

@@ -3,7 +3,7 @@
 #include "udp-transport.hpp"
 #include "../core/logger.hpp"
 
-#define UDPTRANSPORT_DBG(...) DBG(UdpTransport, __VA_ARGS__)
+#define LOG(...) LOGGER(UdpTransport, __VA_ARGS__)
 
 namespace ndn {
 
@@ -22,10 +22,10 @@ UdpTransport::beginListen(uint16_t localPort, IPAddress localIp)
 {
   end();
 #if defined(ESP8266)
-  UDPTRANSPORT_DBG(F("listening on 0.0.0.0:") << _DEC(localPort));
+  LOG(F("listening on 0.0.0.0:") << _DEC(localPort));
   bool ok = m_udp.begin(localPort);
 #elif defined(ESP32)
-  UDPTRANSPORT_DBG(F("listening on ") << localIp << ':' << _DEC(localPort));
+  LOG(F("listening on ") << localIp << ':' << _DEC(localPort));
   bool ok = m_udp.begin(localIp, localPort);
 #endif
   if (ok) {
@@ -38,7 +38,7 @@ bool
 UdpTransport::beginTunnel(IPAddress remoteIp, uint16_t remotePort, uint16_t localPort)
 {
   end();
-  UDPTRANSPORT_DBG(F("connecting to ") << remoteIp << ':' << remotePort <<
+  LOG(F("connecting to ") << remoteIp << ':' << remotePort <<
                    F(" from :") << _DEC(localPort));
   bool ok = m_udp.begin(localPort);
   if (ok) {
@@ -54,11 +54,11 @@ UdpTransport::beginMulticast(IPAddress localIp, uint16_t groupPort)
 {
   end();
 #if defined(ESP8266)
-  UDPTRANSPORT_DBG(F("joining group ") << MCAST_GROUP << ':' << _DEC(groupPort) <<
+  LOG(F("joining group ") << MCAST_GROUP << ':' << _DEC(groupPort) <<
                    F(" on ") << localIp);
   bool ok = m_udp.beginMulticast(localIp, MCAST_GROUP, groupPort);
 #elif defined(ESP32)
-  UDPTRANSPORT_DBG(F("joining group ") << MCAST_GROUP << ':' << _DEC(groupPort));
+  LOG(F("joining group ") << MCAST_GROUP << ':' << _DEC(groupPort));
   bool ok = m_udp.beginMulticast(MCAST_GROUP, groupPort);
 #endif
   if (ok) {
@@ -116,7 +116,7 @@ UdpTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
   if (endpointId == 0) {
     switch (m_mode) {
       case Mode::LISTEN:
-        UDPTRANSPORT_DBG(F("remote endpoint not specified"));
+        LOG(F("remote endpoint not specified"));
         return NDN_ERROR_SocketTransport_error_in_getaddrinfo;
       case Mode::TUNNEL:
         res = m_udp.beginPacket(m_ip, m_port);
@@ -142,14 +142,14 @@ UdpTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
   }
 
   if (res != 1) {
-    UDPTRANSPORT_DBG(F("Udp::beginPacket error"));
+    LOG(F("Udp::beginPacket error"));
     return NDN_ERROR_SocketTransport_cannot_connect_to_socket;
   }
 
   m_udp.write(pkt, len);
   res = m_udp.endPacket();
   if (res != 1) {
-    UDPTRANSPORT_DBG(F("Udp::endPacket error"));
+    LOG(F("Udp::endPacket error"));
     return NDN_ERROR_SocketTransport_error_in_send;
   }
 

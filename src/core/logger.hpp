@@ -6,7 +6,7 @@
 #include "detail/PriUint64.h"
 #include "detail/fix-maxmin.hpp"
 
-#define DBG(module, ...) \
+#define LOGGER(module, ...) \
   do { \
     ::ndn::getLogOutput() << _DEC(millis()) << " [" #module "] " << __VA_ARGS__ << "\n"; \
   } while (false)

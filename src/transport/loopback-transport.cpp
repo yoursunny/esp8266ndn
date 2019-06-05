@@ -1,7 +1,7 @@
 #include "loopback-transport.hpp"
 #include "../core/logger.hpp"
 
-#define LOOPBACKTRANSPORT_DBG(...) DBG(LoopbackTransport, __VA_ARGS__)
+#define LOG(...) LOGGER(LoopbackTransport, __VA_ARGS__)
 
 namespace ndn {
 
@@ -16,13 +16,13 @@ ndn_Error
 LoopbackTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
 {
   if (m_other == nullptr) {
-    LOOPBACKTRANSPORT_DBG("cannot send without begin()");
+    LOG(F("cannot send without begin()"));
     return NDN_ERROR_SocketTransport_socket_is_not_open;
   }
 
   PacketBuffer* pb = m_other->beforeReceive();
   if (pb == nullptr) {
-    LOOPBACKTRANSPORT_DBG("receiver is congested");
+    LOG(F("receiver is congested"));
     return NDN_ERROR_SocketTransport_error_in_send;
   }
 

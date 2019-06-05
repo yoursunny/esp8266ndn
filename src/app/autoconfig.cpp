@@ -11,7 +11,7 @@
 #include <HTTPClient.h>
 #endif
 
-#define AUTOCONFIG_DBG(...) DBG(AutoConfig, __VA_ARGS__)
+#define LOG(...) LOGGER(AutoConfig, __VA_ARGS__)
 
 namespace ndn {
 
@@ -24,18 +24,18 @@ queryFchService(String serviceUri)
   http.begin(tcp, serviceUri);
   int httpCode = http.GET();
   if (httpCode != HTTP_CODE_OK) {
-    AUTOCONFIG_DBG(serviceUri << " error: " << httpCode);
+    LOG(serviceUri << " error: " << httpCode);
     return INADDR_NONE;
   }
   String response = http.getString();
-  AUTOCONFIG_DBG(serviceUri << " response: " << response);
+  LOG(serviceUri << " response: " << response);
 
   IPAddress ip;
   if (!WiFi.hostByName(response.c_str(), ip)) {
-    AUTOCONFIG_DBG("DNS error");
+    LOG("DNS error");
     return INADDR_NONE;
   }
-  AUTOCONFIG_DBG("DNS resolved to: " << ip);
+  LOG("DNS resolved to: " << ip);
   return ip;
 #else // HAVE_HTTPCLIENT
   return INADDR_NONE;

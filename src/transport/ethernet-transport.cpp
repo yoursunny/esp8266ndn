@@ -9,7 +9,7 @@
 #include <netif/etharp.h>
 #include <IPAddress.h>
 
-#define ETHTRANSPORT_DBG(...) DBG(EthernetTransport, __VA_ARGS__)
+#define LOG(...) LOGGER(EthernetTransport, __VA_ARGS__)
 
 namespace ndn {
 
@@ -35,7 +35,7 @@ public:
   input(pbuf* p, netif* inp)
   {
     if (g_ethTransport == nullptr) {
-      ETHTRANSPORT_DBG(F("inactive"));
+      LOG(F("inactive"));
       pbuf_free(p);
       return ERR_OK;
     }
@@ -55,7 +55,7 @@ public:
   receive(pbuf* p)
   {
     if (p->next != nullptr) {
-      ETHTRANSPORT_DBG(F("unhandled: chained packet"));
+      LOG(F("unhandled: chained packet"));
       return;
     }
 
@@ -68,7 +68,7 @@ public:
     size_t bufSize = 0;
     std::tie(buf, bufSize) = pb->useBuffer();
     if (p->tot_len > bufSize) {
-      ETHTRANSPORT_DBG(F("insufficient receive buffer: tot_len=") << _DEC(p->tot_len));
+      LOG(F("insufficient receive buffer: tot_len=") << _DEC(p->tot_len));
       g_ethTransport->afterReceive(pb, 0, true);
       return;
     }
@@ -114,7 +114,7 @@ EthernetTransport::begin(const char ifname[2], uint8_t ifnum)
     }
   }
   if (found == nullptr) {
-    ETHTRANSPORT_DBG(F("netif ") << ifname[0] << ifname[1] << ifnum << F(" not found"));
+    LOG(F("netif ") << ifname[0] << ifname[1] << ifnum << F(" not found"));
     return false;
   }
   return begin(found);
@@ -131,7 +131,7 @@ EthernetTransport::begin()
       return begin(nif);
     }
   }
-  ETHTRANSPORT_DBG(F("no available netif"));
+  LOG(F("no available netif"));
   return false;
 #endif
 }
@@ -141,17 +141,17 @@ EthernetTransport::begin(netif* nif)
 {
 #ifdef ESP8266
   if (LWIP_VERSION_MAJOR != 1) {
-    ETHTRANSPORT_DBG(F("packet interception on ESP8266 lwip2 is untested and may not work"));
+    LOG(F("packet interception on ESP8266 lwip2 is untested and may not work"));
   }
 #endif // ESP8266
   if (g_ethTransport != nullptr) {
-    ETHTRANSPORT_DBG(F("an instance is active"));
+    LOG(F("an instance is active"));
     return false;
   }
 
   g_ethTransport = this;
   m_impl.reset(new Impl(nif));
-  ETHTRANSPORT_DBG(F("enabled on ") << nif->name[0] << nif->name[1] << nif->num);
+  LOG(F("enabled on ") << nif->name[0] << nif->name[1] << nif->num);
   return true;
 }
 
@@ -160,7 +160,7 @@ EthernetTransport::end()
 {
   m_impl.reset();
   g_ethTransport = nullptr;
-  ETHTRANSPORT_DBG(F("disabled"));
+  LOG(F("disabled"));
 }
 
 ndn_Error
@@ -197,7 +197,7 @@ EthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
   err_t e = m_impl->nif->linkoutput(m_impl->nif, p);
   pbuf_free(p);
   if (e != ERR_OK) {
-    ETHTRANSPORT_DBG(F("linkoutput error ") << _DEC(e));
+    LOG(F("linkoutput error ") << _DEC(e));
     return NDN_ERROR_SocketTransport_error_in_send;
   }
 

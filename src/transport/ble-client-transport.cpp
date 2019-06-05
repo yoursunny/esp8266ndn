@@ -2,7 +2,7 @@
 #include "detail/ble-impl.hpp"
 #include "../core/logger.hpp"
 
-#define BLECLIENTTRANSPORT_DBG(...) DBG(BleClientTransport, __VA_ARGS__)
+#define LOG(...) LOGGER(BleClientTransport, __VA_ARGS__)
 
 namespace ndn {
 
@@ -15,20 +15,20 @@ BleClientTransport::begin()
 {
   int err = detail::BleDeviceImpl.init("esp8266ndn-client", false, 1);
   if (err != 0) {
-    BLECLIENTTRANSPORT_DBG(F("device init error ") << err);
+    LOG(F("device init error ") << err);
     return false;
   }
 
   m_impl.reset(new detail::BleClientImpl());
   if (!m_impl->begin()) {
-    BLECLIENTTRANSPORT_DBG(F("client begin failure"));
+    LOG(F("client begin failure"));
     m_impl.reset();
     return false;
   }
 
   err = detail::BleDeviceImpl.startScanConnect(*m_impl);
   if (err != 0) {
-    BLECLIENTTRANSPORT_DBG(F("device scan error ") << err);
+    LOG(F("device scan error ") << err);
     m_impl.reset();
     return false;
   }

@@ -2,7 +2,7 @@
 #include "../core/logger.hpp"
 #include "../ndn-cpp/c/util/crypto.h"
 
-#define PINGCLIENT_DBG(...) DBG(PingClient, __VA_ARGS__)
+#define LOG(...) LOGGER(PingClient, __VA_ARGS__)
 
 namespace ndn {
 
@@ -41,7 +41,7 @@ PingClient::PingClient(Face& face, InterestLite& interest, Interval pingInterval
   , m_evtCb(nullptr)
 {
   if (m_pingInterval.min <= m_pingTimeout) {
-    PINGCLIENT_DBG(F("ERROR: minimum interval should be greater than timeout"));
+    LOG(F("ERROR: minimum interval should be greater than timeout"));
   }
 }
 
@@ -64,7 +64,7 @@ PingClient::loop()
   if (m_isPending && now - m_lastProbe > m_pingTimeout) {
     m_isPending = false;
     uint32_t seq = this->getLastSeq();
-    PINGCLIENT_DBG(F("timeout seq=") << _HEX(seq));
+    LOG(F("timeout seq=") << _HEX(seq));
     if (m_evtCb != nullptr) {
       m_evtCb(m_evtCbArg, Event::TIMEOUT, seq);
     }
@@ -84,7 +84,7 @@ PingClient::processData(const DataLite& data, uint64_t endpointId)
   m_isPending = false;
 
   uint32_t seq = this->getLastSeq();
-  PINGCLIENT_DBG(F("response seq=") << _HEX(seq) << F(" rtt=") << _DEC(millis() - m_lastProbe));
+  LOG(F("response seq=") << _HEX(seq) << F(" rtt=") << _DEC(millis() - m_lastProbe));
   if (m_evtCb != nullptr) {
     m_evtCb(m_evtCbArg, Event::RESPONSE, seq);
   }
@@ -101,7 +101,7 @@ PingClient::processNack(const NetworkNackLite& nackHeader, const InterestLite& i
   m_isPending = false;
 
   uint32_t seq = this->getLastSeq();
-  PINGCLIENT_DBG(F("nack seq=") << _HEX(seq) << F(" rtt=") << _DEC(millis() - m_lastProbe));
+  LOG(F("nack seq=") << _HEX(seq) << F(" rtt=") << _DEC(millis() - m_lastProbe));
   if (m_evtCb != nullptr) {
     m_evtCb(m_evtCbArg, Event::NACK, seq);
   }
@@ -123,7 +123,7 @@ PingClient::probe()
   ++seq;
   name.appendSequenceNumber(seq, m_seqBuf, sizeof(m_seqBuf));
 
-  PINGCLIENT_DBG(F("probe seq=") << _HEX(seq));
+  LOG(F("probe seq=") << _HEX(seq));
   getFace()->sendInterest(m_interest);
 
   m_isPending = true;

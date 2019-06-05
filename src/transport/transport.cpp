@@ -1,7 +1,7 @@
 #include "transport.hpp"
 #include "../core/logger.hpp"
 
-#define TRANSPORT_DBG(...) DBG(Transport, __VA_ARGS__)
+#define LOG(...) LOGGER(Transport, __VA_ARGS__)
 
 namespace ndn {
 
@@ -40,7 +40,7 @@ Transport::pushReceiveBuffer(PacketBuffer* pb)
   if (m_rxQueueIn.push(pb)) {
     return true;
   }
-  TRANSPORT_DBG("rxQueueIn is full");
+  LOG(F("rxQueueIn is full"));
   delete pb;
   return false;
 }
@@ -52,7 +52,7 @@ Transport::beforeReceive()
   bool ok = false;
   std::tie(pb, ok) = m_rxQueueIn.pop();
   if (!ok) {
-    TRANSPORT_DBG("rxQueueIn is empty");
+    LOG(F("rxQueueIn is empty"));
     return nullptr;
   }
   return pb;
@@ -68,14 +68,14 @@ Transport::afterReceive(PacketBuffer* pb, size_t pktSize, bool isAsync)
 
   ndn_Error e = pb->parse(pktSize);
   if (e != NDN_ERROR_success) {
-    TRANSPORT_DBG("packet parse error " << e << " endpoint=" << pb->endpointId);
+    LOG(F("packet parse error ") << e << F(" endpoint=") << pb->endpointId);
     pushReceiveBuffer(pb);
     return e;
   }
 
   if (isAsync) {
     if (!m_rxQueueOut.push(pb)) {
-      TRANSPORT_DBG("rxQueueOut is full");
+      LOG(F("rxQueueOut is full"));
       pushReceiveBuffer(pb);
     }
   }
