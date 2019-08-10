@@ -170,15 +170,6 @@ Face::addReceiveBuffers(int count, const PacketBuffer::Options& options)
   return n;
 }
 
-PacketBuffer*
-Face::swapPacketBuffer(PacketBuffer* pb)
-{
-  if (pb != nullptr) {
-    pushReceiveBuffer(pb);
-  }
-  return popReceiveBuffer();
-}
-
 void
 Face::loop()
 {

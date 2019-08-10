@@ -90,28 +90,10 @@ public:
   int
   addReceiveBuffers(int count, const PacketBuffer::Options& options = {});
 
-  [[deprecated("use popReceiveBuffer")]]
-  const PacketBuffer*
-  getPacketBuffer() const
-  {
-    return m_pb;
-  }
-
-  [[deprecated("use popReceiveBuffer and pushReceiveBuffer")]]
-  PacketBuffer*
-  swapPacketBuffer(PacketBuffer* pb);
-
   /** \brief receive and process packets
    */
   void
   loop();
-
-  [[deprecated("use loop(); packetLimit has no effect")]]
-  void
-  loop(int packetLimit)
-  {
-    loop();
-  }
 
   /** \brief verify the signature on current Interest against given public key
    *
