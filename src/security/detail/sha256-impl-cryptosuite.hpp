@@ -1,7 +1,7 @@
 #ifndef ESP8266NDN_SHA256_IMPL_CRYPTOSUITE_HPP
 #define ESP8266NDN_SHA256_IMPL_CRYPTOSUITE_HPP
 
-#include "cryptosuite-sha256.h"
+#include "../../vendor/cryptosuite-sha256.h"
 
 namespace ndn {
 namespace detail {

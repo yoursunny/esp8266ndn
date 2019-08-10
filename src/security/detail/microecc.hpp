@@ -1,7 +1,7 @@
 #ifndef ESP8266NDN_MICROECC_HPP
 #define ESP8266NDN_MICROECC_HPP
 
-#include "uECC.h"
+#include "../../vendor/uECC.h"
 
 namespace ndn {
 namespace detail {
