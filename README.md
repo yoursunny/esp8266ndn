@@ -14,6 +14,7 @@ The following features are implemented in this library:
 * ECDSA signing and verification, and EC key generation
 * [ndnping](https://github.com/named-data/ndn-tools/tree/master/tools/ping) server and client
 * [NDN-FCH](https://github.com/named-data/NDN-FCH) client for connecting to the global NDN testbed (ESP8266 and ESP32)
+* time synchronization
 
 This is a side project owned by [yoursunny.com](https://yoursunny.com). It is not an official part of the NDN platform. The author provides best-effort support on [ndn-lib mailing list](https://www.lists.cs.ucla.edu/mailman/listinfo/ndn-lib).
 

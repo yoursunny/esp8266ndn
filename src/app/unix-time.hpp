@@ -16,6 +16,22 @@ class UnixTimeClass : public PacketHandler
 public:
   UnixTimeClass();
 
+  /** \brief Disable integration with system clock.
+   *
+   *  System clock integration is supported on ESP32 only, and enabled by
+   *  default.
+   *
+   *  When enabled, this module updates the system clock when a valid timestamp
+   *  is received. The current Unix time is then available via gettimeofday()
+   *  and other system functions. This integration cannot be used together with
+   *  other time synchronization mechanisms such as lwip SNTP client.
+   *
+   *  To disable system clock integration, invoke this function before begin().
+   *  Then, Unix timestamp is only available via UnixTime.now() function.
+   */
+  void
+  disableIntegration();
+
   /** \brief Enable UnixTime requests.
    *  \param face a face to communication with server
    *  \param interval how often to refresh time (millis)
@@ -51,6 +67,9 @@ private:
   unsigned long m_nextRequest;
   uint64_t m_timeOffset;
   InterestWCB<2, 0> m_interest;
+#if defined(ESP32)
+  bool m_wantIntegration;
+#endif
 };
 
 extern UnixTimeClass UnixTime;

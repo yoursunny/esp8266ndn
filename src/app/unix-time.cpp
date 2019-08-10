@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <cstdio>
 #include <time.h>
+#include <sys/time.h>
 
 #define LOG(...) LOGGER(UnixTime, __VA_ARGS__)
 
@@ -14,6 +15,9 @@ UnixTimeClass::UnixTimeClass()
   , m_lastRequest(0)
   , m_nextRequest(0)
   , m_timeOffset(0)
+#if defined(ESP32)
+  , m_wantIntegration(true)
+#endif
 {
   ndn::NameLite& name = m_interest.getName();
   name.append("localhop");
@@ -21,6 +25,14 @@ UnixTimeClass::UnixTimeClass()
   m_interest.setCanBePrefix(true);
   m_interest.setMustBeFresh(true);
 }
+
+#if defined(ESP32)
+void
+UnixTimeClass::disableIntegration()
+{
+  m_wantIntegration = false;
+}
+#endif
 
 void
 UnixTimeClass::begin(ndn::Face& face, unsigned long interval)
@@ -89,6 +101,15 @@ UnixTimeClass::processData(const ndn::DataLite& data, uint64_t endpointId)
   m_timeOffset = timestamp - m_lastRequest * 1000;
   LOG(F("time-offset=") << m_timeOffset << F(", now=") << this->now());
   m_lastRequest = 0;
+
+#if defined(ESP32)
+  if (m_wantIntegration) {
+    auto now = this->now();
+    struct timeval tv = { .tv_sec = now / 1000000, .tv_usec = now % 1000000 };
+    settimeofday(&tv, nullptr);
+  }
+#endif
+
   return true;
 }
 
