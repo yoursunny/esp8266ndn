@@ -1,9 +1,7 @@
 #ifndef ESP8266NDN_EC_IMPL_HPP
 #define ESP8266NDN_EC_IMPL_HPP
 
-#if defined(ESP8266)
-#include "ec-impl-bearssl.hpp"
-#elif defined(ESP32)
+#if defined(ESP32)
 #include "ec-impl-mbedtls.hpp"
 #else
 #include "ec-impl-microecc.hpp"

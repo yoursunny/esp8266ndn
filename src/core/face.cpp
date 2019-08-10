@@ -235,6 +235,8 @@ Face::receive(PacketBuffer* pb)
       }
       break;
     }
+    case PacketType::NONE:
+      break;
   }
 }
 

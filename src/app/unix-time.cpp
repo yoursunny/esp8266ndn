@@ -118,8 +118,8 @@ UnixTimeClass::processData(const ndn::DataLite& data, uint64_t endpointId)
   uint64_t now = timeOffset + millis() * 1000;
   if (m_timeOffset == TIMEOFFSET_INTEG) {
     struct timeval tv = {
-      .tv_sec = static_cast<unsigned long>(now / 1000000),
-      .tv_usec = static_cast<unsigned long>(now % 1000000),
+      .tv_sec = static_cast<time_t>(now / 1000000),
+      .tv_usec = static_cast<suseconds_t>(now % 1000000),
     };
     settimeofday(&tv, nullptr);
   }

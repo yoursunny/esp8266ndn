@@ -61,7 +61,7 @@ void
 PingClient::loop()
 {
   unsigned long now = millis();
-  if (m_isPending && now - m_lastProbe > m_pingTimeout) {
+  if (m_isPending && now - m_lastProbe > static_cast<unsigned long>(m_pingTimeout)) {
     m_isPending = false;
     uint32_t seq = this->getLastSeq();
     LOG(F("timeout seq=") << _HEX(seq));
