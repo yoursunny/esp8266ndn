@@ -9,12 +9,12 @@ env:
     - PLATFORM=esp8266 \
       HARDWARE=esp8266com/esp8266 \
       COREGIT=https://github.com/esp8266/Arduino.git \
-      CORECOMMIT=192aaa42919dc65e5532ea4b60b002c4e19ce0ec \
+      CORECOMMIT=adfc28d7d8a8c97ecfc8aed0a5fff66e4e61c3c5 \
       BOARD='--board esp8266com:esp8266:nodemcuv2  --pref custom_xtal=nodemcuv2_80 --pref custom_eesz=nodemcuv2_4M1M'
     - PLATFORM=esp32 \
       HARDWARE=espressif/esp32 \
       COREGIT=https://github.com/espressif/arduino-esp32.git \
-      CORECOMMIT=7df50a97d17b0953ea01cad0355410a66bd8b8b4 \
+      CORECOMMIT=fa55a2c91d31eab673c0115bc57e9437350488cc \
       BOARD='--board espressif:esp32:heltec_wifi_kit_32 --pref custom_FlashFreq=heltec_wifi_kit_32_80'
     - PLATFORM=nrf52 \
       BOARD='--board adafruit:nrf52:feather52832 --pref custom_softdevice=feather52832_s132v6' \

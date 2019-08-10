@@ -147,13 +147,13 @@ public:
     if (this->state != State::CONNECTED) {
       return false;
     }
-    try {
-      m_tx->writeValue(const_cast<uint8_t*>(pkt), len);
-    }
-    catch (const BLEDisconnectedException&) {
+
+    if (!m_client->isConnected()) {
       this->state = State::DISCONNECTED;
       return false;
     }
+
+    m_tx->writeValue(const_cast<uint8_t*>(pkt), len);
     return true;
   }
 
