@@ -40,8 +40,8 @@ install:
     if [[ $PLATFORM == nrf52 ]]; then
       arduino --pref "boardsmanager.additional.urls=https://www.adafruit.com/package_adafruit_index.json" --save-prefs
       arduino --install-boards adafruit:nrf52:$NRF52VERSION
-      sudo pip3 install -U pip
-      sudo pip3 install adafruit-nrfutil
+      sudo pip3 install -U pip setuptools
+      sudo pip install adafruit-nrfutil
     elif [[ $PLATFORM =~ ^esp ]]; then
       mkdir -p $HOME/Arduino/hardware/$HARDWARE
       cd $HOME/Arduino/hardware/$HARDWARE
@@ -50,7 +50,7 @@ install:
       git -c advice.detachedHead=false checkout $CORECOMMIT
       git submodule update --init
       cd tools
-      python get.py
+      python3 get.py
     fi
   - mkdir -p $HOME/Arduino/libraries; cd $HOME/Arduino/libraries
   - |
