@@ -67,9 +67,6 @@ private:
   unsigned long m_nextRequest;
   uint64_t m_timeOffset;
   InterestWCB<2, 0> m_interest;
-#if defined(ESP32)
-  bool m_wantIntegration;
-#endif
 };
 
 extern UnixTimeClass UnixTime;

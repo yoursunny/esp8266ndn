@@ -10,29 +10,35 @@
 
 namespace ndn {
 
+/// special timeOffset values
+enum {
+  TIMEOFFSET_INTEG = 0,
+  TIMEOFFSET_INTEG_UNAVAIL = 1,
+  TIMEOFFSET_UNAVAIL = 2,
+};
+
 UnixTimeClass::UnixTimeClass()
   : m_interval(0)
   , m_lastRequest(0)
   , m_nextRequest(0)
-  , m_timeOffset(0)
-#if defined(ESP32)
-  , m_wantIntegration(true)
-#endif
+  , m_timeOffset(TIMEOFFSET_UNAVAIL)
 {
   ndn::NameLite& name = m_interest.getName();
   name.append("localhop");
   name.append("unix-time");
   m_interest.setCanBePrefix(true);
   m_interest.setMustBeFresh(true);
-}
 
 #if defined(ESP32)
+  m_timeOffset = TIMEOFFSET_INTEG_UNAVAIL;
+#endif
+}
+
 void
 UnixTimeClass::disableIntegration()
 {
-  m_wantIntegration = false;
+  m_timeOffset = TIMEOFFSET_UNAVAIL;
 }
-#endif
 
 void
 UnixTimeClass::begin(ndn::Face& face, unsigned long interval)
@@ -61,7 +67,7 @@ UnixTimeClass::loop()
 bool
 UnixTimeClass::isAvailable() const
 {
-  return m_timeOffset != 0;
+  return m_timeOffset != TIMEOFFSET_UNAVAIL && m_timeOffset != TIMEOFFSET_INTEG_UNAVAIL;
 }
 
 uint64_t
@@ -69,6 +75,12 @@ UnixTimeClass::now() const
 {
   if (!isAvailable()) {
     return 0;
+  }
+
+  if (m_timeOffset == TIMEOFFSET_INTEG) {
+    struct timeval tv = {0};
+    gettimeofday(&tv, nullptr);
+    return static_cast<uint64_t>(tv.tv_sec) * 1000000 + tv.tv_usec;
   }
 
   return m_timeOffset + millis() * 1000;
@@ -95,21 +107,25 @@ UnixTimeClass::processData(const ndn::DataLite& data, uint64_t endpointId)
     return true;
   }
 
+  if (m_timeOffset == TIMEOFFSET_INTEG_UNAVAIL) {
+    m_timeOffset = TIMEOFFSET_INTEG;
+  }
+
   // Calculate timeOffset from lastRequest only, because Face usually transmits
   // the Interest immediately, but processes incoming Data in Face::loop that
   // incurs delay from Arduino's main loop.
-  m_timeOffset = timestamp - m_lastRequest * 1000;
-  LOG(F("time-offset=") << m_timeOffset << F(", now=") << this->now());
-  m_lastRequest = 0;
-
-#if defined(ESP32)
-  if (m_wantIntegration) {
-    auto now = this->now();
+  uint64_t timeOffset = timestamp - m_lastRequest * 1000;
+  uint64_t now = timeOffset + millis() * 1000;
+  if (m_timeOffset == TIMEOFFSET_INTEG) {
     struct timeval tv = { .tv_sec = now / 1000000, .tv_usec = now % 1000000 };
     settimeofday(&tv, nullptr);
   }
-#endif
+  else {
+    m_timeOffset = timeOffset;
+  }
 
+  LOG(F("time-offset=") << timeOffset << F(", now=") << now);
+  m_lastRequest = 0;
   return true;
 }
 
