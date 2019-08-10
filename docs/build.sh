@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$( dirname "${BASH_SOURCE[0]}" )"
 if ! [[ -x ./doxygen.exe ]]; then
   if [[ "$OS" == "Windows_NT" ]]; then
     curl ftp://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.windows.x64.bin.zip > doxygen-windows.zip
