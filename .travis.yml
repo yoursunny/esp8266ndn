@@ -4,7 +4,7 @@ os:
 env:
   global:
     - HELTECCOMMIT=348f16525b3280792c1289ee015666774251afd5
-    - AUNITCOMMIT=25637e47295b0a4c0166de631780ebfa0f057668
+    - AUNITCOMMIT=9c7b442eb74c31bdb0c1c4a006d6a2df202c863b
   matrix:
     - PLATFORM=esp8266 \
       HARDWARE=esp8266com/esp8266 \
@@ -18,7 +18,7 @@ env:
       BOARD='--board espressif:esp32:heltec_wifi_kit_32 --pref custom_FlashFreq=heltec_wifi_kit_32_80'
     - PLATFORM=nrf52 \
       BOARD='--board adafruit:nrf52:feather52832 --pref custom_softdevice=feather52832_s132v6' \
-      NRF52VERSION=0.10.1
+      NRF52VERSION=0.12.0
 
 before_install:
   - sudo iptables -A INPUT -p udp -m udp --dport 5353 -j DROP # https://github.com/per1234/arduino-ci-script/issues/1

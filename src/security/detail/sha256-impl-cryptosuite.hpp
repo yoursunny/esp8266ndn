@@ -6,7 +6,7 @@
 namespace ndn {
 namespace detail {
 
-static void
+inline void
 sha256(const uint8_t* input, size_t len, uint8_t* result)
 {
   Sha256 sha;

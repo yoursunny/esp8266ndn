@@ -151,10 +151,10 @@ PacketBuffer::getPktType() const
 const InterestLite*
 PacketBuffer::getInterest() const
 {
-  switch (this->getPktType()) {
-    case PacketType::INTEREST:
-    case PacketType::NACK:
-      return &InterestLite::downCast(m_interest);
+  PacketType pktType = this->getPktType();
+  if (pktType == PacketType::INTEREST ||
+      pktType == PacketType::NACK) {
+    return &InterestLite::downCast(m_interest);
   }
   return nullptr;
 }
@@ -185,8 +185,9 @@ PacketBuffer::verify(const PublicKey& pubKey) const
       return this->verifyInterest(pubKey);
     case PacketType::DATA:
       return this->verifyData(pubKey);
+    default:
+      return VERIFY_NO_PKT;
   }
-  return VERIFY_NO_PKT;
 }
 
 PacketBuffer::VerifyResult

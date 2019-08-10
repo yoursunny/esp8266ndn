@@ -8,6 +8,10 @@
 
 #define LOG(...) LOGGER(UnixTime, __VA_ARGS__)
 
+#if defined(ESP32)
+#define SUPPORT_SYSCLOCK_INTEG
+#endif
+
 namespace ndn {
 
 /// special timeOffset values
@@ -29,7 +33,7 @@ UnixTimeClass::UnixTimeClass()
   m_interest.setCanBePrefix(true);
   m_interest.setMustBeFresh(true);
 
-#if defined(ESP32)
+#ifdef SUPPORT_SYSCLOCK_INTEG
   m_timeOffset = TIMEOFFSET_INTEG_UNAVAIL;
 #endif
 }
@@ -77,11 +81,13 @@ UnixTimeClass::now() const
     return 0;
   }
 
+#ifdef SUPPORT_SYSCLOCK_INTEG
   if (m_timeOffset == TIMEOFFSET_INTEG) {
     struct timeval tv = {0};
     gettimeofday(&tv, nullptr);
     return static_cast<uint64_t>(tv.tv_sec) * 1000000 + tv.tv_usec;
   }
+#endif
 
   return m_timeOffset + millis() * 1000;
 }
@@ -107,15 +113,18 @@ UnixTimeClass::processData(const ndn::DataLite& data, uint64_t endpointId)
     return true;
   }
 
+#ifdef SUPPORT_SYSCLOCK_INTEG
   if (m_timeOffset == TIMEOFFSET_INTEG_UNAVAIL) {
     m_timeOffset = TIMEOFFSET_INTEG;
   }
+#endif
 
   // Calculate timeOffset from lastRequest only, because Face usually transmits
   // the Interest immediately, but processes incoming Data in Face::loop that
   // incurs delay from Arduino's main loop.
   uint64_t timeOffset = timestamp - m_lastRequest * 1000;
   uint64_t now = timeOffset + millis() * 1000;
+#ifdef SUPPORT_SYSCLOCK_INTEG
   if (m_timeOffset == TIMEOFFSET_INTEG) {
     struct timeval tv = {
       .tv_sec = static_cast<time_t>(now / 1000000),
@@ -123,7 +132,9 @@ UnixTimeClass::processData(const ndn::DataLite& data, uint64_t endpointId)
     };
     settimeofday(&tv, nullptr);
   }
-  else {
+  else
+#endif
+  {
     m_timeOffset = timeOffset;
   }
 

@@ -168,6 +168,7 @@ LiteFrag::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
   }
 
   LOG(F("send id=") << id << F(" seqs=") << seq);
+  return NDN_ERROR_success;
 }
 
 } // namespace ndn

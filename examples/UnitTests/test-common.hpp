@@ -1,5 +1,7 @@
 #include <esp8266ndn.h>
 
+#include <vector>
+
 #include <AUnitVerbose.h>
 
 using namespace aunit;

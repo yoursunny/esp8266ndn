@@ -7,7 +7,7 @@
 namespace ndn {
 namespace detail {
 
-static void
+inline void
 sha256(const uint8_t* input, size_t len, uint8_t* result)
 {
   mbedtls_sha256_ret(input, len, result, 0);
