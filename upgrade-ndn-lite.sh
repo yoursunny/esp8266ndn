@@ -30,6 +30,7 @@ sed -i \
   -e 's|sec-lib/micro-ecc/uECC.h|../../../vendor/uECC.h|' \
   security/default-backend/ndn-lite-default-ecc-impl.h
 sed -i \
+  -e '1 i\#define FEATURE_PERIPH_HWRNG' \
   -e '/uECC_Curve curve/ d' \
   -e 's|switch\s*(\([a-z]*\)_type)|if (\1_type != NDN_ECDSA_CURVE_SECP256R1)|' \
   -e '/case NDN_ECDSA_CURVE_/,/default/ d' \

@@ -1,3 +1,4 @@
+#define FEATURE_PERIPH_HWRNG
 /*
  * Copyright (C) 2018-2019 Zhiyi Zhang, Tianyuan Yu, Edward Lu
  *
