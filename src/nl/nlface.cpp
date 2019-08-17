@@ -27,8 +27,6 @@ private:
   send(ndn_face_intf_t* self, const uint8_t* pkt, uint32_t len)
   {
     Impl* impl = static_cast<Impl*>(self);
-    LOG(_DEC(impl->face_id) << F(" TX len=") << _DEC(len));
-    LOG(_DEC(impl->face_id) << " TX " << PrintHex(pkt, len));
     ndn_Error e = impl->m_transport.send(pkt, len, 0);
     return e == NDN_ERROR_success ? NDN_SUCCESS : NDN_OVERSIZE;
   }
@@ -41,10 +39,10 @@ private:
     std::tie(pkt, len) = pb->getRaw(PacketBuffer::RAW_L3);
 
     Impl* impl = static_cast<Impl*>(arg);
-    LOG(_DEC(impl->face_id) << F(" RX len=") << _DEC(len));
-    LOG(_DEC(impl->face_id) << " RX " << PrintHex(pkt, len));
     int res = impl->intfReceive(pkt, len);
-    LOG(_HEX(impl->face_id) << F(" RX res=") << _DEC(res));
+    if (res != NDN_SUCCESS) {
+      LOG(_HEX(impl->face_id) << F(" RX res=") << _DEC(res) << "\n" << PrintHex(pkt, len));
+    }
     impl->m_transport.pushReceiveBuffer(pb);
   }
 
