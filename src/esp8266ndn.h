@@ -42,5 +42,6 @@
 
 #include "nl/ndnlite.hpp"
 #include "nl/nlface.hpp"
+#include "nl/nltransport.hpp"
 
 #endif // ESP8266NDN_H

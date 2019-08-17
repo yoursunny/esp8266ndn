@@ -24,7 +24,6 @@ public:
   ndn_Error
   addRoute(const NameLite& name);
 
-protected:
   int
   intfReceive(const uint8_t* pkt, size_t len);
 };
