@@ -25,9 +25,13 @@ typedef struct ndn_sec_boot_state {
   const char* device_identifier;
   size_t identifier_size;
   uint8_t trust_anchor_sha[NDN_SEC_SHA256_HASH_SIZE];
+  // TODO: add the dh Pub key into the keystorage
   ndn_ecc_pub_t controller_dh_pub;
+  // TODO: add the hmac key into the keystorage
   const ndn_ecc_prv_t* pre_installed_ecc_key;
+  // TODO: add the hmac key into the keystorage
   const ndn_hmac_key_t* pre_shared_hmac_key;
+  ndn_secruity_bootstrapping_after_bootstrapping after_sec_boot;
 } ndn_sec_boot_state_t;
 
 static uint8_t sec_boot_buf[4096];
@@ -45,6 +49,14 @@ sec_boot_after_bootstrapping()
 {
   ndn_key_storage_delete_aes_key(SEC_BOOT_AES_KEY_ID);
   ndn_key_storage_delete_ecc_key(SEC_BOOT_DH_KEY_ID);
+
+  // start running service discovery protocol
+  ndn_sd_after_bootstrapping();
+  sd_listen(m_sec_boot_state.face);
+  sd_start_adv_self_services();
+
+  // call application-defined after_bootstrapping function
+  m_sec_boot_state.after_sec_boot();
 }
 
 void
@@ -85,6 +97,7 @@ on_cert_data(const uint8_t* raw_data, uint32_t data_size, void* userdata)
   decoder_get_type(&decoder, &probe);
   if (probe != TLV_Data) return;
   decoder_get_length(&decoder, &probe);
+  decoder.offset += probe;
   ndn_data_t self_cert;
   if (ndn_data_tlv_decode_no_verify(&self_cert, data.content_value, encoder_probe_block_size(TLV_Data, probe), NULL, NULL) != NDN_SUCCESS) {
     return;
@@ -152,6 +165,7 @@ sec_boot_send_cert_interest()
   ndn_interest_set_Parameters(&interest, encoder.output_value, encoder.offset);
   // set must be fresh
   ndn_interest_set_MustBeFresh(&interest,true);
+  interest.lifetime = 5000;
   // sign the interest
   ndn_signed_interest_ecdsa_sign(&interest, &interest.name, m_sec_boot_state.pre_installed_ecc_key);
   // send it out
@@ -233,6 +247,7 @@ on_sign_on_data(const uint8_t* raw_data, uint32_t data_size, void* userdata)
   ndn_name_tlv_encode(&encoder, &prefix_to_register);
   ndn_forwarder_add_route(m_sec_boot_state.face, encoder.output_value, encoder.offset);
   // send cert interest
+  ndn_time_delay(60);
   sec_boot_send_cert_interest();
 }
 
@@ -269,6 +284,7 @@ sec_boot_send_sign_on_interest()
   ndn_interest_set_Parameters(&interest, encoder.output_value, encoder.offset);
   // set must be fresh
   ndn_interest_set_MustBeFresh(&interest,true);
+  interest.lifetime = 5000;
   // sign the interest
   ndn_name_t temp_name;
   ndn_signed_interest_ecdsa_sign(&interest, &interest.name, m_sec_boot_state.pre_installed_ecc_key);
@@ -290,7 +306,8 @@ int
 ndn_security_bootstrapping(ndn_face_intf_t* face,
                            const ndn_ecc_prv_t* pre_installed_prv_key, const ndn_hmac_key_t* pre_shared_hmac_key,
                            const char* device_identifier, size_t identifier_size,
-                           const uint8_t* service_list, size_t list_size)
+                           const uint8_t* service_list, size_t list_size,
+                           ndn_secruity_bootstrapping_after_bootstrapping after_bootstrapping)
 {
   // set ECC RNG backend
   ndn_rng_backend_t* rng_backend = ndn_rng_get_backend();
@@ -301,12 +318,15 @@ ndn_security_bootstrapping(ndn_face_intf_t* face,
 
   // remember the state for future use
   m_sec_boot_state.face = face;
+  // TODO: add the pre-installed key into the key storage
   m_sec_boot_state.pre_installed_ecc_key = pre_installed_prv_key;
+  // TODO: add the hmac key into the key storage
   m_sec_boot_state.pre_shared_hmac_key = pre_shared_hmac_key;
   m_sec_boot_state.service_list = service_list;
   m_sec_boot_state.list_size = list_size;
   m_sec_boot_state.device_identifier = device_identifier;
   m_sec_boot_state.identifier_size = identifier_size;
+  m_sec_boot_state.after_sec_boot = after_bootstrapping;
 
   // preparation
   ndn_ecc_pub_t* dh_pub = NULL;
@@ -315,6 +335,11 @@ ndn_security_bootstrapping(ndn_face_intf_t* face,
   if (ndn_ecc_make_key(dh_pub, dh_prv, NDN_ECDSA_CURVE_SECP256R1, SEC_BOOT_DH_KEY_ID) != NDN_SUCCESS) {
     return NDN_SEC_CRYPTO_ALGO_FAILURE;
   }
+
+  // register route
+  int ret = ndn_forwarder_add_route_by_str(face, "/ndn/sign-on", strlen("/ndn/sign-on"));
+  if (ret != NDN_SUCCESS) return ret;
+  printf("SEC BOOT: successfully add route.");
 
   // send the first interest out
   sec_boot_send_sign_on_interest();

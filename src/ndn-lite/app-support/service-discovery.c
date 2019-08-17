@@ -64,18 +64,15 @@ typedef struct sd_sys_state {
 
 static sd_self_state_t m_self_state;
 static sd_sys_state_t m_sys_state;
+static bool m_has_initialized = false;
+static bool m_has_bootstrapped = false;
 static const uint8_t SERVICE_STATUS_MASK = 0x3F;
 static uint8_t sd_buf[4096];
 static ndn_time_ms_t m_next_adv;
 
 void
-ndn_sd_init(const ndn_name_t* dev_identity_name)
+ndn_sd_init()
 {
-  m_self_state.home_prefix = &dev_identity_name->components[0];
-  m_self_state.device_locator_size = dev_identity_name->components_size - 1;
-  for (int i = 0; i < dev_identity_name->components_size - 1; i++) {
-    m_self_state.device_locator[i] = &dev_identity_name->components[i + 1];
-  }
   for (int i = 0; i < NDN_SD_SERVICES_SIZE; i++) {
     m_self_state.services[i].status = 0;
   }
@@ -85,6 +82,19 @@ ndn_sd_init(const ndn_name_t* dev_identity_name)
     m_sys_state.expire_tps[i] = 0;
   }
   m_next_adv = 0;
+  m_has_initialized = true;
+}
+
+void
+ndn_sd_after_bootstrapping()
+{
+  ndn_key_storage_t* storage = ndn_key_storage_get_instance();
+  m_self_state.home_prefix = &storage->self_identity.components[0];
+  m_self_state.device_locator_size = storage->self_identity.components_size - 1;
+  for (int i = 0; i < storage->self_identity.components_size - 1; i++) {
+    m_self_state.device_locator[i] = &storage->self_identity.components[i + 1];
+  }
+  m_has_bootstrapped = true;
 }
 
 int
@@ -187,7 +197,8 @@ on_sd_interest(const uint8_t* raw_int, uint32_t raw_int_size, void* userdata)
 {
   ndn_interest_t interest;
   ndn_decoder_t decoder;
-  decoder_init(&decoder, raw_int, raw_int_size);
+  // decoder_init(&decoder, raw_int, raw_int_size);
+  ndn_interest_from_block(&interest, raw_int, raw_int_size);
   printf("Receive SD related Interest packet with name: \n");
   ndn_name_print(&interest.name);
   // TODO signature verification
@@ -196,7 +207,7 @@ on_sd_interest(const uint8_t* raw_int, uint32_t raw_int_size, void* userdata)
   ndn_time_ms_t now = ndn_time_now_ms();
   if (interest.name.components[2].size != 1) {
     // unrecognized Interest, ignore it
-    return NDN_FWD_STRATEGY_SUPPRESS;
+    return NDN_FWD_STRATEGY_MULTICAST;
   }
   if (memcmp(interest.name.components[2].value, &sd_adv, 1)) {
     // adv Interest packet
@@ -248,17 +259,17 @@ on_sd_interest(const uint8_t* raw_int, uint32_t raw_int_size, void* userdata)
                                   // TLV_DATAARG_SIGTYPE_U8, NDN_SIG_TYPE_ECDSA_SHA256,
                                   // TLV_DATAARG_IDENTITYNAME_PTR, &keys->self_identity,
                                   // TLV_DATAARG_SIGKEY_PTR, &keys->self_identity_key);
-          if (ret != NDN_SUCCESS) return NDN_FWD_STRATEGY_SUPPRESS;
+          if (ret != NDN_SUCCESS) return NDN_FWD_STRATEGY_MULTICAST;
           ndn_forwarder_put_data(data_buf, data_length);
         }
       }
     }
   }
-  return NDN_FWD_STRATEGY_SUPPRESS;
+  return NDN_FWD_STRATEGY_MULTICAST;
 }
 
 void
-sd_listen()
+sd_listen(ndn_face_intf_t *face)
 {
   ndn_name_t listen_prefix;
   ndn_name_init(&listen_prefix);
@@ -269,6 +280,8 @@ sd_listen()
   encoder_init(&encoder, sd_buf, sizeof(sd_buf));
   ndn_name_tlv_encode(&encoder, &listen_prefix);
   ndn_forwarder_register_prefix(encoder.output_value, encoder.offset, on_sd_interest, NULL);
+  // Register outgoing route
+  ndn_forwarder_add_route(face, encoder.output_value, encoder.offset);
 }
 
 void
@@ -303,8 +316,10 @@ on_sd_interest_timeout (void* userdata)
 int
 sd_start_adv_self_services()
 {
+  if (!m_has_initialized || !m_has_bootstrapped) {
+    return NDN_STATE_NOT_INITIALIZED;
+  }
   int service_cnt;
-
   ndn_time_ms_t now = ndn_time_now_ms();
   if (now < m_next_adv) {
     ndn_msgqueue_post(NULL, sd_start_adv_self_services, NULL, NULL);
@@ -362,6 +377,9 @@ sd_start_adv_self_services()
 int
 sd_query_sys_services(const uint8_t* service_ids, size_t size)
 {
+  if (!m_has_initialized || !m_has_bootstrapped) {
+    return NDN_STATE_NOT_INITIALIZED;
+  }
   // format: /[home-prefix]/SD-CTL/meta
   int ret = 0;
   ndn_interest_t interest;
@@ -396,6 +414,9 @@ sd_query_sys_services(const uint8_t* service_ids, size_t size)
 int
 sd_query_service(uint8_t service_id, const ndn_name_t* granularity, bool is_any)
 {
+  if (!m_has_initialized || !m_has_bootstrapped) {
+    return NDN_STATE_NOT_INITIALIZED;
+  }
   // Format: /[home-prefix]/SD/[service]/[granularity]/[descriptor: ANY, ALL]
   int ret = 0;
   ndn_interest_t interest;
