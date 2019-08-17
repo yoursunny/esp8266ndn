@@ -7,7 +7,7 @@ BUILTIN_STL_SUPPORT = YES
 EXTRACT_ALL = YES
 INPUT = "../src"
 RECURSIVE = YES
-EXCLUDE = "../src/ndn-cpp" "../src/vendor"
+EXCLUDE = "../src/ndn-cpp" "../src/ndn-lite" "../src/vendor"
 PREDEFINED = "ARDUINO=100" "ESP32=1"
 HTML_COLORSTYLE_HUE = 37
 HTML_COLORSTYLE_SAT = 255

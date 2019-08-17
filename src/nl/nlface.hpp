@@ -9,19 +9,29 @@
 
 namespace ndn {
 
+/** \brief A network face in NDN-Lite stack.
+ */
 class NlFace
 {
 public:
+  explicit
   NlFace(Transport& transport);
 
   ~NlFace();
 
+  /** \brief Register this face with NDN-Lite forwarder.
+   */
   bool
   begin();
 
+  /** \brief Unregister this face with NDN-Lite forwarder.
+   */
   bool
   end();
 
+  /** \brief Add a route in NDN-Lite FIB.
+   *  \post Interests matching \p name are sent to the underlying transport.
+   */
   ndn_Error
   addRoute(const NameLite& name);
 
