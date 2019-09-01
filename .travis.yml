@@ -1,48 +1,52 @@
-language: bash
-os:
-  - linux
+dist: bionic
+
+language: python
+python: 3.7
+
 env:
   global:
     - HELTECCOMMIT=348f16525b3280792c1289ee015666774251afd5
-    - AUNITCOMMIT=9c7b442eb74c31bdb0c1c4a006d6a2df202c863b
+    - AUNITCOMMIT=acacc8c1d17b25e2b48432ba477f197318ce82ea
   matrix:
-    - PLATFORM=esp8266 \
-      HARDWARE=esp8266com/esp8266 \
-      COREGIT=https://github.com/esp8266/Arduino.git \
-      CORECOMMIT=adfc28d7d8a8c97ecfc8aed0a5fff66e4e61c3c5 \
+    - PLATFORM=esp8266
+      HARDWARE=esp8266com/esp8266
+      COREGIT=https://github.com/esp8266/Arduino.git
+      CORECOMMIT=b6e58301af12c51b28d07e4485060504ef2b293a
       BOARD='--board esp8266com:esp8266:nodemcuv2  --pref custom_xtal=nodemcuv2_80 --pref custom_eesz=nodemcuv2_4M1M'
-    - PLATFORM=esp32 \
-      HARDWARE=espressif/esp32 \
-      COREGIT=https://github.com/espressif/arduino-esp32.git \
-      CORECOMMIT=fa55a2c91d31eab673c0115bc57e9437350488cc \
+    - PLATFORM=esp32
+      HARDWARE=espressif/esp32
+      COREGIT=https://github.com/espressif/arduino-esp32.git
+      CORECOMMIT=7a574399b17e552800459e3eafb72d9158c05968
       BOARD='--board espressif:esp32:heltec_wifi_kit_32 --pref custom_FlashFreq=heltec_wifi_kit_32_80'
-    - PLATFORM=nrf52 \
-      BOARD='--board adafruit:nrf52:feather52832 --pref custom_softdevice=feather52832_s132v6' \
-      NRF52VERSION=0.12.0
+    - PLATFORM=nrf52
+      BOARD='--board adafruit:nrf52:feather52832 --pref custom_softdevice=feather52832_s132v6'
+      NRF52VERSION=0.13.0
+
+services:
+  - xvfb
 
 before_install:
   - sudo iptables -A INPUT -p udp -m udp --dport 5353 -j DROP # https://github.com/per1234/arduino-ci-script/issues/1
-  - |
-    EXTRAAPTPKG=''
-    if [[ $PLATFORM == nrf52 ]]; then
-      sudo dpkg --add-architecture i386
-      EXTRAAPTPKG='libc6:i386 python3-pip'
-    fi
-  - sudo apt-get update; sudo apt-get install xvfb $EXTRAAPTPKG
-  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16
-  - export DISPLAY=:1.0
 
 install:
-  - mkdir -p $HOME/arduino_ide; cd $HOME/arduino_ide
-  - curl -L http://downloads.arduino.cc/arduino-1.8.9-linux64.tar.xz | tar xJ --strip 1
-  - export PATH="$HOME/arduino_ide:$PATH"
   - |
+    : download Arduino IDE
+    mkdir -p $HOME/arduino_ide; cd $HOME/arduino_ide
+    curl -L http://downloads.arduino.cc/arduino-1.8.9-linux64.tar.xz | tar xJ --strip 1
+    export PATH="$HOME/arduino_ide:$PATH"
+  - |
+    : download platform
     if [[ $PLATFORM == nrf52 ]]; then
+      sudo dpkg --add-architecture i386
+      sudo apt-get update
+      sudo apt-get install libc6:i386
+      pip install adafruit-nrfutil
       arduino --pref "boardsmanager.additional.urls=https://www.adafruit.com/package_adafruit_index.json" --save-prefs
       arduino --install-boards adafruit:nrf52:$NRF52VERSION
-      sudo pip3 install -U pip setuptools
-      sudo pip install adafruit-nrfutil
     elif [[ $PLATFORM =~ ^esp ]]; then
+      if [[ $PLATFORM == esp32 ]]; then
+        pip install pyserial
+      fi
       mkdir -p $HOME/Arduino/hardware/$HARDWARE
       cd $HOME/Arduino/hardware/$HARDWARE
       git init
@@ -50,14 +54,15 @@ install:
       git -c advice.detachedHead=false checkout $CORECOMMIT
       git submodule update --init
       cd tools
-      python3 get.py
+      python get.py
     fi
-  - mkdir -p $HOME/Arduino/libraries; cd $HOME/Arduino/libraries
   - |
+    : download Arduino libraries
+    mkdir -p $HOME/Arduino/libraries; cd $HOME/Arduino/libraries
     if [[ $PLATFORM == esp32 ]]; then
       curl -L https://github.com/Heltec-Aaron-Lee/WiFi_Kit_series/archive/$HELTECCOMMIT.tar.gz | tar xz WiFi_Kit_series-$HELTECCOMMIT/esp32/libraries/LoRa --strip-components=3
     fi
-  - curl -L https://github.com/bxparks/AUnit/archive/$AUNITCOMMIT.tar.gz | tar xz; mv AUnit-$AUNITCOMMIT AUnit
+    curl -L https://github.com/bxparks/AUnit/archive/$AUNITCOMMIT.tar.gz | tar xz; mv AUnit-$AUNITCOMMIT AUnit
 
 before_script:
   - cp -r $TRAVIS_BUILD_DIR $HOME/Arduino/libraries/esp8266ndn
@@ -66,6 +71,7 @@ before_script:
 
 script:
   - |
+    : build examples
     NFAIL=0
     for SKETCH in $(find $TRAVIS_BUILD_DIR -name '*.ino'); do
       echo
