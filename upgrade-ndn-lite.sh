@@ -19,12 +19,9 @@ cp -r $NDNLITEPATH/* ./
 find -type f -exec sed -i -e 's/^\s*\t/\t/g' -e 's/\s*$//' '{}' '+'
 
 # delete name-splay: conflicts with name-tree
-# delete app-support/security-sign-on: depends on uECC
-# delete app-support/security-bootstrapping,service-discovery: questionable protocol
+# delete app-support: questionable protocols
 rm -rf forwarder/name-splay.* \
-       app-support/secure-sign-on \
-       app-support/security-bootstrapping.* \
-       app-support/service-discovery.*
+       app-support
 
 # replace uECC with vendor/uECC
 rm -rf security/default-backend/sec-lib/micro-ecc
