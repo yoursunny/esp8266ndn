@@ -4,6 +4,7 @@
 #include "logging.hpp"
 #include "../vendor/Streaming.h"
 #include "../vendor/PriUint64.h"
+#include <Printable.h>
 #include "detail/fix-maxmin.hpp"
 
 #define LOGGER(module, ...) \

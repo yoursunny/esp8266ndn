@@ -55,6 +55,16 @@ public:
   PacketType
   getPktType() const;
 
+  enum RawLayer {
+    RAW_L2 = 2,
+    RAW_L3 = 3,
+  };
+
+  /** \brief retrieve raw L2 or L3 packet buffer
+   */
+  std::tuple<const uint8_t*, size_t>
+  getRaw(RawLayer layer) const;
+
   /** \brief get parsed Interest
    *  \pre getPacketType() == PacketType::INTEREST || getPacketType() == PacketType::NACK
    */

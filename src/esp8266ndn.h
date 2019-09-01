@@ -40,4 +40,8 @@
 #include "transport/transport.hpp"
 #include "transport/udp-transport.hpp"
 
+#include "nl/nlface.hpp"
+#include "nl/nlforwarder.hpp"
+#include "nl/nltransport.hpp"
+
 #endif // ESP8266NDN_H

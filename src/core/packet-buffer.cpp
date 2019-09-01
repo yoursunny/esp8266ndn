@@ -42,7 +42,7 @@ PacketBuffer::useBuffer()
   m_netPktLen = 0;
   m_signedBegin = 0;
   m_signedEnd = 0;
-  return std::tie(m_buf, m_maxSize);
+  return std::make_tuple(m_buf, m_maxSize);
 }
 
 ndn_Error
@@ -146,6 +146,15 @@ PacketBuffer::getPktType() const
     return PacketType::INTEREST;
   }
   return PacketType::NONE;
+}
+
+std::tuple<const uint8_t*, size_t>
+PacketBuffer::getRaw(RawLayer layer) const
+{
+  if (layer == RAW_L2) {
+    return std::make_tuple(m_buf, (m_netPkt - m_buf) + m_netPktLen);
+  }
+  return std::make_tuple(m_netPkt, m_netPktLen);
 }
 
 const InterestLite*
