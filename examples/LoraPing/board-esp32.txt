@@ -1,0 +1,1 @@
+--board espressif:esp32:heltec_wifi_lora_32 --pref custom_FlashFreq=heltec_wifi_lora_32_40

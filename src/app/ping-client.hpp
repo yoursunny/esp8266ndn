@@ -90,7 +90,7 @@ private:
   const int m_pingTimeout;
   unsigned long m_lastProbe; ///< timestamp of last probe
   bool m_isPending; ///< whether lastProbe is waiting for either response or timeout
-  unsigned long m_nextProbe; ///< timestamp of next probe
+  unsigned long m_nextInterval; ///< interval between last and next probe
   EventCallback m_evtCb;
   void* m_evtCbArg;
 };

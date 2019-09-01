@@ -5,7 +5,7 @@ python: 3.7
 
 env:
   global:
-    - HELTECCOMMIT=348f16525b3280792c1289ee015666774251afd5
+    - HELTECCOMMIT=ded98af3c725e5abe844b6adb20a3d1c70b5da34
     - AUNITCOMMIT=acacc8c1d17b25e2b48432ba477f197318ce82ea
   matrix:
     - PLATFORM=esp8266
@@ -58,16 +58,17 @@ install:
     fi
   - |
     : download Arduino libraries
-    mkdir -p $HOME/Arduino/libraries; cd $HOME/Arduino/libraries
+    mkdir -p $HOME/Arduino/libraries
+    cd $HOME/Arduino/libraries
     if [[ $PLATFORM == esp32 ]]; then
-      curl -L https://github.com/Heltec-Aaron-Lee/WiFi_Kit_series/archive/$HELTECCOMMIT.tar.gz | tar xz WiFi_Kit_series-$HELTECCOMMIT/esp32/libraries/LoRa --strip-components=3
+      curl -L https://github.com/HelTecAutomation/Heltec_ESP32/archive/$HELTECCOMMIT.tar.gz | tar xz
+      mv Heltec_ESP32-$HELTECCOMMIT Heltec_ESP32
     fi
-    curl -L https://github.com/bxparks/AUnit/archive/$AUNITCOMMIT.tar.gz | tar xz; mv AUnit-$AUNITCOMMIT AUnit
+    curl -L https://github.com/bxparks/AUnit/archive/$AUNITCOMMIT.tar.gz | tar xz
+    mv AUnit-$AUNITCOMMIT AUnit
 
 before_script:
   - cp -r $TRAVIS_BUILD_DIR $HOME/Arduino/libraries/esp8266ndn
-  - arduino $BOARD --save-prefs
-  - arduino --get-pref
 
 script:
   - |
@@ -80,8 +81,12 @@ script:
         echo -e '\033[0;34m'Skipping $SKETCH '\033[0m'
         continue
       fi
+      BOARDARG=$BOARD
+      if [[ -f $(dirname $SKETCH)/board-$PLATFORM.txt ]]; then
+        BOARDARG=$(cat $(dirname $SKETCH)/board-$PLATFORM.txt)
+      fi
       echo -e '\033[0;36m'Building $SKETCH '\033[0m'
       echo
-      arduino --verify $SKETCH || NFAIL=$((NFAIL+1))
+      arduino --verify $BOARDARG $SKETCH || NFAIL=$((NFAIL+1))
     done
     [[ $NFAIL -eq 0 ]]

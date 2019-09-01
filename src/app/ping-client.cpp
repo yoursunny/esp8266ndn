@@ -37,7 +37,7 @@ PingClient::PingClient(Face& face, InterestLite& interest, Interval pingInterval
   , m_pingTimeout(determineTimeout(pingTimeout, interest))
   , m_lastProbe(millis())
   , m_isPending(false)
-  , m_nextProbe(0)
+  , m_nextInterval(m_pingInterval())
   , m_evtCb(nullptr)
 {
   if (m_pingInterval.min <= m_pingTimeout) {
@@ -70,7 +70,7 @@ PingClient::loop()
     }
   }
 
-  if (now > m_nextProbe) {
+  if (now - m_lastProbe > m_nextInterval) {
     this->probe();
   }
 }
@@ -128,7 +128,7 @@ PingClient::probe()
 
   m_isPending = true;
   m_lastProbe = millis();
-  m_nextProbe = m_lastProbe + m_pingInterval();
+  m_nextInterval = m_pingInterval();
 
   if (m_evtCb != nullptr) {
     m_evtCb(m_evtCbArg, Event::PROBE, seq);
