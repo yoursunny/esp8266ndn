@@ -55,6 +55,9 @@ mv c/util/time.c c/util/time.cpp
 # fix keyLocator->type
 sed -i -e 's/(int)keyLocator->type < 0/keyLocator->type == (ndn_KeyLocatorType)-1/' c/encoding/tlv/tlv-key-locator.c
 
+# delete deprecated forwarding-flags
+rm c/forwarding-flags*.h lite/forwarding-flags*.hpp
+
 # force Interest encoding to use v0.3 format
 sed -i -e '/ndn_encodeTlvInterest$/,/^}/ s/encodeInterestValueV02/encodeInterestValueV03/' c/encoding/tlv/tlv-interest.c
 # set default CanBePrefix to false
