@@ -643,4 +643,3 @@ ndn_Name_setFromName(struct ndn_Name *self, const struct ndn_Name *other);
 #endif
 
 #endif
-

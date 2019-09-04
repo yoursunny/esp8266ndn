@@ -23,7 +23,7 @@
 
 #include "common.h"
 #include "name-types.h"
-#include "forwarding-flags.h"
+#include "registration-options-types.h"
 #include "util/blob-types.h"
 
 #ifdef __cplusplus
@@ -48,7 +48,7 @@ struct ndn_ControlParameters {
   int localControlFeature;           /**< -1 for none. */
   int origin;                        /**< -1 for none. */
   int cost;                          /**< -1 for none. */
-  struct ndn_ForwardingFlags flags;
+  struct ndn_RegistrationOptions flags;
   struct ndn_Name strategy;          /**< nComponents == 0 for none. */
   ndn_Milliseconds expirationPeriod; /**< -1 for none. */
 };

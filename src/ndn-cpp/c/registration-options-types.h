@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2019 Regents of the University of California.
+ * Copyright (C) 2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,20 +18,28 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-/* Note: This file should be named forward-flags-types.h (like data-types.h) but
- * we leave it as forwarding-flags.h for backwards compatibility with the
- * include directory of old installations.
- */
+#ifndef NDN_REGISTRATION_OPTIONS_TYPES_H
+#define NDN_REGISTRATION_OPTIONS_TYPES_H
 
-#ifndef NDN_FORWARDING_FLAGS_H
-#define NDN_FORWARDING_FLAGS_H
-
-#include "registration-options-types.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
- * struct ndn_ForwardingFlags is deprecated. You should change to
- * struct ndn_RegistrationOptions. If you don't want to change your code yet, you can
- * #define ndn_ForwardingFlags ndn_RegistrationOptions
+ * An ndn_RegistrationOptions holds the options used when registering with the
+ * forwarder to specify how to forward an interest and other options. We use a
+ * separate ndn_RegistrationOptions to retain future compatibility if the
+ * format of the registration command is changed.
+ * (This was renamed from ndn_ForwardingFlags, which is deprecated.)
  */
+struct ndn_RegistrationOptions {
+  int childInherit;
+  int capture;
+  int origin; /**< -1 for none. */
+};
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

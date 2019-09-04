@@ -22,7 +22,7 @@
 #define NDN_CONTROL_PARAMETERS_OPTIONS_H
 
 #include "../c/control-parameters-types.h"
-#include "forwarding-flags-impl.h"
+#include "registration-options.h"
 #include "name.h"
 
 #ifdef __cplusplus
@@ -55,7 +55,7 @@ ndn_ControlParameters_initialize
   self->localControlFeature = -1;
   self->origin = -1;
   self->cost = -1;
-  ndn_ForwardingFlags_initialize(&self->flags);
+  ndn_RegistrationOptions_initialize(&self->flags);
   ndn_Name_initialize
     (&self->strategy, strategyNameComponents, strategyMaxNameComponents);
   self->expirationPeriod = -1.0;

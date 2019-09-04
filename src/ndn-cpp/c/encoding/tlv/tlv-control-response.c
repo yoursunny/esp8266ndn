@@ -35,7 +35,7 @@ encodeControlResponseValue(const void *context, struct ndn_TlvEncoder *encoder)
   struct ndn_ControlResponse *controlResponse =
     (struct ndn_ControlResponse *)context;
   ndn_Error error;
-  struct ndn_ForwardingFlags defaultFlags;
+  struct ndn_RegistrationOptions defaultFlags;
 
   if ((error = ndn_TlvEncoder_writeNonNegativeIntegerTlv
        (encoder, ndn_Tlv_NfdCommand_StatusCode,

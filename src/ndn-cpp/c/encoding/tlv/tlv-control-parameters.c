@@ -18,7 +18,7 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-#include "../../forwarding-flags-impl.h"
+#include "../../registration-options.h"
 #include "tlv-name.h"
 #include "tlv-control-parameters.h"
 
@@ -61,7 +61,7 @@ encodeControlParametersValue(const void *context, struct ndn_TlvEncoder *encoder
     (struct ndn_ControlParameters *)context;
   ndn_Error error;
   size_t dummyBeginOffset, dummyEndOffset;
-  struct ndn_ForwardingFlags defaultFlags;
+  struct ndn_RegistrationOptions defaultFlags;
   int flags;
 
   if (controlParameters->hasName) {
@@ -90,10 +90,10 @@ encodeControlParametersValue(const void *context, struct ndn_TlvEncoder *encoder
         controlParameters->cost)))
     return error;
 
-  ndn_ForwardingFlags_initialize(&defaultFlags);
-  flags = ndn_ForwardingFlags_getNfdForwardingFlags
+  ndn_RegistrationOptions_initialize(&defaultFlags);
+  flags = ndn_RegistrationOptions_getNfdForwardingFlags
     (&controlParameters->flags);
-  if (flags != ndn_ForwardingFlags_getNfdForwardingFlags(&defaultFlags)) {
+  if (flags != ndn_RegistrationOptions_getNfdForwardingFlags(&defaultFlags)) {
     // The flags are not the default value.
     if ((error = ndn_TlvEncoder_writeNonNegativeIntegerTlv
          (encoder, ndn_Tlv_ControlParameters_Flags, flags)))
@@ -209,10 +209,10 @@ ndn_decodeTlvControlParameters
     if ((error = ndn_TlvDecoder_readNonNegativeIntegerTlv
          (decoder, ndn_Tlv_ControlParameters_Flags, &flags)))
       return error;
-    ndn_ForwardingFlags_setNfdForwardingFlags(&controlParameters->flags, (int)flags);
+    ndn_RegistrationOptions_setNfdForwardingFlags(&controlParameters->flags, (int)flags);
   }
   else
-    ndn_ForwardingFlags_initialize(&controlParameters->flags);
+    ndn_RegistrationOptions_initialize(&controlParameters->flags);
 
   if ((error = ndn_TlvDecoder_skipOptionalTlv
        (decoder, ndn_Tlv_ControlParameters_Mask, endOffset)))

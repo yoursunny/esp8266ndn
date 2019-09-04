@@ -58,7 +58,7 @@ enum {
   ndn_Tlv_SelectedDelegation = 32,
   ndn_Tlv_CanBePrefix =      33,
   ndn_Tlv_HopLimit =         34,
-  ndn_Tlv_ApplicationParameters = 35
+  ndn_Tlv_ApplicationParameters = 36
 };
 
 enum {

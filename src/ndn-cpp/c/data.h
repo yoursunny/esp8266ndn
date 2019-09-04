@@ -140,6 +140,14 @@ ndn_MetaInfo_setFromMetaInfo
 }
 
 /**
+ * Clear fields and reset to default values.
+ */
+static __inline void ndn_MetaInfo_clear(struct ndn_MetaInfo *self)
+{
+  ndn_MetaInfo_initialize(self);
+}
+
+/**
  * Initialize an ndn_Data struct with the pre-allocated nameComponents and keyNameComponents,
  * and defaults for all the values.
  * @param self A pointer to the ndn_Data struct.

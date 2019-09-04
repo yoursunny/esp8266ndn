@@ -18,8 +18,9 @@ cp -r $NDNCPPPATH/include/ndn-cpp/lite ./
 cp -r $NDNCPPPATH/src/c ./
 cp -r $NDNCPPPATH/src/lite ./
 
-# remove trailing whitespace
+# remove trailing whitespace, trailing blank line
 find -type f -exec sed -i -e 's/\s*$//' '{}' '+'
+find -type f -exec sed -i -e :a -e '/^\n*$/{$d;N;};/\n$/ba' '{}' '+'
 
 # delete transport
 find -name '*transport*' -delete

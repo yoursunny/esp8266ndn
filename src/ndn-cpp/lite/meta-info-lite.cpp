@@ -29,4 +29,10 @@ MetaInfoLite::MetaInfoLite()
   ndn_MetaInfo_initialize(this);
 }
 
+void
+MetaInfoLite::clear()
+{
+  ndn_MetaInfo_clear(this);
+}
+
 }

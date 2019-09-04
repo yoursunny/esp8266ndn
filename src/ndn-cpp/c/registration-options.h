@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2019 Regents of the University of California.
+ * Copyright (C) 2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,16 +18,10 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-/* Note: This file should be named forward-flags.h (like data.h) but
- * we make it forwarding-flags-impl.h because forwarding-flags.h is already in
- * the public include directory for backwards compatibility reasons.
- */
+#ifndef NDN_REGISTRATION_OPTIONS_H
+#define NDN_REGISTRATION_OPTIONS_H
 
-#ifndef NDN_FORWARDING_FLAGS_IMPL_H
-#define NDN_FORWARDING_FLAGS_IMPL_H
-
-#include "../c/common.h"
-#include "registration-options.h"
+#include "../c/registration-options-types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,28 +31,19 @@ extern "C" {
  * Initialize an ndn_RegistrationOptions struct with the default with "childInherit"
  * set and all other flags cleared.
  * @param self A pointer to the ndn_RegistrationOptions struct.
- * @deprecated Use RegistrationOptions.
  */
 void
-DEPRECATED_IN_NDN_CPP ndn_ForwardingFlags_initialize
-  (struct ndn_RegistrationOptions *self)
-{
-  ndn_RegistrationOptions_initialize(self);
-}
+ndn_RegistrationOptions_initialize(struct ndn_RegistrationOptions *self);
 
 /**
  * Get an integer with the bits set according to the NFD forwarding flags as
  * used in the ControlParameters of the command interest.
  * @param self A pointer to the ndn_RegistrationOptions struct.
  * @return An integer with the bits set.
- * @deprecated Use RegistrationOptions.
  */
 int
-DEPRECATED_IN_NDN_CPP ndn_ForwardingFlags_getNfdForwardingFlags
-  (const struct ndn_RegistrationOptions *self)
-{
-  return ndn_RegistrationOptions_getNfdForwardingFlags(self);
-}
+ndn_RegistrationOptions_getNfdForwardingFlags
+  (const struct ndn_RegistrationOptions *self);
 
 /**
  * Set the flags according to the NFD forwarding flags as used in the
@@ -66,14 +51,10 @@ DEPRECATED_IN_NDN_CPP ndn_ForwardingFlags_getNfdForwardingFlags
  * This ignores the origin value.
  * @param self A pointer to the ndn_RegistrationOptions struct.
  * @param nfdForwardingFlags An integer with the bits set.
- * @deprecated Use RegistrationOptions.
  */
 void
-DEPRECATED_IN_NDN_CPP ndn_ForwardingFlags_setNfdForwardingFlags
-  (struct ndn_RegistrationOptions *self, int nfdForwardingFlags)
-{
-  ndn_RegistrationOptions_setNfdForwardingFlags(self, nfdForwardingFlags);
-}
+ndn_RegistrationOptions_setNfdForwardingFlags
+  (struct ndn_RegistrationOptions *self, int nfdForwardingFlags);
 
 #ifdef __cplusplus
 }

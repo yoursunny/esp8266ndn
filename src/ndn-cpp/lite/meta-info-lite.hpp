@@ -99,6 +99,12 @@ public:
   }
 
   /**
+   * Clear fields and reset to default values.
+   */
+  void
+  clear();
+
+  /**
    * Downcast the reference to the ndn_MetaInfo struct to a MetaInfoLite.
    * @param metaInfo A reference to the ndn_MetaInfo struct.
    * @return The same reference as MetaInfoLite.

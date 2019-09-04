@@ -20,6 +20,8 @@
 
 #include "interest.h"
 
+int ndn_Interest_defaultCanBePrefix_ = 1;
+
 ndn_Error
 ndn_Exclude_appendAny(struct ndn_Exclude *self)
 {
@@ -66,4 +68,13 @@ ndn_Exclude_setFromExclude
   }
 
   return NDN_ERROR_success;
+}
+
+int
+ndn_Interest_getDefaultCanBePrefix() { return ndn_Interest_defaultCanBePrefix_; }
+
+void
+ndn_Interest_setDefaultCanBePrefix(int defaultCanBePrefix)
+{
+  ndn_Interest_defaultCanBePrefix_ = (defaultCanBePrefix ? 1 : 0);
 }

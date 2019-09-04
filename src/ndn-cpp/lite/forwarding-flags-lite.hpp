@@ -22,80 +22,37 @@
 #ifndef NDN_FORWARDING_FLAGS_LITE_HPP
 #define NDN_FORWARDING_FLAGS_LITE_HPP
 
-#include "../c/forwarding-flags.h"
+#include "registration-options-lite.hpp"
 
 namespace ndn {
 
 /**
- * A ForwardingFlagsLite holds the flags which specify how the forwarding daemon
- * should forward an interest for a registered prefix.  We use a separate
- * ForwardingFlagsLite object to retain future compatibility if the daemon
- * forwarding bits are changed, amended or deprecated.
+ * @deprecated Use RegistrationOptionsLite.
  */
-class ForwardingFlagsLite : private ndn_ForwardingFlags {
+class ForwardingFlagsLite : public RegistrationOptionsLite {
 public:
   /**
    * Create a ForwardingFlagsLite with "childInherit" set and all other flags
    * cleared.
    */
-  ForwardingFlagsLite();
+  DEPRECATED_IN_NDN_CPP ForwardingFlagsLite() {}
 
   /**
-   * Get the value of the "childInherit" flag.
-   * @return true if the flag is set, false if it is cleared.
-   */
-  bool getChildInherit() const { return childInherit != 0; }
-
-  /**
-   * Get the value of the "capture" flag.
-   * @return true if the flag is set, false if it is cleared.
-   */
-  bool getCapture() const { return capture != 0; }
-
-  /**
-   * Set the value of the "childInherit" flag
-   * @param childInherit true to set the flag, false to clear it.
-   */
-  void setChildInherit(bool childInherit) { this->childInherit = childInherit ? 1 : 0; }
-
-  /**
-   * Set the value of the "capture" flag
-   * @param capture true to set the flag, false to clear it.
-   */
-  void setCapture(bool capture) { this->capture = capture ? 1 : 0; }
-
-  /**
-   * Get an integer with the bits set according to the NFD forwarding flags as
-   * used in the ControlParameters of the command interest.
-   * @return An integer with the bits set.
-   */
-  int
-  getNfdForwardingFlags() const;
-
-  /**
-   * Set the flags according to the NFD forwarding flags as used in the
-   * ControlParameters of the command interest.
-   * @param nfdForwardingFlags An integer with the bits set.
-   */
-  void
-  setNfdForwardingFlags(int nfdForwardingFlags);
-
-  /**
-   * Downcast the reference to the ndn_ForwardingFlags struct to a
+   * Downcast the reference to the ndn_RegistrationOptions struct to a
    * ForwardingFlagsLite.
-   * @param forwardingFlags A reference to the ndn_ForwardingFlags struct.
+   * @param registrationOptions A reference to the ndn_RegistrationOptions struct.
    * @return The same reference as ForwardingFlagsLite.
    */
   static ForwardingFlagsLite&
-  downCast(ndn_ForwardingFlags& forwardingFlags)
+  DEPRECATED_IN_NDN_CPP downCast(ndn_RegistrationOptions& registrationOptions)
   {
-    return *(ForwardingFlagsLite*)&forwardingFlags;
+    return *(ForwardingFlagsLite*)&registrationOptions;
   }
 
   static const ForwardingFlagsLite&
-  downCast(const ndn_ForwardingFlags& forwardingFlags)
+  DEPRECATED_IN_NDN_CPP downCast(const ndn_RegistrationOptions& registrationOptions)
   {
-    return *(ForwardingFlagsLite*)&forwardingFlags;
+    return *(ForwardingFlagsLite*)&registrationOptions;
   }
 };
 

@@ -61,6 +61,23 @@ public:
      ndn_ExcludeEntry *excludeEntries, size_t maxExcludeEntries,
      ndn_NameComponent *keyNameComponents, size_t maxKeyNameComponents);
 
+  /**
+   * Get the default value of the CanBePrefix flag used in the Interest
+   * constructor. You can change this with setDefaultCanBePrefix().
+   * @return The default value of the CanBePrefix flag.
+   */
+  static bool
+  getDefaultCanBePrefix();
+
+  /**
+   * Set the default value of the CanBePrefix flag used in the Interest
+   * constructor. The default is currently 1, but will be changed at a later
+   * date.
+   * @param defaultCanBePrefix The default value of the CanBePrefix flag.
+   */
+  static void
+  setDefaultCanBePrefix(bool defaultCanBePrefix);
+
   NameLite&
   getName() { return NameLite::downCast(name); }
 

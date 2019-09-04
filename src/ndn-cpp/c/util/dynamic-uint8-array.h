@@ -159,4 +159,3 @@ static __inline ndn_Error ndn_DynamicUInt8Array_copyFromBack
 #endif
 
 #endif
-

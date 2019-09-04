@@ -61,9 +61,14 @@ public:
    * @param reason The network Nack reason enum value. If the packet's reason
    * code is not a recognized Reason enum value, use
    * ndn_NetworkNackReason_OTHER_CODE and call setOtherReasonCode().
+   * @return This NetworkNackLite so that you can chain calls to update values.
    */
-  void
-  setReason(ndn_NetworkNackReason reason) { this->reason = reason; }
+  NetworkNackLite&
+  setReason(ndn_NetworkNackReason reason)
+  {
+    this->reason = reason;
+    return *this;
+  }
 
   /**
    * Set the packet's reason code to use when the reason enum is
@@ -71,11 +76,13 @@ public:
    * recognized enum value, just call setReason().
    * @param otherReasonCode The packet's unrecognized reason code, which must be
    * non-negative.
+   * @return This NetworkNackLite so that you can chain calls to update values.
    */
-  void
+  NetworkNackLite&
   setOtherReasonCode(int otherReasonCode)
   {
     this->otherReasonCode = otherReasonCode;
+    return *this;
   }
 
   /**

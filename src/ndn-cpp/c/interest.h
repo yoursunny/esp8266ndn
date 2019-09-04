@@ -127,7 +127,8 @@ static __inline void ndn_Interest_initialize
 {
   ndn_Name_initialize(&self->name, nameComponents, maxNameComponents);
   self->minSuffixComponents = -1;
-  self->maxSuffixComponents = -1;
+  extern int ndn_Interest_defaultCanBePrefix_;
+  self->maxSuffixComponents = (ndn_Interest_defaultCanBePrefix_ ? -1 : 1);
   ndn_Exclude_initialize(&self->exclude, excludeEntries, maxExcludeEntries);
   self->childSelector = -1;
   self->mustBeFresh = 1;
@@ -237,9 +238,25 @@ ndn_Interest_setFromInterest
   return NDN_ERROR_success;
 }
 
+/**
+ * Get the default value of the CanBePrefix flag used in the Interest
+ * constructor. You can change this with ndn_Interest_setDefaultCanBePrefix().
+ * @return The default value of the CanBePrefix flag.
+ */
+int
+ndn_Interest_getDefaultCanBePrefix();
+
+/**
+ * Set the default value of the CanBePrefix flag used in the Interest
+ * constructor. The default is currently 1, but will be changed at a later
+ * date.
+ * @param defaultCanBePrefix The default value of the CanBePrefix flag.
+ */
+void
+ndn_Interest_setDefaultCanBePrefix(int defaultCanBePrefix);
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-

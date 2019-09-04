@@ -109,4 +109,3 @@ void ndn_memset(uint8_t *dest, int val, size_t len);
 #endif
 
 #endif
-

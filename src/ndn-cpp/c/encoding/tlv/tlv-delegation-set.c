@@ -84,4 +84,3 @@ ndn_decodeTlvDelegationSet_Delegation
 
   return NDN_ERROR_success;
 }
-

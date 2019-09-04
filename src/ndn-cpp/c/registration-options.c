@@ -1,6 +1,5 @@
-/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
 /**
- * Copyright (C) 2015-2019 Regents of the University of California.
+ * Copyright (C) 2019 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,26 +18,33 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-#include "../c/forwarding-flags-impl.h"
-#include "../lite/forwarding-flags-lite.hpp"
+#include "control-parameters.h"
+#include "registration-options.h"
 
-namespace ndn {
-
-ForwardingFlagsLite::ForwardingFlagsLite()
+void ndn_RegistrationOptions_initialize(struct ndn_RegistrationOptions *self)
 {
-  ndn_ForwardingFlags_initialize(this);
+  self->childInherit = 1;
+  self->capture = 0;
+  self->origin = -1;
 }
 
 int
-ForwardingFlagsLite::getNfdForwardingFlags() const
+ndn_RegistrationOptions_getNfdForwardingFlags(const struct ndn_RegistrationOptions *self)
 {
-  return ndn_ForwardingFlags_getNfdForwardingFlags(this);
+  int result = 0;
+
+  if (self->childInherit)
+    result |= ndn_NfdForwardingFlags_CHILD_INHERIT;
+  if (self->capture)
+    result |= ndn_NfdForwardingFlags_CAPTURE;
+
+  return result;
 }
 
 void
-ForwardingFlagsLite::setNfdForwardingFlags(int nfdForwardingFlags)
+ndn_RegistrationOptions_setNfdForwardingFlags
+  (struct ndn_RegistrationOptions *self, int nfdForwardingFlags)
 {
-  ndn_ForwardingFlags_setNfdForwardingFlags(this, nfdForwardingFlags);
-}
-
+  self->childInherit = (nfdForwardingFlags & ndn_NfdForwardingFlags_CHILD_INHERIT) ? 1 : 0;
+  self->capture = (nfdForwardingFlags & ndn_NfdForwardingFlags_CAPTURE) ? 1 : 0;
 }

@@ -19,11 +19,6 @@
  * A copy of the GNU Lesser General Public License is in the file COPYING.
  */
 
-/* Note: This file should be named forward-flags.h (like data.h) but
- * we make it forwarding-flags-impl.h because forwarding-flags.h is already in
- * the public include directory for backwards compatibility reasons.
- */
-
 #ifndef NDN_INCOMING_FACE_ID_H
 #define NDN_INCOMING_FACE_ID_H
 

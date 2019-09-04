@@ -194,6 +194,7 @@ ndn_decodeTlvData
   ndn_Error error;
   size_t endOffset;
   size_t dummyBeginOffset, dummyEndOffset;
+  int gotExpectedType;
 
   if ((error = ndn_TlvDecoder_readNestedTlvsStart(decoder, ndn_Tlv_Data, &endOffset)))
     return error;
@@ -203,9 +204,19 @@ ndn_decodeTlvData
   if ((error = ndn_decodeTlvName
        (&data->name, &dummyBeginOffset, &dummyEndOffset, decoder)))
     return error;
-  if ((error = decodeMetaInfo(&data->metaInfo, decoder)))
+
+  if ((error = ndn_TlvDecoder_peekType
+       (decoder, ndn_Tlv_MetaInfo, endOffset, &gotExpectedType)))
     return error;
-  if ((error = ndn_TlvDecoder_readBlobTlv(decoder, ndn_Tlv_Content, &data->content)))
+  if (gotExpectedType) {
+    if ((error = decodeMetaInfo(&data->metaInfo, decoder)))
+      return error;
+  }
+  else
+    ndn_MetaInfo_clear(&data->metaInfo);
+
+  if ((error = ndn_TlvDecoder_readOptionalBlobTlv
+       (decoder, ndn_Tlv_Content, endOffset, &data->content)))
     return error;
   if ((error = ndn_decodeTlvSignatureInfo(&data->signature, decoder)))
     return error;

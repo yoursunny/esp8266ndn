@@ -24,7 +24,7 @@
 
 #include "common-lite.hpp"
 #include "name-lite.hpp"
-#include "forwarding-flags-lite.hpp"
+#include "registration-options-lite.hpp"
 #include "../c/control-parameters-types.h"
 
 namespace ndn {
@@ -89,11 +89,11 @@ public:
   int
   getCost() const { return cost; }
 
-  ForwardingFlagsLite&
-  getForwardingFlags() { return ForwardingFlagsLite::downCast(flags); }
+  RegistrationOptionsLite&
+  getForwardingFlags() { return RegistrationOptionsLite::downCast(flags); }
 
-  const ForwardingFlagsLite&
-  getForwardingFlags() const { return  ForwardingFlagsLite::downCast(flags); }
+  const RegistrationOptionsLite&
+  getForwardingFlags() const { return  RegistrationOptionsLite::downCast(flags); }
 
   NameLite&
   getStrategy() { return NameLite::downCast(strategy); }
@@ -194,16 +194,16 @@ public:
   }
 
   /**
-   * Set the ForwardingFlags object to a copy of forwardingFlags. You can use
-   * getForwardingFlags() and change the existing ForwardingFlags object.
-   * @param forwardingFlags The new cost value, or null for not specified.
+   * Set the RegistrationOptions object to a copy of flags. You can use
+   * getForwardingFlags() and change the existing RegistrationOptions object.
+   * @param flags The new cost value, or null for not specified.
    * @return This ControlParametersLite so that you can chain calls to update
    * values.
    */
   ControlParametersLite&
-  setForwardingFlags(const ForwardingFlagsLite& flags)
+  setForwardingFlags(const RegistrationOptionsLite& flags)
   {
-    ForwardingFlagsLite::downCast(this->flags) = flags;
+    RegistrationOptionsLite::downCast(this->flags) = flags;
     return *this;
   }
 
