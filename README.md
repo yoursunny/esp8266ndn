@@ -11,8 +11,10 @@
 Packet encoding and decoding
 
 * Interest, Data, and Nack
-* Decoding recognizes both [v0.2](https://named-data.net/doc/NDN-packet-spec/0.2/) and [v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/) formats.
-* Encoding defaults to v0.2 format, but will switch to v0.3 soon.
+  * Decoding recognizes both [v0.2](https://named-data.net/doc/NDN-packet-spec/0.2/) and [v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/) formats
+  * Interest encoding defaults to v0.3 format
+* Signed Interest: [2014 format](https://redmine.named-data.net/projects/ndn-cxx/wiki/SignedInterest)
+* Naming Convention: [2014 format](https://named-data.net/publications/techreports/ndn-tr-22-ndn-memo-naming-conventions/)
 
 Transports
 
