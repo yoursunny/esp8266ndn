@@ -20,7 +20,7 @@
 
 #include "interest.h"
 
-int ndn_Interest_defaultCanBePrefix_ = 1;
+int ndn_Interest_defaultCanBePrefix_ = 0;
 
 ndn_Error
 ndn_Exclude_appendAny(struct ndn_Exclude *self)

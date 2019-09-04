@@ -281,7 +281,7 @@ ndn_encodeTlvInterest
       (encoder, ndn_Tlv_Interest, encodeInterestValueV03, &interestValueContext, 0);
 
   return ndn_TlvEncoder_writeNestedTlv
-    (encoder, ndn_Tlv_Interest, encodeInterestValueV02, &interestValueContext, 0);
+    (encoder, ndn_Tlv_Interest, encodeInterestValueV03, &interestValueContext, 0);
 }
 
 static ndn_Error
