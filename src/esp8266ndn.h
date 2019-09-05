@@ -34,7 +34,6 @@
 #include "transport/ble-client-transport.hpp"
 #include "transport/ble-server-transport.hpp"
 #include "transport/ethernet-transport.hpp"
-#include "transport/lite-frag.hpp"
 #include "transport/loopback-transport.hpp"
 #include "transport/lora-transport.hpp"
 #include "transport/transport.hpp"
