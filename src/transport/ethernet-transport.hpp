@@ -1,73 +1,74 @@
-#ifndef ESP8266NDN_ETHERNET_TRANSPORT_HPP
-#define ESP8266NDN_ETHERNET_TRANSPORT_HPP
+#ifndef ESP8266NDN_TRANSPORT_ETHERNET_TRANSPORT_HPP
+#define ESP8266NDN_TRANSPORT_ETHERNET_TRANSPORT_HPP
 
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
-#include "transport.hpp"
-#include <memory>
+#include "../port/port.hpp"
 
-extern "C" {
-struct netif;
+extern "C"
+{
+  struct netif;
 }
 class Print;
 
-namespace ndn {
+namespace esp8266ndn {
 
-/** \brief a transport that communicates over Ethernet
- */
-class EthernetTransport : public Transport
+/** @brief A transport that communicates over Ethernet. */
+class EthernetTransport
+  : public virtual ndnph::Transport
+  , public ndnph::transport::DynamicRxQueueMixin
 {
 public:
-  /** \brief interpretation of endpointId
-   */
-  union EndpointId {
+  /** @brief Interpretation of endpointId. */
+  union EndpointId
+  {
     uint64_t endpointId;
-    struct {
+    struct
+    {
       uint8_t addr[6];
       bool isMulticast : 1; ///< RX only, ignored on TX
       uint16_t _a : 15;
     };
   };
 
-  static void
-  listNetifs(Print& os);
+  /** @brief Print a list of network interfaces. */
+  static void listNetifs(Print& os);
 
   EthernetTransport();
 
   ~EthernetTransport() override;
 
-  /** \brief Start intercepting NDN packets on a network interface.
-   *  \return whether success
+  /**
+   * @brief Start intercepting NDN packets on a network interface.
+   * @return whether success.
    */
-  bool
-  begin(const char ifname[2], uint8_t ifnum);
+  bool begin(const char ifname[2], uint8_t ifnum);
 
-  /** \brief Start intercepting NDN packets on any station interface.
-   *  \return whether success
+  /**
+   * @brief Start intercepting NDN packets on first available station interface.
+   * @return whether success.
    */
-  bool
-  begin();
+  bool begin();
 
-  void
-  end();
-
-  /** \begin transmit a packet
-   *  \param endpointId identity of remote endpoint, zero for sending to multicast group
-   */
-  ndn_Error
-  send(const uint8_t* pkt, size_t len, uint64_t endpointId) override;
+  /** @brief Disable the transport. */
+  void end();
 
 private:
-  bool
-  begin(netif* netif);
+  bool begin(netif* netif);
+
+  bool doIsUp() const final;
+
+  void doLoop() final;
+
+  bool doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) final;
 
 private:
   class Impl;
   std::unique_ptr<Impl> m_impl;
 };
 
-} // namespace ndn
+} // namespace esp8266ndn
 
-#endif // defined(ESP8266) || defined(ESP32)
+#endif // defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
-#endif // ESP8266NDN_ETHERNET_TRANSPORT_HPP
+#endif // ESP8266NDN_TRANSPORT_ETHERNET_TRANSPORT_HPP

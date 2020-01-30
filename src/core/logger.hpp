@@ -1,10 +1,12 @@
 #ifndef ESP8266NDN_LOGGER_HPP
 #define ESP8266NDN_LOGGER_HPP
 
-#include "../vendor/PriUint64.h"
-#include "../vendor/Streaming.h"
 #include "logging.hpp"
 #include <Printable.h>
+
+#include "../vendor/Streaming.h"
+
+#include "../vendor/PriUint64.h"
 
 #define LOGGER(module, ...)                                                                        \
   do {                                                                                             \

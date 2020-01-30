@@ -5,6 +5,13 @@
 #define NDNPH_PORT_CRYPTO_MBEDTLS
 #endif
 
+#if defined(ARDUINO_ARCH_ESP32)
+#define NDNPH_PORT_QUEUE_CUSTOM
+#include "esp32-queue.hpp"
+#else
+#define NDNPH_PORT_QUEUE_SIMPLE
+#endif
+
 #define NDNPH_PORT_RANDOM_CUSTOM
 #include "random.hpp"
 

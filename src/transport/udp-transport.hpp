@@ -1,5 +1,5 @@
-#ifndef ESP8266NDN_UDP_TRANSPORT_HPP
-#define ESP8266NDN_UDP_TRANSPORT_HPP
+#ifndef ESP8266NDN_TRANSPORT_UDP_TRANSPORT_HPP
+#define ESP8266NDN_TRANSPORT_UDP_TRANSPORT_HPP
 
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
@@ -13,6 +13,7 @@
 
 namespace esp8266ndn {
 
+/** @brief A transport that communicates over IPv4 UDP tunnel or multicast group. */
 class UdpTransport : public virtual ndnph::Transport
 {
 public:
@@ -29,28 +30,28 @@ public:
   };
 
   /**
-   * @begin Listen on a UDP port for packets from any remote endpoint.
+   * @brief Listen on a UDP port for packets from any remote endpoint.
    * @param localPort local port.
-   * @param localIp local interface address (ignored on ESP8266).
+   * @param localIp local interface address (ESP32 only).
    */
   bool beginListen(uint16_t localPort = 6363, IPAddress localIp = INADDR_NONE);
 
-  /** \begin establish a UDP tunnel to a remote endpoint
-   *  \param localIp local interface address
-   *                 (ignored on ESP8266 for unicast; ignored on ESP32 for multicast)
-   *  \param localPort listening port
-   *  \param joinMulticast whether to join multicast group
+  /**
+   * @brief Establish a UDP tunnel to a remote endpoint.
+   * @param remoteIp remote host address.
+   * @param remotePort remote port.
+   * @param localPort local port.
    */
   bool beginTunnel(IPAddress remoteIp, uint16_t remotePort = 6363, uint16_t localPort = 6363);
 
-  /** \begin join a UDP multicast group
-   *  \param localIp local interface address (ignored on ESP32)
-   *  \param groupPort multicast group port
+  /**
+   * @brief Join a UDP multicast group.
+   * @param localIp local interface address (ESP8266 only).
+   * @param groupPort group port.
    */
   bool beginMulticast(IPAddress localIp = INADDR_NONE, uint16_t groupPort = 56363);
 
-  /** \begin disable the transport
-   */
+  /** @brief Disable the transport. */
   void end();
 
 private:
@@ -78,11 +79,11 @@ private:
   IPAddress m_ip;      ///< remote IP in TUNNEL mode, local IP in MULTICAST mode
   uint16_t m_port = 0; ///< remote port in TUNNEL mode, group port in MULTICAST mode
 
-  ndnph::StaticRegion<2048> m_region;
+  ndnph::StaticRegion<1500> m_region;
 };
 
 } // namespace esp8266ndn
 
 #endif // defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
-#endif // ESP8266NDN_UDP_TRANSPORT_HPP
+#endif // ESP8266NDN_TRANSPORT_UDP_TRANSPORT_HPP

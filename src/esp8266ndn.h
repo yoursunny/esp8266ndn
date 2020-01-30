@@ -9,6 +9,7 @@
 
 #include "core/logging.hpp"
 
+#include "transport/ethernet-transport.hpp"
 #include "transport/udp-transport.hpp"
 
 #endif // ESP8266NDN_H
