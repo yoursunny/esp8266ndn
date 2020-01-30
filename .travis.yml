@@ -27,4 +27,5 @@ install:
     git -C $HOME/NDNph log -1
 
 script:
+  - build_platform esp8266
   - build_platform esp32

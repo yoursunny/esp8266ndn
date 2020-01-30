@@ -16,11 +16,9 @@ setLogOutput(Print& output);
 class PrintHex : public Printable
 {
 public:
-  explicit
-  PrintHex(const uint8_t* buf, size_t len);
+  explicit PrintHex(const uint8_t* buf, size_t len);
 
-  size_t
-  printTo(Print& p) const override;
+  size_t printTo(Print& p) const override;
 
 private:
   const uint8_t* m_buf;

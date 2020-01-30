@@ -1,0 +1,10 @@
+---
+BasedOnStyle: Mozilla
+AllowShortFunctionsOnASingleLine: Empty
+BinPackArguments: true
+BinPackParameters: true
+ColumnLimit: 100
+IncludeIsMainRegex: '[.]t$'
+ReflowComments: false
+SortIncludes: true
+SortUsingDeclarations: true

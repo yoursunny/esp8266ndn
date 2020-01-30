@@ -5,8 +5,7 @@ namespace ndn {
 class NullPrint : public Print
 {
 public:
-  size_t
-  write(uint8_t) override
+  size_t write(uint8_t) override
   {
     return 1;
   }
@@ -17,8 +16,7 @@ class LogOutputWrapper
 public:
   LogOutputWrapper()
     : output(&nullPrint)
-  {
-  }
+  {}
 
 public:
   NullPrint nullPrint;
@@ -47,8 +45,7 @@ setLogOutput(Print& output)
 PrintHex::PrintHex(const uint8_t* buf, size_t len)
   : m_buf(buf)
   , m_len(len)
-{
-}
+{}
 
 size_t
 PrintHex::printTo(Print& p) const
