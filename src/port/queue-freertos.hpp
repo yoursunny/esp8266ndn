@@ -1,5 +1,7 @@
-#ifndef ESP8266NDN_PORT_ESP32_QUEUE_HPP
-#define ESP8266NDN_PORT_ESP32_QUEUE_HPP
+#ifndef ESP8266NDN_PORT_QUEUE_FREERTOS_HPP
+#define ESP8266NDN_PORT_QUEUE_FREERTOS_HPP
+
+#include "choose.hpp"
 
 #include <cstdlib>
 #include <tuple>
@@ -8,9 +10,9 @@
 #include <freertos/queue.h>
 
 namespace esp8266ndn {
-namespace ndnph_port {
+namespace ndnph_port_freertos {
 
-/** @brief Generic thread-safe queue, implemented with ESP32 FreeRTOS queue API. */
+/** @brief Generic thread-safe queue, implemented with FreeRTOS queue API. */
 template<typename T, size_t capacity>
 class SafeQueue
 {
@@ -44,14 +46,16 @@ private:
   QueueHandle_t m_queue;
 };
 
-} // namespace ndnph_port
+} // namespace ndnph_port_freertos
 } // namespace esp8266ndn
 
+#ifdef ESP8266NDN_PORT_QUEUE_FREERTOS
 namespace ndnph {
 namespace port {
 template<typename T, size_t capacity>
-using SafeQueue = esp8266ndn::ndnph_port::SafeQueue<T, capacity>;
+using SafeQueue = esp8266ndn::ndnph_port_freertos::SafeQueue<T, capacity>;
 } // namespace port
 } // namespace ndnph
+#endif // ESP8266NDN_PORT_QUEUE_FREERTOS
 
-#endif // ESP8266NDN_PORT_ESP32_QUEUE_HPP
+#endif // ESP8266NDN_PORT_QUEUE_FREERTOS_HPP

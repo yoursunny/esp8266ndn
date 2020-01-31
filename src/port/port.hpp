@@ -1,15 +1,18 @@
 #ifndef ESP8266NDN_PORT_PORT_HPP
 #define ESP8266NDN_PORT_PORT_HPP
 
-#if defined(ARDUINO_ARCH_ESP32)
-#define NDNPH_PORT_CRYPTO_MBEDTLS
+#include "choose.hpp"
+
+#ifdef ESP8266NDN_PORT_SHA256_BEARSSL
+#include "sha256-bearssl.hpp"
 #endif
 
-#if defined(ARDUINO_ARCH_ESP32)
-#define NDNPH_PORT_QUEUE_CUSTOM
-#include "esp32-queue.hpp"
-#else
-#define NDNPH_PORT_QUEUE_SIMPLE
+#ifdef ESP8266NDN_PORT_ECDSA_UECC
+#include "ecdsa-uecc.hpp"
+#endif
+
+#ifdef ESP8266NDN_PORT_QUEUE_FREERTOS
+#include "queue-freertos.hpp"
 #endif
 
 #define NDNPH_PORT_RANDOM_CUSTOM
