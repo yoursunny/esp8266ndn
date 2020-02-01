@@ -1,19 +1,19 @@
-#include "autoconfig.hpp"
 #include "../core/logger.hpp"
+#include "autoconfig.hpp"
 
-#if defined(ESP8266)
+#if defined(ARDUINO_ARCH_ESP8266)
 #define HAVE_HTTPCLIENT
-#include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
-#elif defined(ESP32)
+#include <ESP8266WiFi.h>
+#elif defined(ARDUINO_ARCH_ESP32)
 #define HAVE_HTTPCLIENT
-#include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFi.h>
 #endif
 
 #define LOG(...) LOGGER(AutoConfig, __VA_ARGS__)
 
-namespace ndn {
+namespace esp8266ndn {
 
 IPAddress
 queryFchService(String serviceUri)
@@ -24,22 +24,22 @@ queryFchService(String serviceUri)
   http.begin(tcp, serviceUri);
   int httpCode = http.GET();
   if (httpCode != HTTP_CODE_OK) {
-    LOG(serviceUri << " error: " << httpCode);
+    LOG(serviceUri << F(" error: ") << httpCode);
     return INADDR_NONE;
   }
   String response = http.getString();
-  LOG(serviceUri << " response: " << response);
+  LOG(serviceUri << F(" response: ") << response);
 
   IPAddress ip;
   if (!WiFi.hostByName(response.c_str(), ip)) {
-    LOG("DNS error");
+    LOG(F("DNS error"));
     return INADDR_NONE;
   }
-  LOG("DNS resolved to: " << ip);
+  LOG(F("DNS resolved to: ") << ip);
   return ip;
-#else // HAVE_HTTPCLIENT
+#else  // HAVE_HTTPCLIENT
   return INADDR_NONE;
 #endif // HAVE_HTTPCLIENT
 }
 
-} // namespace ndn
+} // namespace esp8266ndn

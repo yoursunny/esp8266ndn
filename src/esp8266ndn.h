@@ -9,6 +9,8 @@
 
 #include "core/logging.hpp"
 
+#include "app/autoconfig.hpp"
+
 #include "transport/ethernet-transport.hpp"
 #include "transport/udp-transport.hpp"
 
