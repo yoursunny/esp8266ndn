@@ -1,36 +1,76 @@
 #ifndef ESP8266NDN_BLE_SERVER_TRANSPORT_HPP
 #define ESP8266NDN_BLE_SERVER_TRANSPORT_HPP
 
-#include "transport.hpp"
-#include <memory>
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_NRF52)
 
-namespace ndn {
-namespace detail {
-class BleServiceImpl;
-} // namespace detail
+#include "../port/port.hpp"
 
-/** \brief a transport that acts as a Bluetooth Low Energy server
- */
-class BleServerTransport : public PollModeTransport
+#if defined(ARDUINO_ARCH_ESP32)
+#include <BLEDevice.h>
+#elif defined(ARDUINO_ARCH_NRF52)
+#include <bluefruit.h>
+#endif
+
+namespace esp8266ndn {
+
+/** @brief A transport that acts as a BLE server/peripheral. */
+class BleServerTransport
+  : public virtual ndnph::Transport
+  , public ndnph::transport::DynamicRxQueueMixin
+#if defined(ARDUINO_ARCH_NRF52)
+  , public ::BLEService
+#endif
 {
 public:
   BleServerTransport();
 
-  ~BleServerTransport();
+  /** @brief Initialize BLE device, service, and advertisement. */
+  bool begin(const char* deviceName);
 
-  bool
-  begin(const char* deviceName);
+#if defined(ARDUINO_ARCH_NRF52)
+  /** @brief Initialize BLE service only. */
+  err_t begin() final;
+#endif
 
-  size_t
-  receive(uint8_t* buf, size_t bufSize, uint64_t& endpointId) final;
-
-  ndn_Error
-  send(const uint8_t* pkt, size_t len, uint64_t endpointId) final;
+  String getAddr() const;
 
 private:
-  std::unique_ptr<detail::BleServiceImpl> m_impl;
+  bool doIsUp() const final;
+
+  void doLoop() final;
+
+  bool doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) final;
+
+  void receiveImpl(const uint8_t* pkt, size_t pktLen, uint64_t endpointId);
+
+#if defined(ARDUINO_ARCH_ESP32)
+  class CsCallbacks : public BLECharacteristicCallbacks
+  {
+  public:
+    explicit CsCallbacks(BleServerTransport& transport);
+
+    void onWrite(::BLECharacteristic* chr) final;
+
+  private:
+    BleServerTransport& m_transport;
+  };
+  CsCallbacks m_csCallbackHandler;
+
+  ::BLEServer* m_server = nullptr;
+  ::BLEService* m_svc = nullptr;
+  ::BLECharacteristic* m_cs = nullptr;
+  ::BLECharacteristic* m_sc = nullptr;
+#elif defined(ARDUINO_ARCH_NRF52)
+  static void handleCsWrite(uint16_t connHdl, ::BLECharacteristic* chr, uint8_t* pkt,
+                            uint16_t pktLen);
+
+  ::BLECharacteristic m_cs;
+  ::BLECharacteristic m_sc;
+#endif
 };
 
 } // namespace ndn
+
+#endif // defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_NRF52)
 
 #endif // ESP8266NDN_BLE_SERVER_TRANSPORT_HPP

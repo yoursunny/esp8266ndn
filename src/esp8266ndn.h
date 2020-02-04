@@ -11,6 +11,7 @@
 
 #include "app/autoconfig.hpp"
 
+#include "transport/ble-server-transport.hpp"
 #include "transport/ethernet-transport.hpp"
 #include "transport/udp-transport.hpp"
 
