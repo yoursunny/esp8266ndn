@@ -10,7 +10,8 @@ namespace ndnph_port {
 /**
  * @brief Hardware random bytes generator.
  *
- * ESP8266 and ESP32: WiFi or Bluetooth must be enabled.
+ * ESP8266/ESP32: WiFi or Bluetooth radio must be enabled.
+ * nRF52: SoftDevice must be enabled.
  */
 class RandomSource
 {

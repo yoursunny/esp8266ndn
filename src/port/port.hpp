@@ -7,6 +7,10 @@
 #include "sha256-bearssl.hpp"
 #endif
 
+#ifdef ESP8266NDN_PORT_SHA256_CRYPTOSUITE
+#include "sha256-cryptosuite.hpp"
+#endif
+
 #ifdef ESP8266NDN_PORT_ECDSA_UECC
 #include "ecdsa-uecc.hpp"
 #endif

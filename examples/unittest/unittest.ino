@@ -3,6 +3,14 @@
 #include <Arduino.h>
 #include <ArduinoUnit.h>
 
+#if defined(ARDUINO_ARCH_ESP8266)
+#include <ESP8266WiFi.h>
+#elif defined(ARDUINO_ARCH_ESP32)
+#include <WiFi.h>
+#elif defined(ARDUINO_ARCH_NRF52)
+#include <bluefruit.h>
+#endif
+
 ndnph::StaticRegion<4096> region;
 
 // Interest, Data, Interest-Data match, Data signing, implicit digest, DigestKey
@@ -64,6 +72,14 @@ setup()
 {
   Serial.begin(115200);
   Serial.println();
+
+  // Enable radio, which is need by hardware random number generator.
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
+  WiFi.persistent(false);
+  WiFi.mode(WIFI_STA);
+#elif defined(ARDUINO_ARCH_NRF52)
+  Bluefruit.begin();
+#endif
 }
 
 void
