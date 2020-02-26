@@ -1,7 +1,7 @@
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
-#include "../core/logger.hpp"
 #include "udp-transport.hpp"
+#include "../core/logger.hpp"
 
 #define LOG(...) LOGGER(UdpTransport, __VA_ARGS__)
 

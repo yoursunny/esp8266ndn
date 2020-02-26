@@ -10,6 +10,7 @@
 #include "core/logging.hpp"
 
 #include "app/autoconfig.hpp"
+#include "app/unix-time.hpp"
 
 #include "transport/ble-server-transport.hpp"
 #include "transport/ethernet-transport.hpp"

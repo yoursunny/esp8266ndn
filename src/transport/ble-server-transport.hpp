@@ -69,7 +69,7 @@ private:
 #endif
 };
 
-} // namespace ndn
+} // namespace esp8266ndn
 
 #endif // defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_NRF52)
 

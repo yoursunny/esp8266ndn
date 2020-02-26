@@ -1,6 +1,6 @@
 #include "logging.hpp"
 
-namespace ndn {
+namespace esp8266ndn {
 
 class NullPrint : public Print
 {
@@ -56,4 +56,4 @@ PrintHex::printTo(Print& p) const
   return 2 * m_len;
 }
 
-} // namespace ndn
+} // namespace esp8266ndn

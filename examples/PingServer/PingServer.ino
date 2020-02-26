@@ -41,7 +41,7 @@ setup()
 {
   Serial.begin(115200);
   Serial.println();
-  ndn::setLogOutput(Serial);
+  esp8266ndn::setLogOutput(Serial);
 
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);

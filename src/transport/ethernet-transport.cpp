@@ -1,7 +1,7 @@
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
-#include "../core/logger.hpp"
 #include "ethernet-transport.hpp"
+#include "../core/logger.hpp"
 
 #include <IPAddress.h>
 #include <lwip/init.h>

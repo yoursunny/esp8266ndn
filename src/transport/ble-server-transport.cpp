@@ -1,7 +1,7 @@
 #if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_NRF52)
 
-#include "../core/logger.hpp"
 #include "ble-server-transport.hpp"
+#include "../core/logger.hpp"
 #include "ble-uuid.hpp"
 
 #define LOG(...) LOGGER(BleServerTransport, __VA_ARGS__)

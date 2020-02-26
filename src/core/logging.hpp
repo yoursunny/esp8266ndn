@@ -3,7 +3,7 @@
 
 #include <Print.h>
 
-namespace ndn {
+namespace esp8266ndn {
 
 Print&
 getLogOutput();
@@ -25,6 +25,6 @@ private:
   size_t m_len;
 };
 
-} // namespace ndn
+} // namespace esp8266ndn
 
 #endif // ESP8266NDN_LOGGING_HPP

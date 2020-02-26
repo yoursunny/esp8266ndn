@@ -10,7 +10,7 @@
 
 #define LOGGER(module, ...)                                                                        \
   do {                                                                                             \
-    ::ndn::getLogOutput() << _DEC(millis()) << " [" #module "] " << __VA_ARGS__ << "\n";           \
+    ::esp8266ndn::getLogOutput() << _DEC(millis()) << " [" #module "] " << __VA_ARGS__ << "\n";    \
   } while (false)
 
 #endif // ESP8266NDN_LOGGER_HPP

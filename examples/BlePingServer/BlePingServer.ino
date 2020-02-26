@@ -14,7 +14,7 @@ setup()
 {
   Serial.begin(115200);
   Serial.println();
-  ndn::setLogOutput(Serial);
+  esp8266ndn::setLogOutput(Serial);
 
   bool ok = transport.begin("esp8266ndn");
   if (!ok) {

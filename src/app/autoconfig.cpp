@@ -1,5 +1,5 @@
-#include "../core/logger.hpp"
 #include "autoconfig.hpp"
+#include "../core/logger.hpp"
 
 #if defined(ARDUINO_ARCH_ESP8266)
 #define HAVE_HTTPCLIENT
