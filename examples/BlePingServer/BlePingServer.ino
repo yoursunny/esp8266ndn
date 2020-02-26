@@ -2,50 +2,32 @@
 
 #include <esp8266ndn.h>
 
-char PREFIX[] = "/example/esp32/ble/ping";
+ndnph::StaticRegion<1024> region;
 
-ndn::BleServerTransport g_transport;
-ndn::Face g_face(g_transport);
-ndn::DigestKey g_pvtkey;
-
-ndn::NameWCB<4> g_prefix;
-ndn::PingServer g_server(g_face, g_prefix);
-
-void
-makePayload(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, size_t* payloadSize)
-{
-  auto text = reinterpret_cast<const char*>(arg);
-  size_t len = strlen(text);
-  memcpy(payloadBuf, text, len);
-  *payloadSize = len;
-}
+esp8266ndn::BleServerTransport transport;
+ndnph::Face face(transport);
+const char* PREFIX = "/example/esp8266/ble/ping";
+ndnph::PingServer server(ndnph::Name::parse(region, PREFIX), face);
 
 void
 setup()
 {
   Serial.begin(115200);
   Serial.println();
-  ndn::setLogOutput(Serial);
+  esp8266ndn::setLogOutput(Serial);
 
-  // BLE MTU is 512, no need for the default 1500-octet buffer
-  {
-    ndn::PacketBuffer::Options opt;
-    opt.maxSize = 512;
-    opt.maxNameComps = 8;
-    opt.maxKeyNameComps = 8;
-    g_face.addReceiveBuffers(1, opt);
+  bool ok = transport.begin("esp8266ndn");
+  if (!ok) {
+    Serial.println(F("BLE transport initialization failed"));
+    return;
   }
-  g_transport.begin("esp8266ndn");
-  g_face.enableTracing(Serial);
-  g_face.setSigningKey(g_pvtkey);
 
-  ndn::parseNameFromUri(g_prefix, PREFIX);
-  g_server.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("PingServer")));
+  Serial.println(transport.getAddr());
 }
 
 void
 loop()
 {
-  g_face.loop();
-  delay(100);
+  face.loop();
+  delay(1);
 }

@@ -1,6 +1,6 @@
-#if defined(ESP8266)
+#if defined(ARDUINO_ARCH_ESP8266)
 #include <ESP8266WiFi.h>
-#elif defined(ESP32)
+#elif defined(ARDUINO_ARCH_ESP32)
 #include <WiFi.h>
 #endif
 #include <esp8266ndn.h>
@@ -8,41 +8,40 @@
 const char* WIFI_SSID = "my-ssid";
 const char* WIFI_PASS = "my-pass";
 
-ndn::DigestKey g_key;
+ndnph::StaticRegion<1024> region;
 
-ndn::EthernetTransport g_transport0;
-ndn::Face g_face0(g_transport0);
-char PREFIX0[] = "/example/esp8266/ether/ping";
-ndn::NameWCB<8> g_prefix0;
-ndn::PingServer g_server0(g_face0, g_prefix0);
+esp8266ndn::EthernetTransport transport0;
+ndnph::transport::ForceEndpointId transport0w(transport0);
+ndnph::Face face0(transport0w);
+const char* PREFIX0 = "/example/esp8266/ether/ping";
+ndnph::PingServer server0(ndnph::Name::parse(region, PREFIX0), face0);
 
-ndn::UdpTransport g_transport1;
-ndn::Face g_face1(g_transport1);
-char PREFIX1[] = "/example/esp8266/udp/ping";
-ndn::NameWCB<8> g_prefix1;
-ndn::PingServer g_server1(g_face1, g_prefix1);
+esp8266ndn::UdpTransport transport1;
+ndnph::Face face1(transport1);
+const char* PREFIX1 = "/example/esp8266/udp/ping";
+ndnph::PingServer server1(ndnph::Name::parse(region, PREFIX1), face1);
 
-ndn::UdpTransport g_transport2;
-ndn::Face g_face2(g_transport2);
-char PREFIX2[] = "/example/esp8266/udpm/ping";
-ndn::NameWCB<8> g_prefix2;
-ndn::PingServer g_server2(g_face2, g_prefix2);
+esp8266ndn::UdpTransport transport2;
+ndnph::transport::ForceEndpointId transport2w(transport2);
+ndnph::Face face2(transport2w);
+const char* PREFIX2 = "/example/esp8266/udpm/ping";
+ndnph::PingServer server2(ndnph::Name::parse(region, PREFIX2), face2);
 
-void
-makePayload(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, size_t* payloadSize)
-{
-  auto text = reinterpret_cast<const char*>(arg);
-  size_t len = strlen(text);
-  memcpy(payloadBuf, text, len);
-  *payloadSize = len;
-}
+// void
+// makePayload(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, size_t* payloadSize)
+// {
+//   auto text = reinterpret_cast<const char*>(arg);
+//   size_t len = strlen(text);
+//   memcpy(payloadBuf, text, len);
+//   *payloadSize = len;
+// }
 
 void
 setup()
 {
   Serial.begin(115200);
   Serial.println();
-  ndn::setLogOutput(Serial);
+  esp8266ndn::setLogOutput(Serial);
 
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
@@ -52,38 +51,27 @@ setup()
   }
   delay(1000);
 
-  ndn::EthernetTransport::listNetifs(Serial);
-  bool ok = g_transport0.begin(); // select any STA netif
+  esp8266ndn::EthernetTransport::listNetifs(Serial);
+  bool ok = transport0.begin(); // select any STA netif
   if (!ok) {
     Serial.println(F("Ethernet transport initialization failed"));
     ESP.restart();
   }
-  g_face0.enableTracing(Serial, F("face0"));
-  g_face0.setSigningKey(g_key);
-  ndn::parseNameFromUri(g_prefix0, PREFIX0);
-  g_server0.enableEndpointIdZero();
-  g_server0.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("Ethernet ndnping server")));
+  // server0.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("Ethernet ndnping server")));
 
-  ok = g_transport1.beginListen();
+  ok = transport1.beginListen();
   if (!ok) {
     Serial.println(F("UDP unicast transport initialization failed"));
     ESP.restart();
   }
-  g_face1.enableTracing(Serial, F("face1"));
-  g_face1.setSigningKey(g_key);
-  ndn::parseNameFromUri(g_prefix1, PREFIX1);
-  g_server1.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("UDP unicast ndnping server")));
+  // server1.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("UDP unicast ndnping server")));
 
-  ok = g_transport2.beginMulticast(WiFi.localIP());
+  ok = transport2.beginMulticast(WiFi.localIP());
   if (!ok) {
     Serial.println(F("UDP multicast transport initialization failed"));
     ESP.restart();
   }
-  g_face2.enableTracing(Serial, F("face2"));
-  g_face2.setSigningKey(g_key);
-  ndn::parseNameFromUri(g_prefix2, PREFIX2);
-  g_server2.enableEndpointIdZero();
-  g_server2.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("UDP multicast ndnping server")));
+  // server2.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("UDP multicast ndnping server")));
 
   Serial.println(F("Please register prefixes on your router:"));
   Serial.println(F("nfdc route add /example/esp8266/ether [ETHER-MCAST-FACEID]"));
@@ -103,8 +91,8 @@ setup()
 void
 loop()
 {
-  g_face0.loop();
-  g_face1.loop();
-  g_face2.loop();
-  delay(10);
+  face0.loop();
+  face1.loop();
+  face2.loop();
+  delay(1);
 }

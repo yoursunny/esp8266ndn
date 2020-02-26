@@ -3,40 +3,16 @@
 
 #include <Arduino.h>
 #include <cstdio>
-#include <time.h>
 #include <sys/time.h>
+#include <time.h>
 
 #define LOG(...) LOGGER(UnixTime, __VA_ARGS__)
 
-#if defined(ESP32)
-#define SUPPORT_SYSCLOCK_INTEG
+#if defined(ARDUINO_ARCH_ESP32)
+#define HAVE_SYSCLOCK_INTEG
 #endif
 
-namespace ndn {
-
-/// special timeOffset values
-enum {
-  TIMEOFFSET_INTEG = 0,
-  TIMEOFFSET_INTEG_UNAVAIL = 1,
-  TIMEOFFSET_UNAVAIL = 2,
-};
-
-UnixTimeClass::UnixTimeClass()
-  : m_interval(0)
-  , m_lastRequest(0)
-  , m_nextRequest(0)
-  , m_timeOffset(TIMEOFFSET_UNAVAIL)
-{
-  ndn::NameLite& name = m_interest.getName();
-  name.append("localhop");
-  name.append("unix-time");
-  m_interest.setCanBePrefix(true);
-  m_interest.setMustBeFresh(true);
-
-#ifdef SUPPORT_SYSCLOCK_INTEG
-  m_timeOffset = TIMEOFFSET_INTEG_UNAVAIL;
-#endif
-}
+namespace esp8266ndn {
 
 void
 UnixTimeClass::disableIntegration()
@@ -44,17 +20,29 @@ UnixTimeClass::disableIntegration()
   m_timeOffset = TIMEOFFSET_UNAVAIL;
 }
 
-void
-UnixTimeClass::begin(ndn::Face& face, unsigned long interval)
+bool
+UnixTimeClass::begin(ndnph::Face& face, int interval)
 {
-  m_interval = std::max<unsigned long>(interval, 5000);
-  face.addHandler(this);
+  if (!face.addHandler(*this)) {
+    return false;
+  }
+
+  m_interval = std::max(interval, 5000);
+
+  static ndnph::StaticRegion<512> region;
+  region.reset();
+  m_interest = region.create<ndnph::Interest>();
+  m_interest.setName(ndnph::Name::parse(region, "/localhop/unix-time"));
+  m_interest.setCanBePrefix(true);
+  m_interest.setMustBeFresh(true);
+  return true;
 }
 
 void
 UnixTimeClass::loop()
 {
-  if (m_nextRequest > millis()) {
+  auto now = millis();
+  if (ndnph::port::Clock::isBefore(now, m_nextRequest)) {
     return;
   }
 
@@ -62,9 +50,9 @@ UnixTimeClass::loop()
     LOG(F("last-request=") << m_lastRequest << F(" timeout"));
   }
 
-  getFace()->sendInterest(m_interest);
-  m_lastRequest = millis();
-  m_nextRequest = m_lastRequest + m_interval;
+  send(m_interest);
+  m_lastRequest = now;
+  m_nextRequest = now + m_interval;
   LOG(F("requesting-at=") << m_lastRequest << F(", next-request=") << m_nextRequest);
 }
 
@@ -81,9 +69,9 @@ UnixTimeClass::now() const
     return 0;
   }
 
-#ifdef SUPPORT_SYSCLOCK_INTEG
+#ifdef HAVE_SYSCLOCK_INTEG
   if (m_timeOffset == TIMEOFFSET_INTEG) {
-    struct timeval tv = {0};
+    struct timeval tv = { 0 };
     gettimeofday(&tv, nullptr);
     return static_cast<uint64_t>(tv.tv_sec) * 1000000 + tv.tv_usec;
   }
@@ -93,52 +81,51 @@ UnixTimeClass::now() const
 }
 
 bool
-UnixTimeClass::processData(const ndn::DataLite& data, uint64_t endpointId)
+UnixTimeClass::processData(ndnph::Data data)
 {
-  const ndn::NameLite& name = data.getName();
-  uint64_t timestamp;
-  if (!m_interest.getName().match(name) ||
-      name.size() != m_interest.getName().size() + 1 ||
-      name.get(-1).toTimestamp(timestamp) != NDN_ERROR_success) {
+  const ndnph::Name& name = data.getName();
+  if (name.size() != m_interest.getName().size() + 1 || !m_interest.getName().isPrefixOf(name) ||
+      !name[-1].is<ndnph::convention::Timestamp>()) {
     return false;
   }
+  uint64_t timestamp = name[-1].as<ndnph::convention::Timestamp>();
 
   if (m_lastRequest == 0) {
     LOG(F("ignore-no-request"));
     return true;
   }
-  auto rtt = millis() - m_lastRequest;
+  auto now = millis();
+  auto rtt = now - m_lastRequest;
   if (rtt > 1000) {
     LOG(F("ignore-high-rtt=") << rtt);
     return true;
   }
 
-#ifdef SUPPORT_SYSCLOCK_INTEG
+#ifdef HAVE_SYSCLOCK_INTEG
   if (m_timeOffset == TIMEOFFSET_INTEG_UNAVAIL) {
     m_timeOffset = TIMEOFFSET_INTEG;
   }
 #endif
 
-  // Calculate timeOffset from lastRequest only, because Face usually transmits
-  // the Interest immediately, but processes incoming Data in Face::loop that
-  // incurs delay from Arduino's main loop.
+  // Calculate timeOffset from lastRequest only, because the face transmits the Interest
+  // immediately, but processes incoming Data in Face::loop() that incurs delay from
+  // Arduino's main loop.
   uint64_t timeOffset = timestamp - m_lastRequest * 1000;
-  uint64_t now = timeOffset + millis() * 1000;
-#ifdef SUPPORT_SYSCLOCK_INTEG
+  uint64_t unixNow = timeOffset + now * 1000;
+#ifdef HAVE_SYSCLOCK_INTEG
   if (m_timeOffset == TIMEOFFSET_INTEG) {
     struct timeval tv = {
-      .tv_sec = static_cast<time_t>(now / 1000000),
-      .tv_usec = static_cast<suseconds_t>(now % 1000000),
+      .tv_sec = static_cast<time_t>(unixNow / 1000000),
+      .tv_usec = static_cast<suseconds_t>(unixNow % 1000000),
     };
     settimeofday(&tv, nullptr);
-  }
-  else
+  } else
 #endif
   {
     m_timeOffset = timeOffset;
   }
 
-  LOG(F("time-offset=") << timeOffset << F(", now=") << now);
+  LOG(F("time-offset=") << timeOffset << F(", now=") << unixNow);
   m_lastRequest = 0;
   return true;
 }
@@ -155,12 +142,11 @@ UnixTimeClass::toRfc3399DateTime(uint64_t timestamp)
   }
 
   char buf[32];
-  snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d.%06dZ",
-           1900 + t.tm_year, 1 + t.tm_mon, t.tm_mday,
-           t.tm_hour, t.tm_min, t.tm_sec, usec);
+  snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d.%06dZ", 1900 + t.tm_year, 1 + t.tm_mon,
+           t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec, usec);
   return buf;
 }
 
 UnixTimeClass UnixTime;
 
-} // namespace ndn
+} // namespace esp8266ndn

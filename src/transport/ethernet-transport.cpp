@@ -1,25 +1,24 @@
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
 #include "ethernet-transport.hpp"
 #include "../core/logger.hpp"
 
+#include <IPAddress.h>
 #include <lwip/init.h>
 #include <lwip/netif.h>
 #include <lwip/pbuf.h>
 #include <netif/etharp.h>
-#include <IPAddress.h>
 
 #define LOG(...) LOGGER(EthernetTransport, __VA_ARGS__)
 
-namespace ndn {
+namespace esp8266ndn {
 
 static EthernetTransport* g_ethTransport = nullptr;
 
 class EthernetTransport::Impl
 {
 public:
-  explicit
-  Impl(netif* nif)
+  explicit Impl(netif* nif)
     : nif(nif)
     , oldInput(nif->input)
   {
@@ -31,8 +30,7 @@ public:
     nif->input = this->oldInput;
   }
 
-  static err_t
-  input(pbuf* p, netif* inp)
+  static err_t input(pbuf* p, netif* inp)
   {
     if (g_ethTransport == nullptr) {
       LOG(F("inactive"));
@@ -51,37 +49,32 @@ public:
     return ERR_OK;
   }
 
-  void
-  receive(pbuf* p)
+  void receive(pbuf* p)
   {
     if (p->next != nullptr) {
-      LOG(F("unhandled: chained packet"));
+      LOG(F("drop: chained packet"));
       return;
     }
 
-    PacketBuffer* pb = g_ethTransport->beforeReceive();
-    if (pb == nullptr) {
+    auto r = g_ethTransport->receiving();
+    if (!r) {
+      LOG(F("drop: no RX buffer"));
       return;
     }
 
-    uint8_t* buf = nullptr;
-    size_t bufSize = 0;
-    std::tie(buf, bufSize) = pb->useBuffer();
-    if (p->tot_len > bufSize) {
-      LOG(F("insufficient receive buffer: tot_len=") << _DEC(p->tot_len));
-      g_ethTransport->afterReceive(pb, 0, true);
+    if (p->tot_len > r.bufLen()) {
+      LOG(F("drop: RX buffer too short, tot_len=") << _DEC(p->tot_len));
       return;
     }
 
     const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(p->payload);
-    EthernetTransport::EndpointId endpoint = {0};
+    EthernetTransport::EndpointId endpoint = {};
     memcpy(endpoint.addr, &eth->src, 6);
     endpoint.isMulticast = 0x01 & (*reinterpret_cast<const uint8_t*>(&eth->dest));
-    pb->endpointId = endpoint.endpointId;
 
-    size_t pktSize = p->tot_len - sizeof(eth_hdr);
-    memcpy(buf, reinterpret_cast<const uint8_t*>(p->payload) + sizeof(eth_hdr), pktSize);
-    g_ethTransport->afterReceive(pb, pktSize, true);
+    size_t pktLen = p->tot_len - sizeof(eth_hdr);
+    memcpy(r.buf(), reinterpret_cast<const uint8_t*>(p->payload) + sizeof(eth_hdr), pktLen);
+    r(pktLen, endpoint.endpointId);
   }
 
 public:
@@ -93,8 +86,8 @@ void
 EthernetTransport::listNetifs(Print& os)
 {
   for (netif* nif = netif_list; nif != nullptr; nif = nif->next) {
-    os << nif->name[0] << nif->name[1] << nif->num
-       << ' ' << IPAddress(*reinterpret_cast<const uint32_t*>(&nif->ip_addr)) << endl;
+    os << nif->name[0] << nif->name[1] << nif->num << ' '
+       << IPAddress(*reinterpret_cast<const uint32_t*>(&nif->ip_addr)) << endl;
   }
 }
 
@@ -107,8 +100,7 @@ EthernetTransport::begin(const char ifname[2], uint8_t ifnum)
 {
   netif* found = nullptr;
   for (netif* nif = netif_list; nif != nullptr; nif = nif->next) {
-    if (nif->name[0] == ifname[0] && nif->name[1] == ifname[1] &&
-        nif->num == ifnum) {
+    if (nif->name[0] == ifname[0] && nif->name[1] == ifname[1] && nif->num == ifnum) {
       found = nif;
       break;
     }
@@ -123,7 +115,7 @@ EthernetTransport::begin(const char ifname[2], uint8_t ifnum)
 bool
 EthernetTransport::begin()
 {
-#if defined(ESP8266) && LWIP_VERSION_MAJOR == 1
+#if defined(ARDUINO_ARCH_ESP8266) && LWIP_VERSION_MAJOR == 1
   return begin("ew", 0);
 #else
   for (netif* nif = netif_list; nif != nullptr; nif = nif->next) {
@@ -139,11 +131,11 @@ EthernetTransport::begin()
 bool
 EthernetTransport::begin(netif* nif)
 {
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
   if (LWIP_VERSION_MAJOR != 1) {
     LOG(F("packet interception on ESP8266 lwip2 is untested and may not work"));
   }
-#endif // ESP8266
+#endif // ARDUINO_ARCH_ESP8266
   if (g_ethTransport != nullptr) {
     LOG(F("an instance is active"));
     return false;
@@ -163,47 +155,59 @@ EthernetTransport::end()
   LOG(F("disabled"));
 }
 
-ndn_Error
-EthernetTransport::send(const uint8_t* pkt, size_t len, uint64_t endpointId)
+bool
+EthernetTransport::doIsUp() const
+{
+  return m_impl != nullptr;
+}
+
+void
+EthernetTransport::doLoop()
+{
+  loopRxQueue();
+}
+
+bool
+EthernetTransport::doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId)
 {
   if (m_impl == nullptr) {
-    return NDN_ERROR_SocketTransport_socket_is_not_open;
+    return false;
   }
 
-  uint16_t payloadLen = max(static_cast<uint16_t>(len), static_cast<uint16_t>(46));
+  uint16_t payloadLen = std::max<uint16_t>(pktLen, 46);
   uint16_t frameSize = sizeof(eth_hdr) + payloadLen;
   pbuf* p = pbuf_alloc(PBUF_RAW, frameSize, PBUF_RAM);
   if (p == nullptr) {
-    return NDN_ERROR_DynamicUInt8Array_realloc_failed;
+    return false;
   }
   p->len = p->tot_len = frameSize;
 
   eth_hdr* eth = reinterpret_cast<eth_hdr*>(p->payload);
   if (endpointId == 0) {
     memcpy(&eth->dest, "\x01\x00\x5E\x00\x17\xAA", sizeof(eth->dest));
-  }
-  else {
+  } else {
     EndpointId endpoint;
     endpoint.endpointId = endpointId;
     memcpy(&eth->dest, endpoint.addr, sizeof(eth->dest));
   }
   memcpy(&eth->src, m_impl->nif->hwaddr, sizeof(eth->src));
   eth->type = PP_HTONS(0x8624);
-  memcpy(reinterpret_cast<uint8_t*>(p->payload) + sizeof(eth_hdr), pkt, len);
-  if (len < payloadLen) {
-    memset(reinterpret_cast<uint8_t*>(p->payload) + sizeof(eth_hdr) + len, 0, payloadLen - len);
+  memcpy(reinterpret_cast<uint8_t*>(p->payload) + sizeof(eth_hdr), pkt, pktLen);
+  if (pktLen < payloadLen) {
+    memset(reinterpret_cast<uint8_t*>(p->payload) + sizeof(eth_hdr) + pktLen, 0,
+           payloadLen - pktLen);
   }
 
   err_t e = m_impl->nif->linkoutput(m_impl->nif, p);
   pbuf_free(p);
   if (e != ERR_OK) {
     LOG(F("linkoutput error ") << _DEC(e));
-    return NDN_ERROR_SocketTransport_error_in_send;
+    return false;
   }
 
-  return NDN_ERROR_success;
+  return true;
 }
 
-} // namespace ndn
+} // namespace esp8266ndn
 
-#endif // defined(ESP8266) || defined(ESP32)
+#endif // defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)

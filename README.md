@@ -6,15 +6,24 @@
 * [#esp8266ndn on Twitter](https://twitter.com/hashtag/esp8266ndn) for announcements
 * [ndn-lib mailing list](https://www.lists.cs.ucla.edu/mailman/listinfo/ndn-lib) for best-effort support
 
+![esp8266ndn logo](docs/logo.svg)
+
 ## Features
 
 Packet encoding and decoding
 
-* Interest, Data, and Nack
-  * Decoding recognizes both [v0.2](https://named-data.net/doc/NDN-packet-spec/0.2/) and [v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/) formats
-  * Interest encoding defaults to v0.3 format
-* Signed Interest: [2014 format](https://redmine.named-data.net/projects/ndn-cxx/wiki/SignedInterest)
-* Naming Convention: [2014 format](https://named-data.net/publications/techreports/ndn-tr-22-ndn-memo-naming-conventions/)
+* Interest and Data
+  * [v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/) format only
+  * TLV evolvability: yes
+  * Forwarding Hint: no
+* [NDNLPv2](https://redmine.named-data.net/projects/nfd/wiki/NDNLPv2)
+  * fragmentation and reassembly: no
+  * Nack: yes
+  * PIT token: yes
+  * congestion mark: no
+  * link layer reliability: no
+* Signed Interest: [v0.3 format](https://named-data.net/doc/NDN-packet-spec/0.3/signed-interest.html)
+* Naming Convention: [2019 format](https://named-data.net/publications/techreports/ndn-tr-22-2-ndn-memo-naming-conventions/)
 
 Transports
 
@@ -25,26 +34,27 @@ Transports
   * ESP8266: yes
   * ESP32: yes
 * Bluetooth Low Energy
-  * ESP32: server/peripheral and client/central
+  * ESP32: server/peripheral only
   * nRF52: server/peripheral only
-* LoRa radio
-  * ESP32: yes, only tested with Heltec WiFi\_LoRa\_32 board
 
-Crypto
+KeyChain - Crypto
 
-* SHA256 and HMAC-SHA256
+* SHA256
   * ESP8266: yes, using BearSSL from Arduino Core
   * ESP32: yes, using mbed TLS from ESP-IDF
   * nRF52: yes, using CryptoSuite
-* ECDSA
-  * ESP8266: yes, using micro-ecc 'static'
+* ECDSA: P-256 curve only
+  * ESP8266 and nRF52: yes, using micro-ecc
   * ESP32: yes, using mbed TLS from ESP-IDF
-  * nRF52: insecure, lacks random number generator integration
+* HMAC-SHA256: no
+* RSA: no
 
-Forwarding
+KeyChain - Services
 
-* ndn-lite forwarder
-  * experimental, only tested with ESP8266
+* [NDN certificates](https://named-data.net/doc/ndn-cxx/0.7.0/specs/certificate-format.html): basic support
+* NDNCERT protocol: no
+* Key storage: no
+* Trust schema: no
 
 Application layer services
 
@@ -55,6 +65,6 @@ Application layer services
 
 ## Installation
 
-Clone this repository under `$HOME/Arduino/libraries` directory.
-Add `#include <esp8266ndn.h>` to your sketch.
-Check out the [examples](examples/) for how to use.
+1. Clone [NDNph](https://github.com/yoursunny/NDNph) and this repository under `$HOME/Arduino/libraries` directory.
+2. Add `#include <esp8266ndn.h>` to your sketch.
+3. Check out the [examples](examples/) for how to use.
