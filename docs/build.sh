@@ -2,9 +2,9 @@
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 if ! [[ -x ./doxygen.exe ]]; then
   if [[ "$OS" == "Windows_NT" ]]; then
-    curl ftp://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.14.windows.x64.bin.zip > doxygen-windows.zip
+    curl -L https://downloads.sourceforge.net/project/doxygen/rel-1.8.17/doxygen-1.8.17.windows.x64.bin.zip > doxygen-windows.zip
     unzip doxygen-windows.zip doxygen.exe libclang.dll
-    rm doxygen-windows.zip
+    # rm doxygen-windows.zip
   elif which doxygen >/dev/null; then
     ln -s $(which doxygen) ./doxygen.exe
   else
@@ -12,4 +12,4 @@ if ! [[ -x ./doxygen.exe ]]; then
     exit 1
   fi
 fi
-./doxygen.exe
+./doxygen.exe Doxyfile 2>&1 | ./filter-Doxygen-warning.awk 1>&2
