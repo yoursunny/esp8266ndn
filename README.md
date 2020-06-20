@@ -1,8 +1,10 @@
 # NDN Arduino library for ESP8266 and more
 
+[![Travis build status](https://img.shields.io/travis/com/yoursunny/esp8266ndn?style=flat)](https://travis-ci.com/github/yoursunny/esp8266ndn) [![GitHub code size](https://img.shields.io/github/languages/code-size/yoursunny/esp8266ndn?style=flat)](https://github.com/yoursunny/esp8266ndn)
+
 **esp8266ndn** library enables [Named Data Networking](https://named-data.net/) application development in Arduino environment. It supports [ESP8266](https://github.com/esp8266/Arduino), [ESP32](https://github.com/espressif/arduino-esp32), and [Adafruit nRF52](https://github.com/adafruit/Adafruit_nRF52_Arduino) microcontrollers.
 
-* [Doxygen documentation](https://esp8266ndn.netlify.com/)
+* [Doxygen documentation](https://esp8266ndn.ndn.today/)
 * [#esp8266ndn on Twitter](https://twitter.com/hashtag/esp8266ndn) for announcements
 * [ndn-lib mailing list](https://www.lists.cs.ucla.edu/mailman/listinfo/ndn-lib) for best-effort support
 
@@ -48,6 +50,7 @@ KeyChain - Crypto
   * ESP32: yes, using mbed TLS from ESP-IDF
 * HMAC-SHA256: no
 * RSA: no
+* Null: yes
 
 KeyChain - Services
 

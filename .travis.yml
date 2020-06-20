@@ -4,6 +4,11 @@ dist: bionic
 language: python
 python: "3.7"
 
+addons:
+  apt:
+    packages:
+      - doxygen
+
 cache:
   pip: true
   directories:
@@ -24,9 +29,24 @@ install:
     : install NDNph
     git clone --single-branch --depth=1 https://github.com/yoursunny/NDNph.git $HOME/NDNph
     ln -s $HOME/NDNph $HOME/arduino_ide/libraries/NDNph
+    ln -s $HOME/NDNph $TRAVIS_BUILD_DIR/../NDNph
     git -C $HOME/NDNph log -1
 
 script:
   - build_platform esp8266
   - build_platform esp32
   - build_platform nrf52840
+
+after_success:
+  - GTAGID=UA-935676-12 docs/build.sh
+
+deploy:
+  - provider: netlify
+    edge: true
+    site: cf340d80-1709-45d9-878f-12570d9dcee0
+    auth: $NETLIFY_AUTH
+    dir: docs/html/
+    message: $TRAVIS_COMMIT
+    prod: true
+    on:
+      branch: develop
