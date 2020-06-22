@@ -11,8 +11,8 @@
 #include "sha256-cryptosuite.hpp"
 #endif
 
-#ifdef ESP8266NDN_PORT_ECDSA_UECC
-#include "ecdsa-uecc.hpp"
+#ifdef ESP8266NDN_PORT_EC_UECC
+#include "ec-uecc.hpp"
 #endif
 
 #ifdef ESP8266NDN_PORT_QUEUE_FREERTOS

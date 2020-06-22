@@ -1,8 +1,8 @@
 #include "choose.hpp"
 
-#ifdef ESP8266NDN_PORT_ECDSA_UECC
+#ifdef ESP8266NDN_PORT_EC_UECC
 
-#include "ecdsa-uecc.hpp"
+#include "ec-uecc.hpp"
 #include "random.hpp"
 
 #include <algorithm>
@@ -186,4 +186,4 @@ Ecdsa::generateKey(uint8_t pvt[Curve::PvtLen::value], uint8_t pub[Curve::PubLen:
 } // namespace ndnph_port_uecc
 } // namespace esp8266ndn
 
-#endif // ESP8266NDN_PORT_ECDSA_UECC
+#endif // ESP8266NDN_PORT_EC_UECC

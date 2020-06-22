@@ -1,5 +1,5 @@
-#ifndef ESP8266NDN_PORT_ECDSA_UECC_HPP
-#define ESP8266NDN_PORT_ECDSA_UECC_HPP
+#ifndef ESP8266NDN_PORT_EC_UECC_HPP
+#define ESP8266NDN_PORT_EC_UECC_HPP
 
 #include "choose.hpp"
 
@@ -49,12 +49,12 @@ public:
 } // namespace ndnph_port_uecc
 } // namespace esp8266ndn
 
-#ifdef ESP8266NDN_PORT_ECDSA_UECC
+#ifdef ESP8266NDN_PORT_EC_UECC
 namespace ndnph {
 namespace port {
 using Ecdsa = esp8266ndn::ndnph_port_uecc::Ecdsa;
 } // namespace port
 } // namespace ndnph
-#endif // ESP8266NDN_PORT_ECDSA_UECC
+#endif
 
-#endif // ESP8266NDN_PORT_ECDSA_UECC_HPP
+#endif // ESP8266NDN_PORT_EC_UECC_HPP
