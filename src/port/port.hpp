@@ -19,6 +19,9 @@
 #include "queue-freertos.hpp"
 #endif
 
+#define NDNPH_PORT_FS_CUSTOM
+#include "fs.hpp"
+
 #define NDNPH_PORT_RANDOM_CUSTOM
 #include "random.hpp"
 

@@ -5,13 +5,18 @@
 
 #if defined(ARDUINO_ARCH_ESP8266)
 #include <ESP8266WiFi.h>
+#include <LittleFS.h>
 #elif defined(ARDUINO_ARCH_ESP32)
+#include <FFat.h>
 #include <WiFi.h>
 #elif defined(ARDUINO_ARCH_NRF52)
+#include <InternalFileSystem.h>
 #include <bluefruit.h>
 #endif
 
 ndnph::StaticRegion<4096> region;
+ndnph::KeyChain keyChain;
+bool keyChainOpenResult = false;
 
 // Interest, Data, Interest-Data match, Data signing, implicit digest, DigestKey
 test(InterestData)
@@ -24,7 +29,7 @@ test(InterestData)
   uint8_t implicitDigest[NDNPH_SHA256_LEN];
   {
     ndnph::Encoder encoder(region);
-    encoder.prepend(data.sign(ndnph::DigestKey()));
+    encoder.prepend(data.sign(ndnph::DigestKey::get()));
     encoder.trim();
 
     data = region.create<ndnph::Data>();
@@ -41,30 +46,46 @@ test(InterestData)
   assertTrue(interest.match(data));
 }
 
-// Interest signing, ECDSA
+// Interest signing, ECDSA, KeyChain
 test(Ecdsa)
 {
   region.reset();
-  auto keyName = ndnph::Name::parse(region, "/K");
+  auto subjectName = ndnph::Name::parse(region, "/K");
 
-  ndnph::EcdsaPrivateKey pvt;
-  ndnph::EcdsaPublicKey pub;
-  assertTrue(ndnph::EcdsaPrivateKey::generate(keyName, pvt, pub));
+  assertTrue(keyChainOpenResult);
+  ndnph::EcPrivateKey pvt0, pvt1;
+  ndnph::EcPublicKey pub0, pub1;
+  assertTrue(ndnph::ec::generate(region, subjectName, pvt0, pub0, keyChain, "k"));
+  assertTrue(ndnph::ec::load(keyChain, "k", region, pvt1, pub1));
+  assertEqual(pvt1.getName(), pvt0.getName());
+  assertEqual(pub1.getName(), pub0.getName());
 
   auto interest = region.create<ndnph::Interest>();
   assertFalse(!interest);
-  interest.setName(ndnph::Name::parse(region, "/A"));
+  auto data = region.create<ndnph::Data>();
+  assertFalse(!data);
+  interest.setName(ndnph::Name::parse(region, "/I"));
+  data.setName(ndnph::Name::parse(region, "/D"));
   {
-    ndnph::Encoder encoder(region);
-    encoder.prepend(interest.sign(pvt));
-    encoder.trim();
+    ndnph::Encoder encoderI(region);
+    encoderI.prepend(interest.sign(pvt0));
+    encoderI.trim();
 
     interest = region.create<ndnph::Interest>();
     assertFalse(!interest);
-    assertTrue(ndnph::Decoder(encoder.begin(), encoder.size()).decode(interest));
+    assertTrue(ndnph::Decoder(encoderI.begin(), encoderI.size()).decode(interest));
+
+    ndnph::Encoder encoderD(region);
+    encoderD.prepend(data.sign(pvt1));
+    encoderD.trim();
+
+    data = region.create<ndnph::Data>();
+    assertFalse(!data);
+    assertTrue(ndnph::Decoder(encoderD.begin(), encoderD.size()).decode(data));
   }
 
-  assertTrue(interest.verify(pub));
+  assertTrue(interest.verify(pub1));
+  assertTrue(data.verify(pub0));
 }
 
 void
@@ -73,13 +94,27 @@ setup()
   Serial.begin(115200);
   Serial.println();
 
-  // Enable radio, which is need by hardware random number generator.
+  // Radio is needed by hardware random number generator.
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
 #elif defined(ARDUINO_ARCH_NRF52)
   Bluefruit.begin();
 #endif
+
+  // Filesystem is needed by KeyChain.
+#if defined(ARDUINO_ARCH_ESP8266)
+  LittleFS.begin();
+  LittleFS.format();
+#elif defined(ARDUINO_ARCH_ESP32)
+  FFat.begin();
+  FFat.format();
+#elif defined(ARDUINO_ARCH_NRF52)
+  InternalFS.begin();
+  InternalFS.format();
+#endif
+  delay(1);
+  keyChainOpenResult = keyChain.open("/keychain");
 }
 
 void

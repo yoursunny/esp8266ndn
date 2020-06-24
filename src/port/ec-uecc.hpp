@@ -11,7 +11,7 @@ namespace esp8266ndn {
 namespace ndnph_port_uecc {
 
 /** @brief ECDSA P-256, implemented with micro-ecc. */
-class Ecdsa
+class Ec
 {
 public:
   struct Curve
@@ -52,7 +52,7 @@ public:
 #ifdef ESP8266NDN_PORT_EC_UECC
 namespace ndnph {
 namespace port {
-using Ecdsa = esp8266ndn::ndnph_port_uecc::Ecdsa;
+using Ec = esp8266ndn::ndnph_port_uecc::Ec;
 } // namespace port
 } // namespace ndnph
 #endif

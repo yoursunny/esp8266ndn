@@ -137,15 +137,14 @@ decodeSignatureBits(const uint8_t* input, size_t len, uint8_t* decoded)
 } // anonymous namespace
 
 bool
-Ecdsa::PrivateKey::import(const uint8_t key[Curve::PubLen::value])
+Ec::PrivateKey::import(const uint8_t key[Curve::PubLen::value])
 {
   std::copy_n(key, sizeof(m_key), m_key);
   return true;
 }
 
 ssize_t
-Ecdsa::PrivateKey::sign(const uint8_t digest[uECC_BYTES],
-                        uint8_t sig[Curve::MaxSigLen::value]) const
+Ec::PrivateKey::sign(const uint8_t digest[uECC_BYTES], uint8_t sig[Curve::MaxSigLen::value]) const
 {
   UeccSetRng::once();
   bool ok = uECC_sign(m_key, digest, &sig[8]);
@@ -156,7 +155,7 @@ Ecdsa::PrivateKey::sign(const uint8_t digest[uECC_BYTES],
 }
 
 bool
-Ecdsa::PublicKey::import(const uint8_t key[Curve::PubLen::value])
+Ec::PublicKey::import(const uint8_t key[Curve::PubLen::value])
 {
   if (key[0] != 0x04) {
     return false;
@@ -166,7 +165,7 @@ Ecdsa::PublicKey::import(const uint8_t key[Curve::PubLen::value])
 }
 
 bool
-Ecdsa::PublicKey::verify(const uint8_t digest[uECC_BYTES], const uint8_t* sig, size_t sigLen) const
+Ec::PublicKey::verify(const uint8_t digest[uECC_BYTES], const uint8_t* sig, size_t sigLen) const
 {
   uint8_t rawSig[uECC_BYTES * 2];
   if (!decodeSignatureBits(sig, sigLen, rawSig)) {
@@ -176,7 +175,7 @@ Ecdsa::PublicKey::verify(const uint8_t digest[uECC_BYTES], const uint8_t* sig, s
 }
 
 bool
-Ecdsa::generateKey(uint8_t pvt[Curve::PvtLen::value], uint8_t pub[Curve::PubLen::value])
+Ec::generateKey(uint8_t pvt[Curve::PvtLen::value], uint8_t pub[Curve::PubLen::value])
 {
   UeccSetRng::once();
   pub[0] = 0x04;
