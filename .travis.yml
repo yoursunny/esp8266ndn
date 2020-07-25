@@ -38,7 +38,7 @@ script:
   - build_platform nrf52840
 
 after_success:
-  - GTAGID=UA-935676-12 docs/build.sh
+  - GTAGID=UA-935676-11 docs/build.sh
 
 deploy:
   - provider: netlify
