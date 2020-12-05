@@ -28,6 +28,7 @@ jobs:
           mkdir -p $HOME/Arduino/libraries
           ln -s $GITHUB_WORKSPACE $HOME/Arduino/libraries/esp8266ndn
           git clone --single-branch --depth=1 https://github.com/yoursunny/NDNph.git $HOME/Arduino/libraries/NDNph
+          ln -s $HOME/Arduino/libraries/NDNph $GITHUB_WORKSPACE/../NDNph # for Doxygen
       - name: compile in ESP8266
         uses: ./.github/actions/build-examples
         with:
