@@ -1,0 +1,21 @@
+name: "Build Arduino Example Sketches"
+description: "Build example sketches with arduino-cli but skip incompatible sketches"
+inputs:
+  fqbn:
+    description: "Arduino board FQBN"
+    required: true
+runs:
+  using: composite
+  steps:
+    - run: |
+        ARCH=$(echo $FQBN | cut -d: -f2)
+        for D in $(find ./examples -name '*.ino' -printf '%h\n'); do
+          if [[ -f $D/.$ARCH.test.skip ]]; then
+            continue
+          fi
+          printf "\n---- \033[1;35mBuild $D\033[0m ----\n"
+          arduino-cli compile -b $FQBN $D
+        done
+      shell: bash
+      env:
+        FQBN: ${{ inputs.fqbn }}
