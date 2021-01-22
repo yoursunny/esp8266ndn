@@ -9,7 +9,7 @@ namespace esp8266ndn {
  * @brief Retrieve and maintain UnixTime clock.
  *
  * This requires a UnixTime service running in the local network.
- * @sa https://github.com/yoursunny/ndn6-tools/blob/master/unix-time-service.md
+ * @sa https://github.com/yoursunny/ndn6-tools/blob/main/unix-time-service.md
  */
 class UnixTimeClass : public ndnph::PacketHandler
 {
@@ -31,8 +31,8 @@ public:
 
   /**
    * @brief Enable UnixTime requests.
-   * @param face a face to communication with server
-   * @param interval how often to refresh time (millis), minimum 5000ms
+   * @param face a face to communication with server.
+   * @param interval how often to refresh time (millis), minimum 5000ms.
    */
   bool begin(ndnph::Face& face, int interval = 60000);
 

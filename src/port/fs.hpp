@@ -23,7 +23,8 @@ private:
   bool joinPath(const char* filename);
 
 private:
-  char m_path[64];
+  static constexpr size_t maxNameLen = 31;
+  char m_path[maxNameLen + maxNameLen + 1];
   size_t m_pathLen = 0;
 };
 

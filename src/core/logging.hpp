@@ -11,8 +11,7 @@ getLogOutput();
 void
 setLogOutput(Print& output);
 
-/** \brief Print a buffer in hexadecimal.
- */
+/** @brief Print a buffer in hexadecimal. */
 class PrintHex : public Printable
 {
 public:

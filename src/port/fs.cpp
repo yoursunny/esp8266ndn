@@ -25,11 +25,11 @@ bool
 FileStore::open(const char* path)
 {
   size_t pathLen = strlen(path);
-  if (pathLen == 0 || pathLen > 31 || path[0] != '/' || path[pathLen - 1] == '/') {
+  if (pathLen == 0 || pathLen > maxNameLen || path[0] != '/' || path[pathLen - 1] == '/') {
     return false;
   }
   FSPORT_FILESYSTEM.mkdir(path);
-  strncpy(m_path, path, sizeof(m_path));
+  strncpy(m_path, path, maxNameLen + 1);
   m_path[pathLen++] = '/';
   m_pathLen = pathLen;
   return true;
@@ -85,7 +85,7 @@ bool
 FileStore::joinPath(const char* filename)
 {
   size_t nameLen = strlen(filename);
-  if (m_pathLen == 0 || nameLen == 0 || nameLen > 31) {
+  if (m_pathLen == 0 || nameLen == 0 || nameLen > maxNameLen) {
     return false;
   }
   strncpy(&m_path[m_pathLen], filename, sizeof(m_path) - m_pathLen);

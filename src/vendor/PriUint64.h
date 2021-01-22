@@ -5,11 +5,12 @@
 #include <Print.h>
 #include <Printable.h>
 
-/** \brief Allow printing uint64_t value.
- *  \code
- *  uint64_t x = 1;
- *  Serial.print(PriUint64<DEC>(x));
- *  \endcode
+/**
+ * @brief Allow printing uint64_t value.
+ * @code
+ * uint64_t x = 1;
+ * Serial.print(PriUint64<DEC>(x));
+ * @endcode
  */
 template<int Base>
 class PriUint64 : public Printable
@@ -45,15 +46,14 @@ private:
 
 #if defined(ARDUINO_STREAMING) && defined(STREAMING_LIBRARY_VERSION) && STREAMING_LIBRARY_VERSION == 5
 
-/** \brief Print uint64_t as decimal.
- */
+/** @brief Print uint64_t as decimal. */
 inline Print&
 operator<<(Print& p, uint64_t x)
 {
   return p << PriUint64<DEC>(x);
 }
 
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_NRF52)
 #define PRIUINT64_OVERRIDE_STREAMING_BASED
 // <type_traits> is available on ESP8266 and ESP32, but unavailable on AVR.
 #endif
