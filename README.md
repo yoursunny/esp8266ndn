@@ -45,6 +45,9 @@ KeyChain
   * Null: yes
 * [NDN certificates](https://named-data.net/doc/ndn-cxx/0.7.1/specs/certificate-format.html): basic support
 * Persistent key and certificate storage: binary files
+  * ESP8266: using LittleFS
+  * ESP32: using FFat (in Arduino *Tools* menu select "Partition Scheme: with FAT")
+  * nRF52: using InternalFileSystem
 * Trust schema: no
 
 Application layer services
