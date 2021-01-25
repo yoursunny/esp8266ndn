@@ -54,11 +54,13 @@ Application layer services
 
 * [ndnping](https://github.com/named-data/ndn-tools/tree/master/tools/ping) server and client
 * segmented object producer and consumer
-* [Realtime Data Retrieval (RDR)](https://redmine.named-data.net/projects/ndn-tlv/wiki/RDR) metadata producer
-* [NDNCERT](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3) (work in progress)
-* [NDN-FCH](https://github.com/named-data/NDN-FCH) client for connecting to the global NDN testbed
+* [Realtime Data Retrieval (RDR)](https://redmine.named-data.net/projects/ndn-tlv/wiki/RDR) metadata producer and consumer
+* [NDNCERT](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3) server and client
+  * ESP32 only
+  * supported challenges: "nop" and "possession"
+* [NDN-FCH](https://github.com/named-data/ndn-fch) client for connecting to the global NDN testbed
   * ESP8266 and ESP32 only
-* [UnixTime](https://github.com/yoursunny/ndn6-tools/blob/master/unix-time-service.md) client for time synchronization
+* [UnixTime](https://github.com/yoursunny/ndn6-tools/blob/main/unix-time-service.md) client for time synchronization
 
 ## Installation
 
