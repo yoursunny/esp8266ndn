@@ -9,7 +9,19 @@ namespace esp8266ndn {
 
 static_assert(sizeof(UdpTransport::EndpointId) == sizeof(uint64_t), "");
 
-const IPAddress UdpTransport::MCAST_GROUP(224, 0, 23, 170);
+const IPAddress UdpTransport::MulticastGroup(224, 0, 23, 170);
+
+UdpTransport::UdpTransport(size_t mtu)
+{
+  m_ownBuf.reset(new uint8_t[mtu]);
+  m_buf = m_ownBuf.get();
+  m_bufcap = mtu;
+}
+
+UdpTransport::UdpTransport(uint8_t* buffer, size_t capacity)
+  : m_buf(buffer)
+  , m_bufcap(capacity)
+{}
 
 bool
 UdpTransport::beginListen(uint16_t localPort, IPAddress localIp)
@@ -47,11 +59,11 @@ UdpTransport::beginMulticast(IPAddress localIp, uint16_t groupPort)
 {
   end();
 #if defined(ARDUINO_ARCH_ESP8266)
-  LOG(F("joining group ") << MCAST_GROUP << ':' << _DEC(groupPort) << F(" on ") << localIp);
-  bool ok = m_udp.beginMulticast(localIp, MCAST_GROUP, groupPort);
+  LOG(F("joining group ") << MulticastGroup << ':' << _DEC(groupPort) << F(" on ") << localIp);
+  bool ok = m_udp.beginMulticast(localIp, MulticastGroup, groupPort);
 #elif defined(ARDUINO_ARCH_ESP32)
-  LOG(F("joining group ") << MCAST_GROUP << ':' << _DEC(groupPort));
-  bool ok = m_udp.beginMulticast(MCAST_GROUP, groupPort);
+  LOG(F("joining group ") << MulticastGroup << ':' << _DEC(groupPort));
+  bool ok = m_udp.beginMulticast(MulticastGroup, groupPort);
 #endif
   if (ok) {
     m_mode = Mode::MULTICAST;
@@ -94,19 +106,17 @@ UdpTransport::doLoop()
       endpoint.port = m_udp.remotePort();
     }
 
-    m_region.reset();
-    uint8_t* buf = m_region.alloc(pktLen);
-    if (buf == nullptr) {
-      LOG(F("alloc failure for pktLen=") << pktLen);
+    if (static_cast<size_t>(pktLen) > m_bufcap) {
+      LOG(F("packet longer than buffer capacity pktLen=") << pktLen);
       continue;
     }
 
-    int len = m_udp.read(buf, pktLen);
+    int len = m_udp.read(m_buf, pktLen);
     m_udp.flush();
     if (len <= 0) {
       continue;
     }
-    invokeRxCallback(m_region, buf, pktLen, endpoint.endpointId);
+    invokeRxCallback(m_buf, pktLen, endpoint.endpointId);
   }
 }
 
@@ -124,7 +134,7 @@ UdpTransport::doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId)
         break;
       case Mode::MULTICAST:
 #if defined(ARDUINO_ARCH_ESP8266)
-        ok = m_udp.beginPacketMulticast(MCAST_GROUP, m_port, m_ip);
+        ok = m_udp.beginPacketMulticast(MulticastGroup, m_port, m_ip);
 #elif defined(ARDUINO_ARCH_ESP32)
         ok = m_udp.beginMulticastPacket();
 #endif

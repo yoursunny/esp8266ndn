@@ -86,14 +86,19 @@ void
 EthernetTransport::listNetifs(Print& os)
 {
   for (netif* nif = netif_list; nif != nullptr; nif = nif->next) {
-    os << nif->name[0] << nif->name[1] << nif->num << ' '
-       << IPAddress(*reinterpret_cast<const uint32_t*>(&nif->ip_addr)) << endl;
+    uint32_t ip = 0;
+    std::copy_n(reinterpret_cast<uint8_t*>(&nif->ip_addr), sizeof(ip),
+                reinterpret_cast<uint8_t*>(&ip));
+    os << nif->name[0] << nif->name[1] << nif->num << ' ' << IPAddress(ip) << endl;
   }
 }
 
 EthernetTransport::EthernetTransport() = default;
 
-EthernetTransport::~EthernetTransport() = default;
+EthernetTransport::~EthernetTransport()
+{
+  end();
+}
 
 bool
 EthernetTransport::begin(const char ifname[2], uint8_t ifnum)
@@ -150,6 +155,9 @@ EthernetTransport::begin(netif* nif)
 void
 EthernetTransport::end()
 {
+  if (m_impl == nullptr) {
+    return;
+  }
   m_impl.reset();
   g_ethTransport = nullptr;
   LOG(F("disabled"));

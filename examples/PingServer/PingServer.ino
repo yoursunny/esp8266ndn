@@ -16,12 +16,13 @@ ndnph::Face face0(transport0w);
 const char* PREFIX0 = "/example/esp8266/ether/ping";
 ndnph::PingServer server0(ndnph::Name::parse(region, PREFIX0), face0);
 
-esp8266ndn::UdpTransport transport1;
+std::array<uint8_t, esp8266ndn::UdpTransport::DefaultMtu> udpBuffer;
+esp8266ndn::UdpTransport transport1(udpBuffer);
 ndnph::Face face1(transport1);
 const char* PREFIX1 = "/example/esp8266/udp/ping";
 ndnph::PingServer server1(ndnph::Name::parse(region, PREFIX1), face1);
 
-esp8266ndn::UdpTransport transport2;
+esp8266ndn::UdpTransport transport2(udpBuffer);
 ndnph::transport::ForceEndpointId transport2w(transport2);
 ndnph::Face face2(transport2w);
 const char* PREFIX2 = "/example/esp8266/udpm/ping";

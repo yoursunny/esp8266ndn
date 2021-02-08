@@ -30,11 +30,34 @@ public:
   };
 
   /**
+   * @brief Construct using internal buffer.
+   * @param mtu maximum packet length.
+   *            Default is default Ethernet MTU minus IP and UDP headers.
+   */
+  explicit UdpTransport(size_t mtu = DefaultMtu);
+
+  /**
+   * @brief Construct using external buffer.
+   * @param buffer buffer pointer. This must remain valid until transport is destructed.
+   * @param capacity buffer capacity.
+   */
+  explicit UdpTransport(uint8_t* buffer, size_t capacity);
+
+  /**
+   * @brief Construct using external buffer.
+   * @param buffer buffer array. This must remain valid until transport is destructed.
+   */
+  template<size_t capacity>
+  explicit UdpTransport(std::array<uint8_t, capacity>& buffer)
+    : UdpTransport(buffer.data(), buffer.size())
+  {}
+
+  /**
    * @brief Listen on a UDP port for packets from any remote endpoint.
    * @param localPort local port.
    * @param localIp local interface address (ESP32 only).
    */
-  bool beginListen(uint16_t localPort = 6363, IPAddress localIp = INADDR_NONE);
+  bool beginListen(uint16_t localPort = 6363, IPAddress localIp = IPAddress(0, 0, 0, 0));
 
   /**
    * @brief Establish a UDP tunnel to a remote endpoint.
@@ -62,10 +85,19 @@ private:
   bool doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) final;
 
 public:
-  static const IPAddress MCAST_GROUP;
+  enum
+  {
+    /** @brief Default MTU for UDP is Ethernet MTU minus IPv4 and UDP headers. */
+    DefaultMtu = 1500 - 20 - 8,
+  };
+
+  /** @brief NDN multicast group "224.0.23.170". */
+  static const IPAddress MulticastGroup;
 
 private:
-  WiFiUDP m_udp;
+  uint8_t* m_buf = nullptr;
+  size_t m_bufcap = 0;
+  std::unique_ptr<uint8_t[]> m_ownBuf;
 
   enum class Mode
   {
@@ -75,11 +107,9 @@ private:
     MULTICAST,
   };
   Mode m_mode = Mode::NONE;
-
+  WiFiUDP m_udp;
   IPAddress m_ip;      ///< remote IP in TUNNEL mode, local IP in MULTICAST mode
   uint16_t m_port = 0; ///< remote port in TUNNEL mode, group port in MULTICAST mode
-
-  ndnph::StaticRegion<1500> m_region;
 };
 
 } // namespace esp8266ndn
