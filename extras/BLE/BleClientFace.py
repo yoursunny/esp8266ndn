@@ -67,7 +67,6 @@ class BleClientFace(Face):
             self.cs.write(pkt)
         self.txQueue.clear()
 
-        self.delegate.data = None
         if not self.p.waitForNotifications(0.1):
             return
         for pkt in self.delegate.rxQueue:

@@ -1,16 +1,14 @@
 # esp8266ndn Bluetooth Low Energy transport for python-ndn
 
-This directory contains a Bluetooth Low Energy (BLE) transport module for [python-ndn](https://python-ndn.readthedocs.io/en/latest/), and a simple ndnping client that demonstrates its usage.
-
-This transport uses [bluepy](https://github.com/IanHarvey/bluepy) library.
-It is tested on Raspberry Pi 4, and is known to work on Raspberry Pi 3, Raspberry Pi Zero W, and Linux laptops.
-See [this answer](https://raspberrypi.stackexchange.com/a/114588) on how to enable Bluetooth on Raspberry Pi running Ubuntu.
+This is a Bluetooth Low Energy (BLE) transport module for [python-ndn](https://python-ndn.readthedocs.io/en/latest/), implemented with [bluepy](https://github.com/IanHarvey/bluepy) library.
+It is tested on Raspberry Pi 4, and is known to work on other Raspberry Pi models.
+See [this answer](https://raspberrypi.stackexchange.com/a/114588) regarding how to enable Bluetooth on Raspberry Pi running Ubuntu.
 
 This transport works as the BLE client (central).
 esp8266ndn `BleServerTransport` class works as the BLE server (peripheral).
-NDNts [@ndn/web-bluetooth-transport](https://www.npmjs.com/package/@ndn/web-bluetooth-transport) has a summary of the protocol.
+The protocol is summaries in NDNts [@ndn/web-bluetooth-transport](https://www.npmjs.com/package/@ndn/web-bluetooth-transport) package documentation.
 
-## Demo Instructions
+## Installation and ndnping Demo
 
 1. Install system-wide dependencies in a sudoer user:
 
@@ -34,4 +32,28 @@ NDNts [@ndn/web-bluetooth-transport](https://www.npmjs.com/package/@ndn/web-blue
     ```bash
     pipenv run python BlePingClient.py --address 02:00:00:00:00:00 --addr-type public
     pipenv run python BlePingClient.py --address 02:00:00:00:00:00 --addr-type random
+    ```
+
+## BLE-UDP Bridge
+
+`BleUdpBridge.py` is a BLE-UDP bridge program.
+It listens on a UDP port and connects to a BLE peripheral.
+
+1. Start the bridge program:
+
+    ```bash
+    pipenv run python BleUdpBridge.py --address 02:00:00:00:00:00 --addr-type public
+    ```
+
+2. In NFD, create a UDP face with NDNLPv2 fragmentation:
+
+    ```bash
+    nfdc face create udp4://127.0.0.1:6362 mtu 244 persistency permanent
+    ```
+
+3. Add route and send Interests:
+
+    ```bash
+    nfdc route add /example/esp8266/ble udp4://127.0.0.1:6362
+    ndnping /example/esp8266/ble
     ```

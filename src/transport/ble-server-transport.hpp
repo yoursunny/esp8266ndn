@@ -13,7 +13,12 @@
 
 namespace esp8266ndn {
 
-/** @brief A transport that acts as a BLE server/peripheral. */
+/**
+ * @brief A transport that acts as a BLE server/peripheral.
+ *
+ * @bug On nRF52 platform, rapidly transmitting multiple packets would result in significant
+ *      packet loss due to lack of queuing. Such loss severely affects fragmentation.
+ */
 class BleServerTransport
   : public virtual ndnph::Transport
   , public ndnph::transport::DynamicRxQueueMixin
@@ -22,6 +27,8 @@ class BleServerTransport
 #endif
 {
 public:
+  static size_t getMtu();
+
   BleServerTransport();
 
   /** @brief Initialize BLE device, service, and advertisement. */

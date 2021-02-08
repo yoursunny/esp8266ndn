@@ -19,7 +19,7 @@ Packet encoding and decoding
   * TLV evolvability: yes
   * forwarding hint: no
 * [NDNLPv2](https://redmine.named-data.net/projects/nfd/wiki/NDNLPv2)
-  * fragmentation and reassembly: no
+  * fragmentation and reassembly: yes, requires in-order delivery
   * Nack: partial
   * PIT token: yes
   * congestion mark: no

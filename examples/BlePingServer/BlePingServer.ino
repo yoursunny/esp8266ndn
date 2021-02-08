@@ -6,6 +6,11 @@ ndnph::StaticRegion<1024> region;
 
 esp8266ndn::BleServerTransport transport;
 ndnph::Face face(transport);
+
+ndnph::StaticRegion<2048> fragRegion;
+ndnph::lp::Fragmenter fragmenter(fragRegion, transport.getMtu());
+ndnph::lp::Reassembler reassembler(fragRegion);
+
 const char* PREFIX = "/example/esp8266/ble/ping";
 ndnph::PingServer server(ndnph::Name::parse(region, PREFIX), face);
 
@@ -23,6 +28,11 @@ setup()
   }
 
   Serial.println(transport.getAddr());
+  Serial.print("mtu=");
+  Serial.println(transport.getMtu());
+
+  face.setFragmenter(fragmenter);
+  face.setReassembler(reassembler);
 }
 
 void

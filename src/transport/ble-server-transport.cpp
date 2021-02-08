@@ -30,8 +30,14 @@ BleServerTransport::receiveImpl(const uint8_t* pkt, size_t pktLen, uint64_t endp
 
 #define BLEUUID_FROM_ARRAY(array) BLEUUID(const_cast<uint8_t*>(array), sizeof(array), false)
 
+size_t
+BleServerTransport::getMtu()
+{
+  return 512;
+}
+
 BleServerTransport::BleServerTransport()
-  : DynamicRxQueueMixin(512)
+  : DynamicRxQueueMixin(getMtu())
   , m_csCallbackHandler(*this)
 {}
 
@@ -105,8 +111,14 @@ BleServerTransport::CsCallbacks::onWrite(::BLECharacteristic* chr)
 
 #elif defined(ARDUINO_ARCH_NRF52)
 
+size_t
+BleServerTransport::getMtu()
+{
+  return BLE_GATT_ATT_MTU_MAX - 3;
+}
+
 BleServerTransport::BleServerTransport()
-  : DynamicRxQueueMixin(BLE_GATT_ATT_MTU_MAX)
+  : DynamicRxQueueMixin(getMtu())
   , BLEService(BLE_UUID_SVC)
   , m_cs(BLE_UUID_CS)
   , m_sc(BLE_UUID_SC)
