@@ -1,4 +1,4 @@
-// extras/BlePingClient.py is a client that can connect to this ndnping server.
+// extras/BLE/BlePingClient.py is a client that can connect to this ndnping server.
 
 #include <esp8266ndn.h>
 

@@ -1,9 +1,10 @@
 import asyncio as aio
-from bluepy import btle
+import struct
 from concurrent.futures import ThreadPoolExecutor
+
+from bluepy import btle
 from ndn.encoding import parse_tl_num
 from ndn.transport.stream_socket import Face
-import struct
 
 UUID_SVC = '099577e3-0788-412a-8824-395084d97391'
 UUID_CS = 'cc5abb89-a541-46d8-a351-2f95a6a81f49'
@@ -72,7 +73,5 @@ class BleClientFace(Face):
         for pkt in self.delegate.rxQueue:
             wire = memoryview(pkt)
             tlvType, sizeofTlvType = parse_tl_num(wire)
-            tlvLength, sizeofTlvLength = parse_tl_num(wire, sizeofTlvType)
-            tlvValue = wire[sizeofTlvType + sizeofTlvLength:]
-            aio.ensure_future(self.callback(tlvType, tlvValue), loop=self.loop)
+            aio.ensure_future(self.callback(tlvType, wire), loop=self.loop)
         self.delegate.rxQueue.clear()

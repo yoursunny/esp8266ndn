@@ -1,13 +1,13 @@
-#!/usr/bin/python3
-
-from BleClientFace import BleClientFace
 import argparse
+
 from ndn.app import NDNApp
-from ndn.encoding import Name, Component
+from ndn.encoding import Component, Name
 from ndn.security.keychain import KeychainDigest
 from ndn.transport.stream_socket import Face
 from ndn.types import InterestNack, InterestTimeout
 from ndn.utils import timestamp
+
+from BleClientFace import BleClientFace
 
 parser = argparse.ArgumentParser(
     description='ndnping over Bluetooth Low Energy.')
