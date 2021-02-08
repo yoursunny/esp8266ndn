@@ -73,8 +73,8 @@ UnixTime::processData(ndnph::Data data)
     return true;
   }
 
-  // Calculate timeOffset from lastRequest only, because Interest transmission is instant but
-  // Data processing incurs delay from Arduino's main loop.
+  // Calculate timeOffset from m_lastRequest only, because Interest transmission is instantaneous
+  // but Data processing is delayed in from Arduino's main loop.
   uint64_t unixNow = timestamp + rtt * 1000;
   ndnph::port::UnixTime::set(unixNow);
   LOG(F("now=") << unixNow);

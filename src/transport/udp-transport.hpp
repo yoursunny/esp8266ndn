@@ -72,7 +72,7 @@ public:
    * @param localIp local interface address (ESP8266 only).
    * @param groupPort group port.
    */
-  bool beginMulticast(IPAddress localIp = INADDR_NONE, uint16_t groupPort = 56363);
+  bool beginMulticast(IPAddress localIp = IPAddress(0, 0, 0, 0), uint16_t groupPort = 56363);
 
   /** @brief Disable the transport. */
   void end();

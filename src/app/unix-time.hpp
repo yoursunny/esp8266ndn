@@ -30,9 +30,6 @@ public:
    */
   void begin(int interval = 60000);
 
-  /** @brief Convert timestamp (micros) to RFC3399 date-time string. */
-  static String toRfc3399DateTime(uint64_t timestamp);
-
 private:
   void loop() final;
 
