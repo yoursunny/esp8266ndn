@@ -15,27 +15,30 @@
 
 namespace esp8266ndn {
 
-IPAddress
-queryFchService(String serviceUri)
+FchResponse
+fchQuery(::WiFiClient& client, String serviceUri)
 {
-  WiFiClient tcp;
+  FchResponse res;
   HTTPClient http;
-  http.begin(tcp, serviceUri);
-  int httpCode = http.GET();
-  if (httpCode != HTTP_CODE_OK) {
-    LOG(serviceUri << F(" error: ") << httpCode);
-    return IPAddress(0, 0, 0, 0);
-  }
-  String response = http.getString();
-  LOG(serviceUri << F(" response: ") << response);
+  http.begin(client, serviceUri);
 
-  IPAddress ip;
-  if (!WiFi.hostByName(response.c_str(), ip)) {
-    LOG(F("DNS error"));
-    return IPAddress(0, 0, 0, 0);
+  int status = http.GET();
+  if (status != HTTP_CODE_OK) {
+    LOG(serviceUri << F(" error: ") << status);
+    return res;
   }
-  LOG(F("DNS resolved to: ") << ip);
-  return ip;
+
+  String body = http.getString();
+  body.trim();
+  LOG(serviceUri << F(" body: ") << body);
+
+  if (!WiFi.hostByName(body.c_str(), res.ip)) {
+    LOG(F("DNS error"));
+    return res;
+  }
+  LOG(F("DNS resolved to: ") << res.ip);
+  res.ok = true;
+  return res;
 }
 
 } // namespace esp8266ndn

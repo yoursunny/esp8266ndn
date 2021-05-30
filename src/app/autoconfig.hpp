@@ -6,14 +6,23 @@
 #include <IPAddress.h>
 #include <WString.h>
 
+class WiFiClient;
+
 namespace esp8266ndn {
+
+struct FchResponse
+{
+  bool ok = false;
+  IPAddress ip;
+};
 
 /**
  * @brief Query NDN-FCH service to find a nearby NDN router.
- * @return Router IP address, or "0.0.0.0" on failure.
+ * @param client @c WiFiClient or @c WiFiClientSecure instance.
+ * @param serviceUri NDN-FCH service base URI.
  */
-IPAddress
-queryFchService(String serviceUri = "http://ndn-fch.named-data.net/");
+FchResponse
+fchQuery(::WiFiClient& client, String serviceUri = "https://fch.ndn.today/");
 
 } // namespace esp8266ndn
 

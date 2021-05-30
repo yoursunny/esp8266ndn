@@ -1,7 +1,9 @@
 #if defined(ARDUINO_ARCH_ESP8266)
 #include <ESP8266WiFi.h>
+#include <WiFiClientSecureBearSSL.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #endif
 #include <esp8266ndn.h>
 
@@ -37,11 +39,18 @@ setup()
   }
   delay(1000);
 
-  IPAddress router = esp8266ndn::queryFchService();
-  if (router == IPAddress(INADDR_NONE)) {
+#if defined(ARDUINO_ARCH_ESP8266)
+  BearSSL::WiFiClientSecure fchSocketClient;
+  fchSocketClient.setInsecure();
+#elif defined(ARDUINO_ARCH_ESP32)
+  WiFiClientSecure fchSocketClient;
+  fchSocketClient.setInsecure();
+#endif
+  auto fchResponse = esp8266ndn::fchQuery(fchSocketClient);
+  if (!fchResponse.ok) {
     ESP.restart();
   }
-  transport.beginTunnel(router);
+  transport.beginTunnel(fchResponse.ip);
 }
 
 void

@@ -21,7 +21,7 @@ Packet encoding and decoding
 * [NDNLPv2](https://redmine.named-data.net/projects/nfd/wiki/NDNLPv2)
   * fragmentation and reassembly: yes, requires in-order delivery
   * Nack: partial
-  * PIT token: yes
+  * PIT token: 8-octet only
   * congestion mark: no
   * link layer reliability: no
 * Signed Interest: [v0.3 format](https://named-data.net/doc/NDN-packet-spec/0.3/signed-interest.html)
@@ -57,7 +57,7 @@ Application layer services
 * [NDNCERT](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3) server and client
   * ESP32 only
   * supported challenges: "nop" and "possession"
-* [NDN-FCH](https://github.com/named-data/ndn-fch) client for connecting to the global NDN testbed
+* [NDN-FCH](https://github.com/11th-ndn-hackathon/ndn-fch) client for connecting to the global NDN testbed and other connected networks
   * ESP8266 and ESP32 only
 * [UnixTime](https://github.com/yoursunny/ndn6-tools/blob/main/unix-time-service.md) client for time synchronization
 
