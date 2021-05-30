@@ -30,7 +30,6 @@ Packet encoding and decoding
 Transports
 
 * Ethernet: unicast and multicast on ESP8266 and ESP32
-  * ESP8266: requires lwIP 1.4 (in Arduino *Tools* menu select "lwIP Variant: v1.4 Higher Bandwidth")
 * UDP: unicast and multicast on ESP8266 and ESP32
 * Bluetooth Low Energy: server/peripheral only on ESP32 and nRF52
   * Compatible with [NDNts](https://yoursunny.com/p/NDNts/) `@ndn/web-bluetooth-transport` package

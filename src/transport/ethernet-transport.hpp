@@ -26,7 +26,7 @@ public:
     struct
     {
       uint8_t addr[6];
-      bool isMulticast : 1; ///< RX only, ignored on TX
+      bool isMulticast : 1;
       uint16_t _a : 15;
     };
   };

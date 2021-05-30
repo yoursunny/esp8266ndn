@@ -11,8 +11,7 @@ const char* WIFI_PASS = "my-pass";
 ndnph::StaticRegion<1024> region;
 
 esp8266ndn::EthernetTransport transport0;
-ndnph::transport::ForceEndpointId transport0w(transport0);
-ndnph::Face face0(transport0w);
+ndnph::Face face0(transport0);
 const char* PREFIX0 = "/example/esp8266/ether/ping";
 ndnph::PingServer server0(ndnph::Name::parse(region, PREFIX0), face0);
 
@@ -28,15 +27,6 @@ ndnph::Face face2(transport2w);
 const char* PREFIX2 = "/example/esp8266/udpm/ping";
 ndnph::PingServer server2(ndnph::Name::parse(region, PREFIX2), face2);
 
-// void
-// makePayload(void* arg, const ndn::InterestLite& interest, uint8_t* payloadBuf, size_t* payloadSize)
-// {
-//   auto text = reinterpret_cast<const char*>(arg);
-//   size_t len = strlen(text);
-//   memcpy(payloadBuf, text, len);
-//   *payloadSize = len;
-// }
-
 void
 setup()
 {
@@ -46,9 +36,11 @@ setup()
 
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.println(F("WiFi connect failed"));
+    ESP.restart();
   }
   delay(1000);
 
@@ -58,21 +50,18 @@ setup()
     Serial.println(F("Ethernet transport initialization failed"));
     ESP.restart();
   }
-  // server0.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("Ethernet ndnping server")));
 
   ok = transport1.beginListen();
   if (!ok) {
     Serial.println(F("UDP unicast transport initialization failed"));
     ESP.restart();
   }
-  // server1.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("UDP unicast ndnping server")));
 
   ok = transport2.beginMulticast(WiFi.localIP());
   if (!ok) {
     Serial.println(F("UDP multicast transport initialization failed"));
     ESP.restart();
   }
-  // server2.onProbe(&makePayload, const_cast<void*>(reinterpret_cast<const void*>("UDP multicast ndnping server")));
 
   Serial.println(F("Please register prefixes on your router:"));
   Serial.println(F("nfdc route add /example/esp8266/ether [ETHER-MCAST-FACEID]"));
