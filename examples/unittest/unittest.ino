@@ -88,6 +88,35 @@ test(Ecdsa)
   assertTrue(data.verify(pub0));
 }
 
+// HMAC-SHA256
+test(Hmac)
+{
+  // https://datatracker.ietf.org/doc/html/rfc4231#section-4.4
+  std::array<uint8_t, 20> buffer;
+  buffer.fill(0xAA);
+  ndnph::HmacKey key;
+  assertTrue(key.import(buffer.data(), 20));
+  buffer.fill(0xDD);
+
+  uint8_t sig[NDNPH_SHA256_LEN];
+  assertEqual(key.sign({ ndnph::tlv::Value(buffer.data(), 20), ndnph::tlv::Value(buffer.data(), 15),
+                         ndnph::tlv::Value(buffer.data(), 15) },
+                       sig),
+              static_cast<ssize_t>(sizeof(sig)));
+  assertTrue(
+    key.verify({ ndnph::tlv::Value(buffer.data(), 10), ndnph::tlv::Value(buffer.data(), 20),
+                 ndnph::tlv::Value(buffer.data(), 20) },
+               sig, sizeof(sig)));
+
+  assertFalse(key.verify({ ndnph::tlv::Value(buffer.data(), 17) }, sig, sizeof(sig)));
+
+  sig[15] ^= 0x01;
+  assertFalse(
+    key.verify({ ndnph::tlv::Value(buffer.data(), 10), ndnph::tlv::Value(buffer.data(), 20),
+                 ndnph::tlv::Value(buffer.data(), 20) },
+               sig, sizeof(sig)));
+}
+
 void
 setup()
 {
