@@ -2,9 +2,10 @@
 #define ESP8266NDN_LOGGER_HPP
 
 #include "logging.hpp"
-#include <Printable.h>
 
 #include "../vendor/Streaming.h"
+
+#undef min
 
 #include "../vendor/PriUint64.h"
 

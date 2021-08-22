@@ -1,9 +1,31 @@
 #ifndef PRIUINT64_H
 #define PRIUINT64_H
 
-#include <stdint.h>
 #include <Print.h>
 #include <Printable.h>
+#include <stdint.h>
+
+namespace priuint64 {
+namespace detail {
+
+inline size_t
+print(Print& p, uint64_t n, uint64_t base)
+{
+  char buf[8 * sizeof(uint64_t) + 1];
+  char* str = &buf[sizeof(buf) - 1];
+  *str = '\0';
+
+  do {
+    char c = n % base;
+    n /= base;
+
+    *--str = c < 10 ? c + '0' : c + 'A' - 10;
+  } while (n > 0);
+
+  return p.write(str);
+}
+
+} // namespace detail
 
 /**
  * @brief Allow printing uint64_t value.
@@ -12,39 +34,28 @@
  * Serial.print(PriUint64<DEC>(x));
  * @endcode
  */
-template<int Base>
+template<uint64_t base>
 class PriUint64 : public Printable
 {
 public:
-  explicit
-  PriUint64(uint64_t value, int ignored = 0)
+  explicit PriUint64(uint64_t value)
     : m_value(value)
+  {}
+
+  size_t printTo(Print& p) const override
   {
-  }
-
-  size_t
-  printTo(Print& p) const override
-  {
-    char buf[8 * sizeof(uint64_t) + 1];
-    char* str = &buf[sizeof(buf) - 1];
-    *str = '\0';
-
-    uint64_t n = m_value;
-    do {
-      char c = n % Base;
-      n /= Base;
-
-      *--str = c < 10 ? c + '0' : c + 'A' - 10;
-    } while (n > 0);
-
-    return p.write(str);
+    return detail::print(p, m_value, base);
   }
 
 private:
   uint64_t m_value;
 };
 
-#if defined(ARDUINO_STREAMING) && defined(STREAMING_LIBRARY_VERSION) && STREAMING_LIBRARY_VERSION == 5
+} // namespace priuint64
+
+using priuint64::PriUint64;
+
+#if defined(ARDUINO_STREAMING) && STREAMING_LIBRARY_VERSION == 6
 
 /** @brief Print uint64_t as decimal. */
 inline Print&
@@ -53,44 +64,14 @@ operator<<(Print& p, uint64_t x)
   return p << PriUint64<DEC>(x);
 }
 
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_NRF52)
-#define PRIUINT64_OVERRIDE_STREAMING_BASED
-// <type_traits> is available on ESP8266 and ESP32, but unavailable on AVR.
-#endif
-
-#ifdef PRIUINT64_OVERRIDE_STREAMING_BASED
-#include <type_traits>
-
-#undef _HEX
-#undef _DEC
-#undef _OCT
-#undef _BIN
-
-class _BASED1 : public _BASED, public Printable
+template<>
+inline Print&
+operator<<(Print& obj, const _BASED<uint64_t>& arg)
 {
-public:
-  using _BASED::_BASED;
+  priuint64::detail::print(obj, arg.val, static_cast<uint64_t>(arg.base));
+  return obj;
+}
 
-  size_t
-  printTo(Print& p) const override
-  {
-    return p.print(val, base);
-  }
-};
-
-template<typename V, int Base, typename BaseCls = typename std::conditional<std::is_same<V, uint64_t>::value, PriUint64<Base>, _BASED1>::type>
-class _BASED2 : public BaseCls
-{
-public:
-  using BaseCls::BaseCls;
-};
-
-#define _HEX(a) (_BASED2<decltype(a),HEX>(a, HEX))
-#define _DEC(a) (_BASED2<decltype(a),DEC>(a, DEC))
-#define _OCT(a) (_BASED2<decltype(a),OCT>(a, OCT))
-#define _BIN(a) (_BASED2<decltype(a),BIN>(a, BIN))
-
-#endif // PRIUINT64_OVERRIDE_STREAMING_BASED
 #endif // ARDUINO_STREAMING
 
 #endif // PRIUINT64_H

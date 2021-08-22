@@ -178,7 +178,7 @@ loop()
       break;
     }
     case State::StartRetrieveProfile: {
-      profileSegment.reset(new ndnph::SegmentConsumer(face, packetRegion));
+      profileSegment.reset(new ndnph::SegmentConsumer(face));
       profileSegment->setSegmentCallback(segmentCallback, nullptr);
       profileSegment->start(profileVersion);
       state = State::WaitRetrieveProfile;
