@@ -13,22 +13,10 @@
 
 namespace esp8266ndn {
 
-/** @brief A transport that communicates over IPv4 UDP tunnel or multicast group. */
+/** @brief A transport that communicates over UDP tunnel or multicast group. */
 class UdpTransport : public virtual ndnph::Transport
 {
 public:
-  /** @brief Interpretation of endpointId. */
-  union EndpointId
-  {
-    uint64_t endpointId;
-    struct
-    {
-      uint32_t ip;
-      uint16_t port;
-      char _a[2];
-    };
-  };
-
   /**
    * @brief Construct using internal buffer.
    * @param mtu maximum packet length.
@@ -56,6 +44,12 @@ public:
    * @brief Listen on a UDP port for packets from any remote endpoint.
    * @param localPort local port.
    * @param localIp local interface address (ESP32 only).
+   *
+   * IPv6 is supported on ESP8266 only.
+   *
+   * Since IPv6 address+port is longer than EndpointId, this transport uses an internal table to
+   * store full IPv6 endpoint. This table can track up to four simultaneous flows; exceeding this
+   * limit would cause incorrect EndpointId assignment or sending packets to wrong IPv6 endpoint.
    */
   bool beginListen(uint16_t localPort = 6363, IPAddress localIp = IPAddress(0, 0, 0, 0));
 
@@ -64,6 +58,8 @@ public:
    * @param remoteIp remote host address.
    * @param remotePort remote port.
    * @param localPort local port.
+   *
+   * IPv6 is supported on ESP8266 only.
    */
   bool beginTunnel(IPAddress remoteIp, uint16_t remotePort = 6363, uint16_t localPort = 6363);
 
@@ -78,6 +74,10 @@ public:
   void end();
 
 private:
+  uint64_t toEndpointId(IPAddress ip, uint16_t port);
+
+  std::tuple<IPAddress, uint16_t> fromEndpointId(uint64_t id);
+
   bool doIsUp() const final;
 
   void doLoop() final;
@@ -95,21 +95,28 @@ public:
   static const IPAddress MulticastGroup;
 
 private:
-  uint8_t* m_buf = nullptr;
-  size_t m_bufcap = 0;
-  std::unique_ptr<uint8_t[]> m_ownBuf;
-
-  enum class Mode
+  enum class Mode : uint8_t
   {
     NONE,
     LISTEN,
     TUNNEL,
     MULTICAST,
   };
-  Mode m_mode = Mode::NONE;
+
+  uint8_t* m_buf = nullptr;
+  size_t m_bufcap = 0;
+  std::unique_ptr<uint8_t[]> m_ownBuf;
+
   WiFiUDP m_udp;
+#if defined(ARDUINO_ARCH_ESP8266) && LWIP_IPV6
+  std::array<std::array<uint8_t, 11>, 4> m_v6Intern;
+#endif
   IPAddress m_ip;      ///< remote IP in TUNNEL mode, local IP in MULTICAST mode
   uint16_t m_port = 0; ///< remote port in TUNNEL mode, group port in MULTICAST mode
+  Mode m_mode = Mode::NONE;
+#if defined(ARDUINO_ARCH_ESP8266) && LWIP_IPV6
+  uint8_t m_v6InternPos = 0;
+#endif
 };
 
 } // namespace esp8266ndn

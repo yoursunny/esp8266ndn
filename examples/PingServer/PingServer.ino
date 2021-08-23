@@ -1,4 +1,5 @@
 #if defined(ARDUINO_ARCH_ESP8266)
+#include <AddrList.h>
 #include <ESP8266WiFi.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 #include <WiFi.h>
@@ -42,7 +43,22 @@ setup()
     Serial.println(F("WiFi connect failed"));
     ESP.restart();
   }
+#if defined(ARDUINO_ARCH_ESP8266) && LWIP_IPV6
+  { // wait until no new address showing up in 1000ms
+    size_t nAddrPrev = 0, nAddr = 0;
+    do {
+      delay(1000);
+      nAddrPrev = nAddr;
+      nAddr = 0;
+      for (auto a : addrList) {
+        (void)a;
+        ++nAddr;
+      }
+    } while (nAddrPrev == nAddr);
+  }
+#else
   delay(1000);
+#endif
 
   esp8266ndn::EthernetTransport::listNetifs(Serial);
   bool ok = transport0.begin(); // select any STA netif
@@ -65,9 +81,25 @@ setup()
 
   Serial.println(F("Please register prefixes on your router:"));
   Serial.println(F("nfdc route add /example/esp8266/ether [ETHER-MCAST-FACEID]"));
+#if defined(ARDUINO_ARCH_ESP8266)
+  for (auto a : addrList) {
+    if (a.isV4()) {
+      Serial.print(F("nfdc face create udp4://"));
+    } else {
+      Serial.print(F("nfdc face create udp6://["));
+    }
+    Serial.print(a.addr());
+    if (a.isV4()) {
+      Serial.println(F(":6363"));
+    } else {
+      Serial.println(F("]:6363"));
+    }
+  }
+#elif defined(ARDUINO_ARCH_ESP32)
   Serial.print(F("nfdc face create udp4://"));
   Serial.print(WiFi.localIP());
   Serial.println(F(":6363"));
+#endif
   Serial.println(F("nfdc route add /example/esp8266/udp [UDP-UNICAST-FACEID]"));
   Serial.println(F("nfdc route add /example/esp8266/udpm [UDP-MCAST-FACEID]"));
   Serial.println();

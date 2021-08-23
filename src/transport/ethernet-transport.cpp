@@ -14,6 +14,22 @@
 
 namespace esp8266ndn {
 
+namespace {
+
+union EndpointId
+{
+  uint64_t id;
+  struct
+  {
+    uint8_t addr[6];
+    bool isMulticast;
+  };
+};
+
+static_assert(sizeof(EndpointId) == sizeof(uint64_t), "");
+
+} // anonymous namespace
+
 static EthernetTransport* g_ethTransport = nullptr;
 
 class EthernetTransport::Impl
@@ -100,13 +116,13 @@ public:
       return;
     }
 
-    EthernetTransport::EndpointId endpoint = {};
+    EndpointId endpoint{};
     memcpy(endpoint.addr, &eth->src, 6);
     endpoint.isMulticast = 0x01 & (*reinterpret_cast<const uint8_t*>(&eth->dest));
 
     size_t pktLen = size - sizeof(eth_hdr);
     memcpy(r.buf(), payload + sizeof(eth_hdr), pktLen);
-    r(pktLen, endpoint.endpointId);
+    r(pktLen, endpoint.id);
   }
 
 public:
@@ -215,7 +231,7 @@ EthernetTransport::doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId
 
   eth_hdr* eth = reinterpret_cast<eth_hdr*>(p->payload);
   EndpointId endpoint;
-  endpoint.endpointId = endpointId;
+  endpoint.id = endpointId;
   if (endpointId == 0 || endpoint.isMulticast != 0) {
     memcpy(&eth->dest, "\x01\x00\x5E\x00\x17\xAA", sizeof(eth->dest));
   } else {

@@ -19,18 +19,6 @@ class EthernetTransport
   , public ndnph::transport::DynamicRxQueueMixin
 {
 public:
-  /** @brief Interpretation of endpointId. */
-  union EndpointId
-  {
-    uint64_t endpointId;
-    struct
-    {
-      uint8_t addr[6];
-      bool isMulticast : 1;
-      uint16_t _a : 15;
-    };
-  };
-
   /** @brief Print a list of network interfaces. */
   static void listNetifs(Print& os);
 
