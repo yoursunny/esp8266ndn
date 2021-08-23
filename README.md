@@ -17,11 +17,11 @@ Packet encoding and decoding
 * Interest and Data
   * [v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/) format only
   * TLV evolvability: yes
-  * forwarding hint: no
+  * forwarding hint: yes, limited to one delegation name
 * [NDNLPv2](https://redmine.named-data.net/projects/nfd/wiki/NDNLPv2)
   * fragmentation and reassembly: yes, requires in-order delivery
   * Nack: partial
-  * PIT token: 8-octet only
+  * PIT token: yes
   * congestion mark: no
   * link layer reliability: no
 * Signed Interest: [v0.3 format](https://named-data.net/doc/NDN-packet-spec/0.3/signed-interest.html)
@@ -30,7 +30,8 @@ Packet encoding and decoding
 Transports
 
 * Ethernet: unicast and multicast on ESP8266 and ESP32
-* UDP: unicast and multicast on ESP8266 and ESP32
+* UDP/IPv4: unicast and multicast on ESP8266 and ESP32
+* UDP/IPv6: unicast on ESP8266
 * Bluetooth Low Energy: server/peripheral only on ESP32 and nRF52
   * Compatible with [NDNts](https://yoursunny.com/p/NDNts/) `@ndn/web-bluetooth-transport` package
 

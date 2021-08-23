@@ -1,12 +1,11 @@
 #!/bin/bash
-set -e
-set -o pipefail
+set -eo pipefail
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 if ! [[ -x ./doxygen.exe ]]; then
   rm -f ./doxygen.exe
   if [[ "$OS" == "Windows_NT" ]]; then
-    curl -sL https://downloads.sourceforge.net/project/doxygen/rel-1.8.17/doxygen-1.8.17.windows.x64.bin.zip > doxygen-windows.zip
+    curl -sfL https://www.doxygen.nl/files/doxygen-1.9.2.windows.x64.bin.zip > doxygen-windows.zip
     unzip -o doxygen-windows.zip doxygen.exe libclang.dll
     rm doxygen-windows.zip
   elif which doxygen >/dev/null; then

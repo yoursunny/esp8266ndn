@@ -23,9 +23,14 @@ jobs:
           python-version: '3.9'
       - name: install dependencies
         run: |
+          sudo apt-get install clang-format-8 doxygen
           python -m pip install --upgrade pip
           pip install adafruit-nrfutil esptool
       - uses: actions/checkout@v2
+      - name: check code style
+        run: |
+          mk/format-code.sh
+          [[ $(git status --porcelain | tee /dev/stderr | wc -l) -eq 0 ]]
       - name: link library
         run: |
           mkdir -p $HOME/Arduino/libraries
@@ -45,9 +50,7 @@ jobs:
         with:
           fqbn: adafruit:nrf52:feather52832
       - name: build docs
-        run: |
-          sudo apt-get install doxygen
-          docs/build.sh
+        run: docs/build.sh
       - name: deploy docs
         uses: South-Paw/action-netlify-deploy@v1.2.0
         with:
@@ -55,4 +58,4 @@ jobs:
           netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           netlify-site-id: cf340d80-1709-45d9-878f-12570d9dcee0
           build-dir: ./docs/html/
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.repository == 'yoursunny/esp8266ndn' && github.event_name == 'push' }}
