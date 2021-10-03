@@ -23,20 +23,24 @@ jobs:
           python-version: '3.9'
       - name: install dependencies
         run: |
-          sudo apt-get install clang-format-8 doxygen
+          sudo apt-get install -y --no-install-recommends clang-format-11 doxygen
           python -m pip install --upgrade pip
           pip install adafruit-nrfutil esptool
       - uses: actions/checkout@v2
       - name: check code style
         run: |
           mk/format-code.sh
-          [[ $(git status --porcelain | tee /dev/stderr | wc -l) -eq 0 ]]
+          git diff --exit-code
       - name: link library
         run: |
           mkdir -p $HOME/Arduino/libraries
-          ln -s $GITHUB_WORKSPACE $HOME/Arduino/libraries/esp8266ndn
-          git clone --single-branch --depth=1 https://github.com/yoursunny/NDNph.git $HOME/Arduino/libraries/NDNph
+          cd $HOME/Arduino/libraries
+          ln -s $GITHUB_WORKSPACE esp8266ndn
+          mkdir NDNph
+          curl -fsLS https://github.com/yoursunny/NDNph/archive/${NDNPH_VERSION}.tar.gz | tar -C NDNph -xz --strip-components=1
           ln -s $HOME/Arduino/libraries/NDNph $GITHUB_WORKSPACE/../NDNph # for Doxygen
+        env:
+          NDNPH_VERSION: develop
       - name: compile in ESP8266
         uses: ./.github/actions/build-examples
         with:
@@ -52,7 +56,7 @@ jobs:
       - name: build docs
         run: docs/build.sh
       - name: deploy docs
-        uses: South-Paw/action-netlify-deploy@v1.2.0
+        uses: South-Paw/action-netlify-deploy@v1.2.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
