@@ -172,7 +172,7 @@ loop()
       profileRdr.reset(new ndnph::RdrMetadataConsumer(face));
       profileRdr->start(
         ndnph::Name::parse(packetRegion, CA_NAME)
-          .append(region, { ndnph::ndncert::getCaComponent(), ndnph::ndncert::getInfoComponent() }),
+          .append(region, ndnph::ndncert::getCaComponent(), ndnph::ndncert::getInfoComponent()),
         rdrCallback, nullptr);
       state = State::WaitDiscoverProfileVersion;
       break;

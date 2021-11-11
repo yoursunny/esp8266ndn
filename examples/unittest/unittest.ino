@@ -40,9 +40,8 @@ test(InterestData)
 
   auto interest = region.create<ndnph::Interest>();
   assertFalse(!interest);
-  interest.setName(data.getName().append(
-    region, { ndnph::Component(region, ndnph::TT::ImplicitSha256DigestComponent,
-                               sizeof(implicitDigest), implicitDigest) }));
+  interest.setName(
+    data.getName().append(region, ndnph::convention::ImplicitDigest(), implicitDigest));
   assertTrue(interest.match(data));
 }
 
