@@ -16,6 +16,7 @@ jobs:
           arduino-cli core install esp8266:esp8266 esp32:esp32 adafruit:nrf52 --additional-urls $ARDUINO_CORE_URI
           arduino-cli lib update-index
           arduino-cli lib install ArduinoUnit
+          arduino-cli lib install NimBLE-Arduino
         env:
           ARDUINO_CORE_URI: https://arduino.esp8266.com/stable/package_esp8266com_index.json,https://espressif.github.io/arduino-esp32/package_esp32_index.json,https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
       - uses: actions/setup-python@v2
@@ -30,7 +31,7 @@ jobs:
         run: |
           mk/format-code.sh
           git diff --exit-code
-      - name: install libraries
+      - name: prepare Arduino libraries
         run: |
           mkdir -p $HOME/Arduino/libraries
           cd $HOME/Arduino/libraries
@@ -48,8 +49,11 @@ jobs:
               if [[ -f $E/.${ARCH}.test.skip ]]; then
                 continue
               fi
-              printf "\n---- \033[1;35mBuild $E in $B\033[0m ----\n"
+              printf "\n---- \033[1;35mBuild %s in %s\033[0m ----\n" ${E##*/} $B
               arduino-cli compile -b $B $E
+              if [[ -f $E/.${ARCH}.test.extra ]]; then
+                sed "s|^|arduino-cli compile -b $B $E |" $E/.${ARCH}.test.extra | bash
+              fi
             done
           done
       - name: build docs

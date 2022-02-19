@@ -1,7 +1,9 @@
 #ifndef ESP8266NDN_PORT_EC_UECC_HPP
 #define ESP8266NDN_PORT_EC_UECC_HPP
 
-#include "choose.hpp"
+#include "choose.h"
+
+#ifdef ESP8266NDN_PORT_EC_UECC
 
 #include "../vendor/uECC.h"
 #include <sys/types.h>
@@ -49,12 +51,11 @@ public:
 } // namespace ndnph_port_uecc
 } // namespace esp8266ndn
 
-#ifdef ESP8266NDN_PORT_EC_UECC
 namespace ndnph {
 namespace port {
 using Ec = esp8266ndn::ndnph_port_uecc::Ec;
 } // namespace port
 } // namespace ndnph
-#endif
 
+#endif // ESP8266NDN_PORT_EC_UECC
 #endif // ESP8266NDN_PORT_EC_UECC_HPP

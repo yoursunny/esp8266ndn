@@ -1,8 +1,6 @@
-#include "choose.hpp"
-
+#include "ec-uecc.hpp"
 #ifdef ESP8266NDN_PORT_EC_UECC
 
-#include "ec-uecc.hpp"
 #include "random.hpp"
 
 #include <algorithm>

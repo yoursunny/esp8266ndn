@@ -32,8 +32,7 @@ Transports
 * Ethernet: unicast and multicast on ESP8266 and ESP32
 * UDP/IPv4: unicast and multicast on ESP8266 and ESP32
 * UDP/IPv6: unicast on ESP8266
-* Bluetooth Low Energy: server/peripheral only on ESP32 and nRF52
-  * Compatible with [NDNts](https://yoursunny.com/p/NDNts/) `@ndn/web-bluetooth-transport` package
+* [Bluetooth Low Energy](https://github.com/yoursunny/NDNts/tree/main/packages/web-bluetooth-transport): server/peripheral only on ESP32 and nRF52
 
 KeyChain
 
@@ -43,7 +42,7 @@ KeyChain
   * HMAC-SHA256: yes (using BearSSL on ESP8266, Mbed TLS on ESP32, Cryptosuite on nRF52)
   * RSA: no
   * Null: yes
-* [NDN certificates](https://named-data.net/doc/ndn-cxx/0.8.0/specs/certificate-format.html): basic support
+* [NDN certificates](https://named-data.net/doc/ndn-cxx/0.8.0/specs/certificate.html): basic support
 * Persistent key and certificate storage: binary files
   * ESP8266: using LittleFS
   * ESP32: using FFat (in Arduino *Tools* menu select "Partition Scheme: with FAT")

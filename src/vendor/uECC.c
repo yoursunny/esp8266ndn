@@ -1,3 +1,9 @@
+// https://github.com/kmackay/micro-ecc/blob/static/uECC.c
+// commit e4d264b582a7d885e562c6b2bb2919aaec9b21c8
+// adding ESP8266NDN_PORT_EC_UECC guard so that this is compiled only if needed,
+// to avoid linker conflict with another copy of uECC included in ESP32 NimBLE-Arduino
+#include "../port/choose.h"
+#ifdef ESP8266NDN_PORT_EC_UECC
 /* Copyright 2014, Kenneth MacKay. Licensed under the BSD 2-clause license. */
 
 #include "uECC.h"
@@ -2741,3 +2747,5 @@ int uECC_verify(const uint8_t public_key[uECC_BYTES*2],
     /* Accept only if v == r. */
     return vli_equal(rx, r);
 }
+
+#endif // ESP8266NDN_PORT_EC_UECC

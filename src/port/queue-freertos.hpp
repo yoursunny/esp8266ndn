@@ -1,7 +1,7 @@
 #ifndef ESP8266NDN_PORT_QUEUE_FREERTOS_HPP
 #define ESP8266NDN_PORT_QUEUE_FREERTOS_HPP
 
-#include "choose.hpp"
+#include "choose.h"
 
 #include <cstdlib>
 #include <tuple>

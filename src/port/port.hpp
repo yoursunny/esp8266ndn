@@ -1,7 +1,7 @@
 #ifndef ESP8266NDN_PORT_PORT_HPP
 #define ESP8266NDN_PORT_PORT_HPP
 
-#include "choose.hpp"
+#include "choose.h"
 
 #ifdef ESP8266NDN_PORT_SHA256_BEARSSL
 #include "sha256-bearssl.hpp"

@@ -1,3 +1,8 @@
+// https://github.com/kmackay/micro-ecc/blob/static/uECC.h
+// commit e4d264b582a7d885e562c6b2bb2919aaec9b21c8
+// adding the next two lines
+#define uECC_ASM uECC_asm_none
+#define uECC_CURVE uECC_secp256r1
 /* Copyright 2014, Kenneth MacKay. Licensed under the BSD 2-clause license. */
 
 #ifndef _MICRO_ECC_H_
@@ -28,7 +33,6 @@ uECC_asm_fast  - Use GCC inline assembly optimized for maximum speed. */
 #define uECC_asm_none  0
 #define uECC_asm_small 1
 #define uECC_asm_fast  2
-#define uECC_ASM uECC_asm_none
 #ifndef uECC_ASM
     #define uECC_ASM uECC_asm_fast
 #endif
@@ -39,7 +43,6 @@ uECC_asm_fast  - Use GCC inline assembly optimized for maximum speed. */
 #define uECC_secp256r1 3
 #define uECC_secp256k1 4
 #define uECC_secp224r1 5
-#define uECC_CURVE uECC_secp256r1
 #ifndef uECC_CURVE
     #define uECC_CURVE uECC_secp160r1
 #endif
