@@ -9,16 +9,23 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: arduino/setup-arduino-cli@v1.1.1
+      - id: cores
+        name: refresh Arduino cores
+        run: |
+          echo 'https://arduino.esp8266.com/stable/package_esp8266com_index.json,https://espressif.github.io/arduino-esp32/package_esp32_index.json,https://adafruit.github.io/arduino-board-index/package_adafruit_index.json' > ~/arduino-cores.txt
+          arduino-cli version
+          arduino-cli update --additional-urls "$(<~/arduino-cores.txt)"
+          echo ::set-output name=d::$(sha256sum ~/.arduino15/package_*index.json | sha256sum | cut -d' ' -f1)
+      - name: cache Arduino cores
+        uses: actions/cache@v2
+        with:
+          path: ~/.arduino15/staging/packages
+          key: cores-${{ steps.cores.outputs.d }}
       - name: install Arduino cores
         run: |
-          arduino-cli version
-          arduino-cli core update-index --additional-urls $ARDUINO_CORE_URI
-          arduino-cli core install esp8266:esp8266 esp32:esp32 adafruit:nrf52 --additional-urls $ARDUINO_CORE_URI
-          arduino-cli lib update-index
+          arduino-cli core install esp8266:esp8266 esp32:esp32 adafruit:nrf52 --additional-urls "$(<~/arduino-cores.txt)"
           arduino-cli lib install ArduinoUnit
           arduino-cli lib install NimBLE-Arduino
-        env:
-          ARDUINO_CORE_URI: https://arduino.esp8266.com/stable/package_esp8266com_index.json,https://espressif.github.io/arduino-esp32/package_esp32_index.json,https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
       - uses: actions/setup-python@v2
         with:
           python-version: '3.9'
@@ -49,10 +56,13 @@ jobs:
               if [[ -f $E/.${ARCH}.test.skip ]]; then
                 continue
               fi
-              printf "\n---- \033[1;35mBuild %s in %s\033[0m ----\n" ${E##*/} $B
+              printf "\n----\033[1;35m Build %s in %s \033[0m----\n" ${E##*/} $B
               arduino-cli compile -b $B $E
               if [[ -f $E/.${ARCH}.test.extra ]]; then
-                sed "s|^|arduino-cli compile -b $B $E |" $E/.${ARCH}.test.extra | bash
+                while IFS= read -r EXTRA_ARGS; do
+                  printf "\n----\033[1;35m Rebuild with %s \033[0m----\n" "$EXTRA_ARGS"
+                  arduino-cli compile -b $B $E $EXTRA_ARGS
+                done < $E/.${ARCH}.test.extra
               fi
             done
           done
