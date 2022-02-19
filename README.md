@@ -17,7 +17,7 @@ Packet encoding and decoding
 * Interest and Data
   * [v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/) format only
   * TLV evolvability: yes
-  * forwarding hint: yes, limited to one delegation name
+  * forwarding hint: yes, limited to one name
 * [NDNLPv2](https://redmine.named-data.net/projects/nfd/wiki/NDNLPv2)
   * fragmentation and reassembly: yes, requires in-order delivery
   * Nack: partial
@@ -25,7 +25,7 @@ Packet encoding and decoding
   * congestion mark: no
   * link layer reliability: no
 * Signed Interest: [v0.3 format](https://named-data.net/doc/NDN-packet-spec/0.3/signed-interest.html)
-* Naming Convention: [2019 format](https://named-data.net/publications/techreports/ndn-tr-22-2-ndn-memo-naming-conventions/)
+* Naming Convention: [rev3 format](https://named-data.net/publications/techreports/ndn-tr-22-3-ndn-memo-naming-conventions/)
 
 Transports
 
@@ -43,7 +43,7 @@ KeyChain
   * HMAC-SHA256: yes (using BearSSL on ESP8266, Mbed TLS on ESP32, Cryptosuite on nRF52)
   * RSA: no
   * Null: yes
-* [NDN certificates](https://named-data.net/doc/ndn-cxx/0.7.1/specs/certificate-format.html): basic support
+* [NDN certificates](https://named-data.net/doc/ndn-cxx/0.8.0/specs/certificate-format.html): basic support
 * Persistent key and certificate storage: binary files
   * ESP8266: using LittleFS
   * ESP32: using FFat (in Arduino *Tools* menu select "Partition Scheme: with FAT")
