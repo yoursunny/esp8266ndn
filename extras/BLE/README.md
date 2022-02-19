@@ -6,15 +6,15 @@ See [this answer](https://raspberrypi.stackexchange.com/a/114588) regarding how 
 
 This transport works as the BLE client (central).
 esp8266ndn `BleServerTransport` class works as the BLE server (peripheral).
-The protocol is summaries in NDNts [@ndn/web-bluetooth-transport](https://www.npmjs.com/package/@ndn/web-bluetooth-transport) package documentation.
+The protocol is summarized in NDNts [@ndn/web-bluetooth-transport](https://github.com/yoursunny/NDNts/tree/main/packages/web-bluetooth-transport) package documentation.
 
 ## Installation and ndnping Demo
 
 1. Install system-wide dependencies in a sudoer user:
 
     ```bash
-    sudo apt install python3-dev python3-venv libglib2.0-dev
-    curl -sL https://bootstrap.pypa.io/get-pip.py | sudo python3
+    sudo apt install --no-install-recommends python3-dev python3-venv libglib2.0-dev
+    curl -fsLS https://bootstrap.pypa.io/get-pip.py | sudo python3
     sudo pip install -U pip pipenv
     ```
 
@@ -30,8 +30,8 @@ The protocol is summaries in NDNts [@ndn/web-bluetooth-transport](https://www.np
 4. Run the ping client with the displayed address and address type:
 
     ```bash
-    pipenv run python BlePingClient.py --address 02:00:00:00:00:00 --addr-type public
-    pipenv run python BlePingClient.py --address 02:00:00:00:00:00 --addr-type random
+    pipenv run python BlePingClient.py --addr 02:00:00:00:00:00 --addr-type public
+    pipenv run python BlePingClient.py --addr 02:00:00:00:00:00 --addr-type random
     ```
 
 ## BLE-UDP Bridge
@@ -42,7 +42,7 @@ It listens on a UDP port and connects to a BLE peripheral.
 1. Start the bridge program:
 
     ```bash
-    pipenv run python BleUdpBridge.py --address 02:00:00:00:00:00 --addr-type public
+    pipenv run python BleUdpBridge.py --addr 02:00:00:00:00:00 --addr-type public
     ```
 
 2. In NFD, create a UDP face with NDNLPv2 fragmentation:

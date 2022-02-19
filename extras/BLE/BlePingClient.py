@@ -3,7 +3,6 @@ import argparse
 from ndn.app import NDNApp
 from ndn.encoding import Component, Name
 from ndn.security.keychain import KeychainDigest
-from ndn.transport.stream_socket import Face
 from ndn.types import InterestNack, InterestTimeout
 from ndn.utils import timestamp
 
