@@ -18,6 +18,8 @@ class SafeQueue
 {
 public:
   using Item = T;
+  static_assert(std::is_trivially_copyable<Item>::value, "");
+  static_assert(std::is_trivially_destructible<Item>::value, "");
 
   SafeQueue()
   {

@@ -10,7 +10,7 @@
 #include <netif/etharp.h>
 
 #define LOG(...) LOGGER(EthernetTransport, __VA_ARGS__)
-#define NDN_ETHERTYPE (PP_HTONS(0x8624))
+#define NDN_ETHERTYPE_BE (PP_HTONS(0x8624))
 
 namespace esp8266ndn {
 
@@ -66,7 +66,7 @@ public:
     Impl& self = *g_ethTransport->m_impl;
 
     const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(p->payload);
-    if (self.nif != inp || p->len < sizeof(eth_hdr) || eth->type != NDN_ETHERTYPE) {
+    if (self.nif != inp || p->len < sizeof(eth_hdr) || eth->type != NDN_ETHERTYPE_BE) {
       return self.oldInput(p, inp);
     }
 
@@ -101,7 +101,7 @@ public:
   void receive(const uint8_t* payload, size_t size)
   {
     const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(payload);
-    if (size < sizeof(eth_hdr) || eth->type != NDN_ETHERTYPE) {
+    if (size < sizeof(eth_hdr) || eth->type != NDN_ETHERTYPE_BE) {
       return;
     }
 
@@ -232,13 +232,13 @@ EthernetTransport::doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId
   eth_hdr* eth = reinterpret_cast<eth_hdr*>(p->payload);
   EndpointId endpoint;
   endpoint.id = endpointId;
-  if (endpointId == 0 || endpoint.isMulticast != 0) {
+  if (endpointId == 0 || endpoint.isMulticast) {
     memcpy(&eth->dest, "\x01\x00\x5E\x00\x17\xAA", sizeof(eth->dest));
   } else {
     memcpy(&eth->dest, endpoint.addr, sizeof(eth->dest));
   }
   memcpy(&eth->src, m_impl->nif->hwaddr, sizeof(eth->src));
-  eth->type = NDN_ETHERTYPE;
+  eth->type = NDN_ETHERTYPE_BE;
   memcpy(reinterpret_cast<uint8_t*>(p->payload) + sizeof(eth_hdr), pkt, pktLen);
   if (pktLen < payloadLen) {
     memset(reinterpret_cast<uint8_t*>(p->payload) + sizeof(eth_hdr) + pktLen, 0,
