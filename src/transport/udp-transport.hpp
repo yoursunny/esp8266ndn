@@ -45,11 +45,7 @@ public:
    * @param localPort local port.
    * @param localIp local interface address (ESP32 only).
    *
-   * IPv6 is supported on ESP8266 only.
-   *
-   * Since IPv6 address+port is longer than EndpointId, this transport uses an internal table to
-   * store full IPv6 endpoint. This table can track up to four simultaneous flows; exceeding this
-   * limit would cause incorrect EndpointId assignment or sending packets to wrong IPv6 endpoint.
+   * IPv6 is supported on ESP8266 only. Up to four simultaneous IPv6 EndpointIds can be tracked.
    */
   bool beginListen(uint16_t localPort = 6363, IPAddress localIp = IPAddress(0, 0, 0, 0));
 
@@ -74,10 +70,6 @@ public:
   void end();
 
 private:
-  uint64_t toEndpointId(IPAddress ip, uint16_t port);
-
-  std::tuple<IPAddress, uint16_t> fromEndpointId(uint64_t id);
-
   bool doIsUp() const final;
 
   void doLoop() final;
@@ -109,14 +101,14 @@ private:
 
   WiFiUDP m_udp;
 #if defined(ARDUINO_ARCH_ESP8266) && LWIP_IPV6
-  std::array<std::array<uint8_t, 11>, 4> m_v6Intern;
+  using EndpointIdHelper = ndnph::port_transport_socket::Ipv6EndpointIdHelper<4>;
+#else
+  using EndpointIdHelper = ndnph::port_transport_socket::Ipv6EndpointIdHelper<1>;
 #endif
+  EndpointIdHelper m_endpoints;
   IPAddress m_ip;      ///< remote IP in TUNNEL mode, local IP in MULTICAST mode
   uint16_t m_port = 0; ///< remote port in TUNNEL mode, group port in MULTICAST mode
   Mode m_mode = Mode::NONE;
-#if defined(ARDUINO_ARCH_ESP8266) && LWIP_IPV6
-  uint8_t m_v6InternPos = 0;
-#endif
 };
 
 } // namespace esp8266ndn
