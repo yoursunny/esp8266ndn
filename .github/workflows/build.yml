@@ -50,7 +50,7 @@ jobs:
           NDNPH_VERSION: develop
       - name: compile examples
         run: |
-          for B in esp8266:esp8266:nodemcuv2 esp32:esp32:esp32wrover adafruit:nrf52:feather52832; do
+          for B in esp8266:esp8266:nodemcuv2 esp32:esp32:esp32wrover esp32:esp32:esp32c3 adafruit:nrf52:feather52832; do
             ARCH=${B#*:}; ARCH=${ARCH%:*}
             for E in $(find ./examples -name '*.ino' -printf '%h\n'); do
               if [[ -f $E/.${ARCH}.test.skip ]]; then
