@@ -26,29 +26,29 @@ jobs:
             pip-deps: adafruit-nrfutil
       fail-fast: false
     steps:
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v3
         with:
           python-version: '3.9'
-      - uses: arduino/setup-arduino-cli@v1.1.1
+      - uses: arduino/setup-arduino-cli@v1
       - id: cores
-        name: refresh Arduino cores
+        name: Refresh Arduino cores
         run: |
           arduino-cli version
           arduino-cli update --additional-urls "${{ matrix.core-url }}"
           echo ::set-output name=d::$(sha256sum ~/.arduino15/package_*index.json | sha256sum | cut -d' ' -f1)
-      - name: cache Arduino cores
-        uses: actions/cache@v2
+      - name: Cache Arduino cores
+        uses: actions/cache@v3
         with:
           path: ~/.arduino15/staging/packages
           key: cores-${{ steps.cores.outputs.d }}
-      - name: install Arduino cores
+      - name: Install Arduino cores
         run: |
           FQBN=${{ matrix.fqbn }}
           arduino-cli core install ${FQBN%:*} --additional-urls "${{ matrix.core-url }}"
           echo ${{ matrix.pip-deps }} | xargs -r pip install
           echo ArduinoUnit ${{ matrix.arduino-libs }} | xargs -rn1 arduino-cli lib install
-      - uses: actions/checkout@v2
-      - name: prepare Arduino libraries
+      - uses: actions/checkout@v3
+      - name: Prepare Arduino libraries
         run: |
           mkdir -p $HOME/Arduino/libraries
           cd $HOME/Arduino/libraries
@@ -58,7 +58,7 @@ jobs:
           ln -s $HOME/Arduino/libraries/NDNph $GITHUB_WORKSPACE/../NDNph # for Doxygen
         env:
           NDNPH_VERSION: develop
-      - name: compile examples
+      - name: Compile examples
         run: |
           B=${{ matrix.fqbn }}
           ARCH=${B#*:}; ARCH=${ARCH%:*}
@@ -79,24 +79,24 @@ jobs:
     needs: [build]
     runs-on: ubuntu-20.04
     steps:
-      - name: install dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get install -y --no-install-recommends clang-format-11 doxygen
-      - uses: actions/checkout@v2
-      - name: check code style
+      - uses: actions/checkout@v3
+      - name: Check code style
         run: |
           mk/format-code.sh
           git diff --exit-code
-      - name: prepare Arduino libraries
+      - name: Prepare Arduino libraries
         run: |
           NDNPH_DIR=$GITHUB_WORKSPACE/../NDNph
           mkdir $NDNPH_DIR
           curl -fsLS https://github.com/yoursunny/NDNph/archive/${NDNPH_VERSION}.tar.gz | tar -C $NDNPH_DIR -xz --strip-components=1
         env:
           NDNPH_VERSION: develop
-      - name: build docs
+      - name: Build docs
         run: docs/build.sh
-      - name: deploy docs
+      - name: Deploy docs
         uses: South-Paw/action-netlify-deploy@v1.2.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -41,6 +41,7 @@ KeyChain
   * ECDSA: P-256 curve only (using Mbed TLS on ESP32, micro-ecc on ESP8266 and nRF52)
   * HMAC-SHA256: yes (using BearSSL on ESP8266, Mbed TLS on ESP32, Cryptosuite on nRF52)
   * RSA: no
+  * Ed25519: no
   * Null: yes
 * [NDN certificates](https://named-data.net/doc/ndn-cxx/0.8.0/specs/certificate.html): basic support
 * Persistent key and certificate storage: binary files
