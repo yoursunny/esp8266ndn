@@ -25,7 +25,9 @@ private:
   void doLoop() override;
 };
 
-#if defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO_ARCH_ESP32) &&                                                                 \
+  (defined(MAIN_NIMBLEDEVICE_H_) || defined(CONFIG_BT_BLUEDROID_ENABLED))
+#define ESP8266NDN_HAVE_ESP32BLE
 
 /** @brief A transport that acts as a BLE server/peripheral. */
 class BleServerTransport : public BleServerTransportBase

@@ -1,1 +1,0 @@
---build-property=compiler.cpp.extra_flags=-DDEMO_BLEPINGSERVER_DISABLE_NIMBLE=1

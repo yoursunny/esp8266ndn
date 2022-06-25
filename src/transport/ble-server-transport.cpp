@@ -34,7 +34,7 @@ BleServerTransportBase::doLoop()
   loopRxQueue();
 }
 
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef ESP8266NDN_HAVE_ESP32BLE
 void
 BleServerTransport::warnBluedroid()
 {

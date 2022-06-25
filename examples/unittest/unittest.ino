@@ -119,6 +119,11 @@ test(Hmac)
 void
 setup()
 {
+#if ARDUINO_USB_CDC_ON_BOOT
+  while (!Serial) {
+    delay(1);
+  }
+#endif
   Serial.begin(115200);
   Serial.println();
 

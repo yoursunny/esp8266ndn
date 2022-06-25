@@ -1,0 +1,12 @@
+{
+  "ESP8266": [],
+  "ESP32": [
+    "",
+    "--build-property=compiler.cpp.extra_flags=-DDEMO_BLEPINGSERVER_DISABLE_NIMBLE=1"
+  ],
+  "ESP32S2": [],
+  "ESP32C3": [
+    "",
+    "--build-property=compiler.cpp.extra_flags=-DDEMO_BLEPINGSERVER_DISABLE_NIMBLE=1"
+  ]
+}
