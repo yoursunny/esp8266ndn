@@ -75,12 +75,14 @@ setup()
 
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.println(F("WiFi connect failed"));
+    ESP.restart();
   }
   configTime(0, 0, "time.nist.gov");
-  delay(1000);
+  delay(2000);
 
   struct tm tm = {};
   bool ok = getLocalTime(&tm);

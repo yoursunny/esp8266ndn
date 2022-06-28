@@ -36,9 +36,11 @@ setup()
 
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.println(F("WiFi connect failed"));
+    ESP.restart();
   }
   delay(1000);
 
