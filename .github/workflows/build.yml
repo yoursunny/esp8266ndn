@@ -56,6 +56,10 @@ jobs:
           arduino-cli core install ${FQBN%:*} --additional-urls "${{ matrix.core-url }}"
           echo ${{ matrix.pip-deps }} | xargs -r pip install
           echo ArduinoUnit ${{ matrix.arduino-libs }} | xargs -rn1 arduino-cli lib install
+          if echo ${{ matrix.arduino-libs }} | grep -wq NimBLE-Arduino; then
+            # NimBLE-Arduino v1.4.0 has compiler error on ESP32-C3, use this unreleased revision instead
+            env ARDUINO_LIBRARY_ENABLE_UNSAFE_INSTALL=true arduino-cli lib install --git-url 'https://github.com/h2zero/NimBLE-Arduino.git#57cd0c1a041aa2379ce5cc41367dd79d9d7259ef1'
+          fi
       - uses: actions/checkout@v3
       - name: Prepare Arduino libraries
         run: |
