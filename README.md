@@ -1,12 +1,12 @@
 # NDN Arduino library for ESP8266 and more
 
-[![GitHub Workflow status](https://img.shields.io/github/workflow/status/yoursunny/esp8266ndn/build?style=flat)](https://github.com/yoursunny/esp8266ndn/actions) [![GitHub code size](https://img.shields.io/github/languages/code-size/yoursunny/esp8266ndn?style=flat)](https://github.com/yoursunny/esp8266ndn)
+[![GitHub Workflow status](https://img.shields.io/github/actions/workflow/status/yoursunny/esp8266ndn/build.yml?style=flat)](https://github.com/yoursunny/esp8266ndn/actions) [![GitHub code size](https://img.shields.io/github/languages/code-size/yoursunny/esp8266ndn?style=flat)](https://github.com/yoursunny/esp8266ndn)
 
 **esp8266ndn** library enables [Named Data Networking](https://named-data.net/) application development in Arduino environment. It supports [ESP8266](https://github.com/esp8266/Arduino), [ESP32, ESP32-S2, ESP32-C3](https://github.com/espressif/arduino-esp32), and [Adafruit nRF52](https://github.com/adafruit/Adafruit_nRF52_Arduino) microcontrollers.
 
 * [Doxygen documentation](https://esp8266ndn.ndn.today/)
 * [#esp8266ndn on Twitter](https://twitter.com/hashtag/esp8266ndn) for announcements
-* [ndn-lib mailing list](https://www.lists.cs.ucla.edu/mailman/listinfo/ndn-lib) for best-effort support
+* [GitHub Issues](https://github.com/yoursunny/esp8266ndn) for bug reports and best-effort support
 
 ![esp8266ndn logo](docs/logo.svg)
 

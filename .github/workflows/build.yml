@@ -56,10 +56,6 @@ jobs:
           arduino-cli core install ${FQBN%:*} --additional-urls "${{ matrix.core-url }}"
           echo ${{ matrix.pip-deps }} | xargs -r pip install
           echo ArduinoUnit ${{ matrix.arduino-libs }} | xargs -rn1 arduino-cli lib install
-          if echo ${{ matrix.arduino-libs }} | grep -wq NimBLE-Arduino; then
-            # NimBLE-Arduino v1.4.0 has compiler error on ESP32-C3, use this unreleased revision instead
-            env ARDUINO_LIBRARY_ENABLE_UNSAFE_INSTALL=true arduino-cli lib install --git-url 'https://github.com/h2zero/NimBLE-Arduino.git#57cd0c1a041aa2379ce5cc41367dd79d9d7259ef1'
-          fi
       - uses: actions/checkout@v3
       - name: Prepare Arduino libraries
         run: |
@@ -96,10 +92,15 @@ jobs:
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs
-        uses: South-Paw/action-netlify-deploy@v1.2.1
+        uses: nwtgck/actions-netlify@v1.2
         with:
+          publish-dir: ./docs/html/
+          production-deploy: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          netlify-site-id: cf340d80-1709-45d9-878f-12570d9dcee0
-          build-dir: ./docs/html/
+          deploy-message: ${{ github.sha }} ${{ github.run_id }}
+          enable-pull-request-comment: false
+          enable-commit-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: cf340d80-1709-45d9-878f-12570d9dcee0
         if: ${{ github.repository == 'yoursunny/esp8266ndn' && github.event_name == 'push' }}
