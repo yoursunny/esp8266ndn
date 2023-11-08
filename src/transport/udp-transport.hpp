@@ -14,8 +14,7 @@
 namespace esp8266ndn {
 
 /** @brief A transport that communicates over UDP tunnel or multicast group. */
-class UdpTransport : public virtual ndnph::Transport
-{
+class UdpTransport : public virtual ndnph::Transport {
 public:
   /**
    * @brief Construct using internal buffer.
@@ -37,8 +36,7 @@ public:
    */
   template<size_t capacity>
   explicit UdpTransport(std::array<uint8_t, capacity>& buffer)
-    : UdpTransport(buffer.data(), buffer.size())
-  {}
+    : UdpTransport(buffer.data(), buffer.size()) {}
 
   /**
    * @brief Listen on a UDP port for packets from any remote endpoint.
@@ -77,8 +75,7 @@ private:
   bool doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) final;
 
 public:
-  enum
-  {
+  enum {
     /** @brief Default MTU for UDP is Ethernet MTU minus IPv4 and UDP headers. */
     DefaultMtu = 1500 - 20 - 8,
   };
@@ -87,8 +84,7 @@ public:
   static const IPAddress MulticastGroup;
 
 private:
-  enum class Mode : uint8_t
-  {
+  enum class Mode : uint8_t {
     NONE,
     LISTEN,
     TUNNEL,

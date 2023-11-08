@@ -9,8 +9,7 @@ namespace esp8266ndn {
 
 const IPAddress UdpTransport::MulticastGroup(224, 0, 23, 170);
 
-UdpTransport::UdpTransport(size_t mtu)
-{
+UdpTransport::UdpTransport(size_t mtu) {
   m_ownBuf.reset(new uint8_t[mtu]);
   m_buf = m_ownBuf.get();
   m_bufcap = mtu;
@@ -18,12 +17,10 @@ UdpTransport::UdpTransport(size_t mtu)
 
 UdpTransport::UdpTransport(uint8_t* buffer, size_t capacity)
   : m_buf(buffer)
-  , m_bufcap(capacity)
-{}
+  , m_bufcap(capacity) {}
 
 bool
-UdpTransport::beginListen(uint16_t localPort, IPAddress localIp)
-{
+UdpTransport::beginListen(uint16_t localPort, IPAddress localIp) {
   end();
 #if defined(ARDUINO_ARCH_ESP8266)
 #if LWIP_IPV6
@@ -43,8 +40,7 @@ UdpTransport::beginListen(uint16_t localPort, IPAddress localIp)
 }
 
 bool
-UdpTransport::beginTunnel(IPAddress remoteIp, uint16_t remotePort, uint16_t localPort)
-{
+UdpTransport::beginTunnel(IPAddress remoteIp, uint16_t remotePort, uint16_t localPort) {
   end();
   LOG(F("connecting to ") << remoteIp << ':' << remotePort << F(" from :") << _DEC(localPort));
   bool ok = m_udp.begin(localPort);
@@ -57,8 +53,7 @@ UdpTransport::beginTunnel(IPAddress remoteIp, uint16_t remotePort, uint16_t loca
 }
 
 bool
-UdpTransport::beginMulticast(IPAddress localIp, uint16_t groupPort)
-{
+UdpTransport::beginMulticast(IPAddress localIp, uint16_t groupPort) {
   end();
 #if defined(ARDUINO_ARCH_ESP8266)
   LOG(F("joining group ") << MulticastGroup << ':' << _DEC(groupPort) << F(" on ") << localIp);
@@ -76,8 +71,7 @@ UdpTransport::beginMulticast(IPAddress localIp, uint16_t groupPort)
 }
 
 void
-UdpTransport::end()
-{
+UdpTransport::end() {
   m_mode = Mode::NONE;
   m_ip = INADDR_NONE;
   m_port = 0;
@@ -85,14 +79,12 @@ UdpTransport::end()
 }
 
 bool
-UdpTransport::doIsUp() const
-{
+UdpTransport::doIsUp() const {
   return m_mode != Mode::NONE;
 }
 
 void
-UdpTransport::doLoop()
-{
+UdpTransport::doLoop() {
   if (m_mode == Mode::NONE) {
     return;
   }
@@ -132,8 +124,7 @@ UdpTransport::doLoop()
 }
 
 bool
-UdpTransport::doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId)
-{
+UdpTransport::doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) {
   bool ok = false;
   if (endpointId == 0) {
     switch (m_mode) {

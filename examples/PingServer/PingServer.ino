@@ -29,8 +29,7 @@ const char* PREFIX2 = "/example/esp8266/udpm/ping";
 ndnph::PingServer server2(ndnph::Name::parse(region, PREFIX2), face2);
 
 void
-setup()
-{
+setup() {
   Serial.begin(115200);
   Serial.println();
   esp8266ndn::setLogOutput(Serial);
@@ -111,8 +110,7 @@ setup()
 }
 
 void
-loop()
-{
+loop() {
   face0.loop();
   face1.loop();
   face2.loop();

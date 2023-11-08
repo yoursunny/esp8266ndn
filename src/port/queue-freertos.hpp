@@ -14,31 +14,26 @@ namespace ndnph_port_freertos {
 
 /** @brief Generic thread-safe queue, implemented with FreeRTOS queue API. */
 template<typename T, size_t capacity>
-class SafeQueue
-{
+class SafeQueue {
 public:
   using Item = T;
   static_assert(std::is_trivially_copyable<Item>::value, "");
   static_assert(std::is_trivially_destructible<Item>::value, "");
 
-  SafeQueue()
-  {
+  SafeQueue() {
     m_queue = xQueueCreate(capacity, sizeof(Item));
   }
 
-  ~SafeQueue()
-  {
+  ~SafeQueue() {
     vQueueDelete(m_queue);
   }
 
-  bool push(Item item)
-  {
+  bool push(Item item) {
     BaseType_t res = xQueueSendToBack(m_queue, &item, 0);
     return res == pdTRUE;
   }
 
-  std::tuple<Item, bool> pop()
-  {
+  std::tuple<Item, bool> pop() {
     Item item;
     BaseType_t res = xQueueReceive(m_queue, &item, 0);
     return std::make_tuple(std::move(item), res == pdTRUE);

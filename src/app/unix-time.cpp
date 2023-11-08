@@ -6,8 +6,7 @@
 namespace esp8266ndn {
 
 static const ndnph::Name&
-getLocalhopUnixTimePrefix()
-{
+getLocalhopUnixTimePrefix() {
   static const uint8_t tlv[]{
     0x08, 0x08, 0x6C, 0x6F, 0x63, 0x61, 0x6C, 0x68, 0x6F, 0x70,       // localhop
     0x08, 0x09, 0x75, 0x6E, 0x69, 0x78, 0x2D, 0x74, 0x69, 0x6D, 0x65, // unix-time
@@ -18,20 +17,17 @@ getLocalhopUnixTimePrefix()
 
 UnixTime::UnixTime(ndnph::Face& face)
   : PacketHandler(face)
-  , m_pending(this)
-{}
+  , m_pending(this) {}
 
 void
-UnixTime::begin(int interval)
-{
+UnixTime::begin(int interval) {
   m_interval = std::max(5000, interval);
   m_lastRequest = ndnph::port::Clock::now();
   m_nextRequest = m_lastRequest;
 }
 
 void
-UnixTime::loop()
-{
+UnixTime::loop() {
   if (m_interval == 0) {
     return;
   }
@@ -55,8 +51,7 @@ UnixTime::loop()
 }
 
 bool
-UnixTime::processData(ndnph::Data data)
-{
+UnixTime::processData(ndnph::Data data) {
   auto name = data.getName();
   if (!m_pending.match(data, getLocalhopUnixTimePrefix()) ||
       name.size() != getLocalhopUnixTimePrefix().size() + 1 ||

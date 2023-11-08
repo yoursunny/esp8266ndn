@@ -6,7 +6,7 @@ on:
 permissions: {}
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         include:
@@ -34,9 +34,9 @@ jobs:
       fail-fast: false
     name: ${{ matrix.chip }}
     steps:
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.10'
         if: ${{ matrix.pip-deps }}
       - uses: arduino/setup-arduino-cli@v1
       - id: cores
@@ -56,7 +56,7 @@ jobs:
           arduino-cli core install ${FQBN%:*} --additional-urls "${{ matrix.core-url }}"
           echo ${{ matrix.pip-deps }} | xargs -r pip install
           echo ArduinoUnit ${{ matrix.arduino-libs }} | xargs -rn1 arduino-cli lib install
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Prepare Arduino libraries
         run: |
           mkdir -p $HOME/Arduino/libraries
@@ -72,12 +72,12 @@ jobs:
           mk/ci-list.sh ${{ matrix.chip }} ${{ matrix.fqbn }} "${{ matrix.build-args }}" | bash
   publish:
     needs: [build]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install dependencies
         run: |
-          sudo apt-get install -y --no-install-recommends clang-format-11 doxygen
-      - uses: actions/checkout@v3
+          sudo apt-get install -y --no-install-recommends clang-format-15 doxygen
+      - uses: actions/checkout@v4
       - name: Check code style
         run: |
           mk/format-code.sh
@@ -92,7 +92,7 @@ jobs:
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs
-        uses: nwtgck/actions-netlify@30aa80fe8d5eec30813fc8b17b77e0a6663f09b5
+        uses: nwtgck/actions-netlify@v2.1
         with:
           publish-dir: ./docs/html/
           production-deploy: true

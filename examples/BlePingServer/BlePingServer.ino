@@ -25,8 +25,7 @@ const char* PREFIX = "/example/esp8266/ble/ping";
 ndnph::PingServer server(ndnph::Name::parse(region, PREFIX), face);
 
 void
-setup()
-{
+setup() {
   Serial.begin(115200);
   Serial.println();
   esp8266ndn::setLogOutput(Serial);
@@ -46,8 +45,7 @@ setup()
 }
 
 void
-loop()
-{
+loop() {
   face.loop();
   delay(1);
 }

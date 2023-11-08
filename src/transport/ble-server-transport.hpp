@@ -14,8 +14,7 @@ namespace esp8266ndn {
 
 class BleServerTransportBase
   : public virtual ndnph::Transport
-  , public ndnph::transport::DynamicRxQueueMixin
-{
+  , public ndnph::transport::DynamicRxQueueMixin {
 protected:
   explicit BleServerTransportBase(size_t mtu);
 
@@ -30,22 +29,18 @@ private:
 #define ESP8266NDN_HAVE_ESP32BLE
 
 /** @brief A transport that acts as a BLE server/peripheral. */
-class BleServerTransport : public BleServerTransportBase
-{
+class BleServerTransport : public BleServerTransportBase {
 public:
-  static size_t getMtu()
-  {
+  static size_t getMtu() {
     return 512;
   }
 
   BleServerTransport()
     : BleServerTransportBase(getMtu())
-    , m_csCallbackHandler(*this)
-  {}
+    , m_csCallbackHandler(*this) {}
 
   /** @brief Initialize BLE device, service, and advertisement. */
-  bool begin(const char* deviceName)
-  {
+  bool begin(const char* deviceName) {
     ::BLEDevice::init(deviceName);
     ::BLEDevice::setMTU(517);
 
@@ -73,26 +68,22 @@ public:
   }
 
   /** @brief Retrieve BLE address and address type. */
-  String getAddr() const
-  {
+  String getAddr() const {
     return String(::BLEDevice::getAddress().toString().data()) + " (addr-type=public)";
   }
 
 private:
-  static ::BLEUUID makeUuid(const uint8_t a[16])
-  {
+  static ::BLEUUID makeUuid(const uint8_t a[16]) {
     return ::BLEUUID(const_cast<uint8_t*>(a), 16, false);
   }
 
   static void warnBluedroid();
 
-  bool doIsUp() const final
-  {
+  bool doIsUp() const final {
     return m_server != nullptr && m_server->getConnectedCount() > 0;
   }
 
-  bool doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) final
-  {
+  bool doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) final {
     if (m_sc == nullptr) {
       return false;
     }
@@ -102,15 +93,12 @@ private:
   }
 
 private:
-  class CsCallbacks : public BLECharacteristicCallbacks
-  {
+  class CsCallbacks : public BLECharacteristicCallbacks {
   public:
     explicit CsCallbacks(BleServerTransport& transport)
-      : m_transport(transport)
-    {}
+      : m_transport(transport) {}
 
-    void onWrite(::BLECharacteristic* chr) final
-    {
+    void onWrite(::BLECharacteristic* chr) final {
       if (chr != m_transport.m_cs) {
         return;
       }
@@ -139,11 +127,9 @@ private:
  */
 class BleServerTransport
   : public BleServerTransportBase
-  , public ::BLEService
-{
+  , public ::BLEService {
 public:
-  static size_t getMtu()
-  {
+  static size_t getMtu() {
     return BLE_GATT_ATT_MTU_MAX - 3;
   }
 
@@ -151,12 +137,10 @@ public:
     : BleServerTransportBase(getMtu())
     , ::BLEService(BLE_UUID_SVC)
     , m_cs(BLE_UUID_CS)
-    , m_sc(BLE_UUID_SC)
-  {}
+    , m_sc(BLE_UUID_SC) {}
 
   /** @brief Initialize BLE device, service, and advertisement. */
-  bool begin(const char* deviceName)
-  {
+  bool begin(const char* deviceName) {
     Bluefruit.configPrphConn(BLE_GATT_ATT_MTU_MAX, BLE_GAP_EVENT_LENGTH_DEFAULT,
                              BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT,
                              BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
@@ -179,8 +163,7 @@ public:
   }
 
   /** @brief Initialize BLE service only. */
-  err_t begin() final
-  {
+  err_t begin() final {
     VERIFY_STATUS(this->BLEService::begin());
 
     uint16_t mtu = Bluefruit.getMaxMtu(CONN_CFG_PERIPHERAL);
@@ -199,8 +182,7 @@ public:
   }
 
   /** @brief Retrieve BLE address and address type. */
-  String getAddr() const
-  {
+  String getAddr() const {
     uint8_t mac[6]; // reversed
     uint8_t addrType = Bluefruit.getAddr(mac);
     char addr[18];
@@ -213,20 +195,17 @@ public:
   }
 
 private:
-  bool doIsUp() const final
-  {
+  bool doIsUp() const final {
     return Bluefruit.connected() > 0;
   }
 
-  bool doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) final
-  {
+  bool doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) final {
     m_sc.write(pkt, pktLen);
     return m_sc.notify(pkt, pktLen);
   }
 
   static void handleCsWrite(uint16_t connHdl, ::BLECharacteristic* chr, uint8_t* pkt,
-                            uint16_t pktLen)
-  {
+                            uint16_t pktLen) {
     BleServerTransport& self = static_cast<BleServerTransport&>(chr->parentService());
     self.handleReceive(pkt, pktLen, connHdl);
   }

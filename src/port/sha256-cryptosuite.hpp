@@ -8,21 +8,17 @@ namespace esp8266ndn {
 namespace ndnph_port {
 
 /** @brief SHA256 algorithm, implemented with Cryptosuite. */
-class Sha256
-{
+class Sha256 {
 public:
-  Sha256()
-  {
+  Sha256() {
     m_sha.init();
   }
 
-  void update(const uint8_t* chunk, size_t size)
-  {
+  void update(const uint8_t* chunk, size_t size) {
     m_sha.write(chunk, size);
   }
 
-  bool final(uint8_t* digest)
-  {
+  bool final(uint8_t* digest) {
     std::copy_n(m_sha.result(), 32, digest);
     return true;
   }
@@ -32,21 +28,17 @@ private:
 };
 
 /** @brief HMAC-SHA256 algorithm, implemented with Cryptosuite. */
-class HmacSha256
-{
+class HmacSha256 {
 public:
-  explicit HmacSha256(const uint8_t* key, size_t keyLen)
-  {
+  explicit HmacSha256(const uint8_t* key, size_t keyLen) {
     m_sha.initHmac(key, keyLen);
   }
 
-  void update(const uint8_t* chunk, size_t size)
-  {
+  void update(const uint8_t* chunk, size_t size) {
     m_sha.write(chunk, size);
   }
 
-  bool final(uint8_t* result)
-  {
+  bool final(uint8_t* result) {
     std::copy_n(m_sha.resultHmac(), HASH_LENGTH, result);
     m_sha.reset();
     return true;

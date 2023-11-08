@@ -13,8 +13,7 @@ namespace ndnph_port {
  * ESP8266/ESP32: WiFi or Bluetooth radio must be enabled.
  * nRF52: SoftDevice must be enabled.
  */
-class RandomSource
-{
+class RandomSource {
 public:
   RandomSource() = delete;
 

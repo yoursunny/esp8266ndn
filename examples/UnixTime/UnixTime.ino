@@ -13,8 +13,7 @@ ndnph::Face face(transport);
 esp8266ndn::UnixTime unixTime(face);
 
 void
-printRfc3399DateTime(uint64_t timestamp)
-{
+printRfc3399DateTime(uint64_t timestamp) {
   time_t sec = timestamp / 1000000;
   int usec = static_cast<int>(timestamp % 1000000);
 
@@ -28,8 +27,7 @@ printRfc3399DateTime(uint64_t timestamp)
 }
 
 void
-setup()
-{
+setup() {
   Serial.begin(115200);
   Serial.println();
   esp8266ndn::setLogOutput(Serial);
@@ -54,8 +52,7 @@ setup()
 }
 
 void
-loop()
-{
+loop() {
   face.loop();
 
   auto now = ndnph::port::UnixTime::now();

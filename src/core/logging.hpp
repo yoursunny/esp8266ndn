@@ -12,8 +12,7 @@ void
 setLogOutput(Print& output);
 
 /** @brief Print a buffer in hexadecimal. */
-class PrintHex : public Printable
-{
+class PrintHex : public Printable {
 public:
   explicit PrintHex(const uint8_t* buf, size_t len);
 

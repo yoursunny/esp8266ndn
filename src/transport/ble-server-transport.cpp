@@ -7,12 +7,10 @@
 namespace esp8266ndn {
 
 BleServerTransportBase::BleServerTransportBase(size_t mtu)
-  : DynamicRxQueueMixin(mtu)
-{}
+  : DynamicRxQueueMixin(mtu) {}
 
 void
-BleServerTransportBase::handleReceive(const uint8_t* pkt, size_t pktLen, uint64_t endpointId)
-{
+BleServerTransportBase::handleReceive(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) {
   auto r = receiving();
   if (!r) {
     LOG(F("drop: no RX buffer"));
@@ -29,15 +27,13 @@ BleServerTransportBase::handleReceive(const uint8_t* pkt, size_t pktLen, uint64_
 }
 
 void
-BleServerTransportBase::doLoop()
-{
+BleServerTransportBase::doLoop() {
   loopRxQueue();
 }
 
 #ifdef ESP8266NDN_HAVE_ESP32BLE
 void
-BleServerTransport::warnBluedroid()
-{
+BleServerTransport::warnBluedroid() {
   LOG(F("using ESP32 Bluedroid stack that has limited compatibility; "
         "it's recommended to switch to NimBLE stack"));
 }

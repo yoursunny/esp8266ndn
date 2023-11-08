@@ -19,8 +19,7 @@ ndnph::KeyChain keyChain;
 bool keyChainOpenResult = false;
 
 // Interest, Data, Interest-Data match, Data signing, implicit digest, DigestKey
-test(InterestData)
-{
+test(InterestData) {
   region.reset();
 
   auto data = region.create<ndnph::Data>();
@@ -46,8 +45,7 @@ test(InterestData)
 }
 
 // Interest signing, ECDSA, KeyChain
-test(Ecdsa)
-{
+test(Ecdsa) {
   region.reset();
   auto subjectName = ndnph::Name::parse(region, "/K");
 
@@ -88,8 +86,7 @@ test(Ecdsa)
 }
 
 // HMAC-SHA256
-test(Hmac)
-{
+test(Hmac) {
   // https://datatracker.ietf.org/doc/html/rfc4231#section-4.4
   std::array<uint8_t, 20> buffer;
   buffer.fill(0xAA);
@@ -98,27 +95,25 @@ test(Hmac)
   buffer.fill(0xDD);
 
   uint8_t sig[NDNPH_SHA256_LEN];
-  assertEqual(key.sign({ ndnph::tlv::Value(buffer.data(), 20), ndnph::tlv::Value(buffer.data(), 15),
-                         ndnph::tlv::Value(buffer.data(), 15) },
+  assertEqual(key.sign({ndnph::tlv::Value(buffer.data(), 20), ndnph::tlv::Value(buffer.data(), 15),
+                        ndnph::tlv::Value(buffer.data(), 15)},
                        sig),
               static_cast<ssize_t>(sizeof(sig)));
-  assertTrue(
-    key.verify({ ndnph::tlv::Value(buffer.data(), 10), ndnph::tlv::Value(buffer.data(), 20),
-                 ndnph::tlv::Value(buffer.data(), 20) },
-               sig, sizeof(sig)));
+  assertTrue(key.verify({ndnph::tlv::Value(buffer.data(), 10), ndnph::tlv::Value(buffer.data(), 20),
+                         ndnph::tlv::Value(buffer.data(), 20)},
+                        sig, sizeof(sig)));
 
-  assertFalse(key.verify({ ndnph::tlv::Value(buffer.data(), 17) }, sig, sizeof(sig)));
+  assertFalse(key.verify({ndnph::tlv::Value(buffer.data(), 17)}, sig, sizeof(sig)));
 
   sig[15] ^= 0x01;
   assertFalse(
-    key.verify({ ndnph::tlv::Value(buffer.data(), 10), ndnph::tlv::Value(buffer.data(), 20),
-                 ndnph::tlv::Value(buffer.data(), 20) },
+    key.verify({ndnph::tlv::Value(buffer.data(), 10), ndnph::tlv::Value(buffer.data(), 20),
+                ndnph::tlv::Value(buffer.data(), 20)},
                sig, sizeof(sig)));
 }
 
 void
-setup()
-{
+setup() {
 #if ARDUINO_USB_CDC_ON_BOOT
   while (!Serial) {
     delay(1);
@@ -151,7 +146,6 @@ setup()
 }
 
 void
-loop()
-{
+loop() {
   Test::run();
 }

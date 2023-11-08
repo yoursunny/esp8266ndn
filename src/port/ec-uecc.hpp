@@ -13,18 +13,15 @@ namespace esp8266ndn {
 namespace ndnph_port_uecc {
 
 /** @brief ECDSA P-256, implemented with micro-ecc. */
-class Ec
-{
+class Ec {
 public:
-  struct Curve
-  {
+  struct Curve {
     using PvtLen = std::integral_constant<size_t, uECC_BYTES>;
     using PubLen = std::integral_constant<size_t, 1 + uECC_BYTES * 2>;
     using MaxSigLen = std::integral_constant<size_t, 9 + uECC_BYTES * 2>;
   };
 
-  class PrivateKey
-  {
+  class PrivateKey {
   public:
     bool import(const uint8_t key[Curve::PubLen::value]);
 
@@ -34,8 +31,7 @@ public:
     uint8_t m_key[uECC_BYTES];
   };
 
-  class PublicKey
-  {
+  class PublicKey {
   public:
     bool import(const uint8_t[Curve::PubLen::value]);
 

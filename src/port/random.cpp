@@ -14,8 +14,7 @@ namespace esp8266ndn {
 namespace ndnph_port {
 
 bool
-RandomSource::generate(uint8_t* output, size_t count)
-{
+RandomSource::generate(uint8_t* output, size_t count) {
 #if defined(ARDUINO_ARCH_ESP8266)
   for (size_t i = 0; i < count; ++i) {
     output[i] = ::secureRandom(0x100);

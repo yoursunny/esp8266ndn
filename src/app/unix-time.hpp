@@ -19,8 +19,7 @@ namespace esp8266ndn {
  * This module cannot be used together with other time synchronization mechanisms such as
  * lwip SNTP client.
  */
-class UnixTime : public ndnph::PacketHandler
-{
+class UnixTime : public ndnph::PacketHandler {
 public:
   explicit UnixTime(ndnph::Face& face);
 

@@ -8,8 +8,7 @@ namespace esp8266ndn {
 namespace ndnph_port {
 
 /** @brief File storage on microcontroller filesystem. */
-class FileStore
-{
+class FileStore {
 public:
   bool open(const char* path);
 

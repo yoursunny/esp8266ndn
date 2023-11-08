@@ -16,11 +16,9 @@ namespace esp8266ndn {
 
 namespace {
 
-union EndpointId
-{
+union EndpointId {
   uint64_t id;
-  struct
-  {
+  struct {
     uint8_t addr[6];
     bool isMulticast;
   };
@@ -32,13 +30,11 @@ static_assert(sizeof(EndpointId) == sizeof(uint64_t), "");
 
 static EthernetTransport* g_ethTransport = nullptr;
 
-class EthernetTransport::Impl
-{
+class EthernetTransport::Impl {
 public:
   explicit Impl(netif* nif)
     : nif(nif)
-    , oldInput(nif->input)
-  {
+    , oldInput(nif->input) {
 #if defined(ARDUINO_ARCH_ESP32)
     nif->input = EthernetTransport::Impl::input;
 #elif defined(HAS_PHY_CAPTURE) && HAS_PHY_CAPTURE
@@ -46,8 +42,7 @@ public:
 #endif
   }
 
-  ~Impl()
-  {
+  ~Impl() {
 #if defined(ARDUINO_ARCH_ESP32)
     nif->input = this->oldInput;
 #elif defined(HAS_PHY_CAPTURE) && HAS_PHY_CAPTURE
@@ -56,8 +51,7 @@ public:
   }
 
 #if defined(ARDUINO_ARCH_ESP32)
-  static err_t input(pbuf* p, netif* inp)
-  {
+  static err_t input(pbuf* p, netif* inp) {
     if (g_ethTransport == nullptr) {
       LOG(F("inactive"));
       pbuf_free(p);
@@ -79,8 +73,7 @@ public:
     return ERR_OK;
   }
 #elif defined(HAS_PHY_CAPTURE) && HAS_PHY_CAPTURE
-  static void capture(int ifindex, const char* payload, size_t size, int out, int success)
-  {
+  static void capture(int ifindex, const char* payload, size_t size, int out, int success) {
     if (out != 0 || success != 1) {
       return;
     }
@@ -98,8 +91,7 @@ public:
   }
 #endif
 
-  void receive(const uint8_t* payload, size_t size)
-  {
+  void receive(const uint8_t* payload, size_t size) {
     const eth_hdr* eth = reinterpret_cast<const eth_hdr*>(payload);
     if (size < sizeof(eth_hdr) || eth->type != NDN_ETHERTYPE_BE) {
       return;
@@ -131,8 +123,7 @@ public:
 };
 
 void
-EthernetTransport::listNetifs(Print& os)
-{
+EthernetTransport::listNetifs(Print& os) {
   for (netif* nif = netif_list; nif != nullptr; nif = nif->next) {
     uint32_t ip = 0;
     std::copy_n(reinterpret_cast<uint8_t*>(&nif->ip_addr), sizeof(ip),
@@ -143,14 +134,12 @@ EthernetTransport::listNetifs(Print& os)
 
 EthernetTransport::EthernetTransport() = default;
 
-EthernetTransport::~EthernetTransport()
-{
+EthernetTransport::~EthernetTransport() {
   end();
 }
 
 bool
-EthernetTransport::begin(const char ifname[2], uint8_t ifnum)
-{
+EthernetTransport::begin(const char ifname[2], uint8_t ifnum) {
   netif* found = nullptr;
   for (netif* nif = netif_list; nif != nullptr; nif = nif->next) {
     if (nif->name[0] == ifname[0] && nif->name[1] == ifname[1] && nif->num == ifnum) {
@@ -166,8 +155,7 @@ EthernetTransport::begin(const char ifname[2], uint8_t ifnum)
 }
 
 bool
-EthernetTransport::begin()
-{
+EthernetTransport::begin() {
   for (netif* nif = netif_list; nif != nullptr; nif = nif->next) {
     if (nif->name[0] == 's' && nif->name[1] == 't') {
       return begin(nif);
@@ -178,8 +166,7 @@ EthernetTransport::begin()
 }
 
 bool
-EthernetTransport::begin(netif* nif)
-{
+EthernetTransport::begin(netif* nif) {
   if (g_ethTransport != nullptr) {
     LOG(F("an instance is active"));
     return false;
@@ -192,8 +179,7 @@ EthernetTransport::begin(netif* nif)
 }
 
 void
-EthernetTransport::end()
-{
+EthernetTransport::end() {
   if (m_impl == nullptr) {
     return;
   }
@@ -203,20 +189,17 @@ EthernetTransport::end()
 }
 
 bool
-EthernetTransport::doIsUp() const
-{
+EthernetTransport::doIsUp() const {
   return m_impl != nullptr;
 }
 
 void
-EthernetTransport::doLoop()
-{
+EthernetTransport::doLoop() {
   loopRxQueue();
 }
 
 bool
-EthernetTransport::doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId)
-{
+EthernetTransport::doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) {
   if (m_impl == nullptr) {
     return false;
   }

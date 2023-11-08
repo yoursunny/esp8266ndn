@@ -8,21 +8,17 @@ namespace esp8266ndn {
 namespace ndnph_port {
 
 /** @brief SHA256 algorithm, implemented with BearSSL. */
-class Sha256
-{
+class Sha256 {
 public:
-  Sha256()
-  {
+  Sha256() {
     ::br_sha256_init(&m_ctx);
   }
 
-  void update(const uint8_t* chunk, size_t size)
-  {
+  void update(const uint8_t* chunk, size_t size) {
     ::br_sha256_update(&m_ctx, chunk, size);
   }
 
-  bool final(uint8_t* digest)
-  {
+  bool final(uint8_t* digest) {
     ::br_sha256_out(&m_ctx, digest);
     return true;
   }
@@ -32,22 +28,18 @@ private:
 };
 
 /** @brief HMAC-SHA256 algorithm, implemented with BearSSL. */
-class HmacSha256
-{
+class HmacSha256 {
 public:
-  explicit HmacSha256(const uint8_t* key, size_t keyLen)
-  {
+  explicit HmacSha256(const uint8_t* key, size_t keyLen) {
     ::br_hmac_key_init(&m_key, &br_sha256_vtable, key, keyLen);
     ::br_hmac_init(&m_ctx, &m_key, 0);
   }
 
-  void update(const uint8_t* chunk, size_t size)
-  {
+  void update(const uint8_t* chunk, size_t size) {
     ::br_hmac_update(&m_ctx, chunk, size);
   }
 
-  bool final(uint8_t* result)
-  {
+  bool final(uint8_t* result) {
     bool ok = ::br_hmac_out(&m_ctx, result) != 0;
     ::br_hmac_init(&m_ctx, &m_key, 0);
     return ok;

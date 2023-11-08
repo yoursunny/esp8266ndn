@@ -22,8 +22,7 @@ namespace esp8266ndn {
 namespace ndnph_port {
 
 bool
-FileStore::open(const char* path)
-{
+FileStore::open(const char* path) {
   size_t pathLen = strlen(path);
   if (pathLen == 0 || pathLen > maxNameLen || path[0] != '/' || path[pathLen - 1] == '/') {
     return false;
@@ -36,8 +35,7 @@ FileStore::open(const char* path)
 }
 
 int
-FileStore::read(const char* filename, uint8_t* buffer, size_t count)
-{
+FileStore::read(const char* filename, uint8_t* buffer, size_t count) {
   if (!joinPath(filename)) {
     return -1;
   }
@@ -54,8 +52,7 @@ FileStore::read(const char* filename, uint8_t* buffer, size_t count)
 }
 
 bool
-FileStore::write(const char* filename, const uint8_t* buffer, size_t count)
-{
+FileStore::write(const char* filename, const uint8_t* buffer, size_t count) {
   if (!joinPath(filename)) {
     return false;
   }
@@ -71,8 +68,7 @@ FileStore::write(const char* filename, const uint8_t* buffer, size_t count)
 }
 
 bool
-FileStore::unlink(const char* filename)
-{
+FileStore::unlink(const char* filename) {
   if (!joinPath(filename)) {
     return false;
   }
@@ -82,8 +78,7 @@ FileStore::unlink(const char* filename)
 }
 
 bool
-FileStore::joinPath(const char* filename)
-{
+FileStore::joinPath(const char* filename) {
   size_t nameLen = strlen(filename);
   if (m_pathLen == 0 || nameLen == 0 || nameLen > maxNameLen) {
     return false;

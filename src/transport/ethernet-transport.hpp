@@ -5,9 +5,8 @@
 
 #include "../port/port.hpp"
 
-extern "C"
-{
-  struct netif;
+extern "C" {
+struct netif;
 }
 class Print;
 
@@ -16,8 +15,7 @@ namespace esp8266ndn {
 /** @brief A transport that communicates over Ethernet. */
 class EthernetTransport
   : public virtual ndnph::Transport
-  , public ndnph::transport::DynamicRxQueueMixin
-{
+  , public ndnph::transport::DynamicRxQueueMixin {
 public:
   /** @brief Print a list of network interfaces. */
   static void listNetifs(Print& os);

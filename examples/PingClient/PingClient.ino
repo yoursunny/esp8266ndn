@@ -23,8 +23,7 @@ ndnph::PingClient client1(ndnph::Name::parse(region, PREFIX1), face);
 ndnph::PingClient client2(ndnph::Name::parse(region, PREFIX2), face);
 
 void
-setup()
-{
+setup() {
   Serial.begin(115200);
   Serial.println();
   esp8266ndn::setLogOutput(Serial);
@@ -54,16 +53,14 @@ setup()
 }
 
 void
-printCounters(const char* prefix, const ndnph::PingClient& client)
-{
+printCounters(const char* prefix, const ndnph::PingClient& client) {
   auto cnt = client.readCounters();
   Serial.printf("%8dI %8dD %3.3f%% %s\n", static_cast<int>(cnt.nTxInterests),
                 static_cast<int>(cnt.nRxData), 100.0 * cnt.nRxData / cnt.nTxInterests, prefix);
 }
 
 void
-loop()
-{
+loop() {
   face.loop();
   delay(1);
 

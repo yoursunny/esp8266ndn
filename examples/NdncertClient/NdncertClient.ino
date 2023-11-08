@@ -19,8 +19,7 @@ const char* certSlot = "ndncertdemocert";
 ndnph::EcPrivateKey pvt;
 ndnph::EcPublicKey pub;
 
-enum class State
-{
+enum class State {
   Idle,
   StartDiscoverProfileVersion,
   WaitDiscoverProfileVersion,
@@ -43,8 +42,7 @@ std::unique_ptr<ndnph::ndncert::Client> client;
 std::unique_ptr<ndnph::PingServer> ping;
 
 bool
-initKey()
-{
+initKey() {
   packetRegion.reset();
   auto subjectName = ndnph::Name::parse(packetRegion, SUBJECT_NAME);
   bool ok = ndnph::ec::load(keyChain, keySlot, region, pvt, pub);
@@ -66,8 +64,7 @@ initKey()
 }
 
 void
-setup()
-{
+setup() {
   Serial.begin(115200);
   Serial.println();
   esp8266ndn::setLogOutput(Serial);
@@ -112,8 +109,7 @@ setup()
 }
 
 void
-rdrCallback(void*, ndnph::Data rdrMetadata)
-{
+rdrCallback(void*, ndnph::Data rdrMetadata) {
   profileVersion = ndnph::rdr::parseMetadata(rdrMetadata).clone(region);
   profileRdr.reset();
   if (profileVersion.size() == 0) {
@@ -128,8 +124,7 @@ rdrCallback(void*, ndnph::Data rdrMetadata)
 }
 
 void
-segmentCallback(void*, uint64_t, ndnph::Data data)
-{
+segmentCallback(void*, uint64_t, ndnph::Data data) {
   if (!profile.fromData(region, data)) {
     Serial.print("[demo] bad CA profile: ");
     Serial.println(data);
@@ -143,8 +138,7 @@ segmentCallback(void*, uint64_t, ndnph::Data data)
 }
 
 void
-ndncertCallback(void*, ndnph::Data cert)
-{
+ndncertCallback(void*, ndnph::Data cert) {
   if (!cert) {
     Serial.println("[demo] ndncert client failed");
     state = State::Failure;
@@ -164,8 +158,7 @@ ndncertCallback(void*, ndnph::Data cert)
 }
 
 void
-loop()
-{
+loop() {
   face.loop();
   packetRegion.reset();
 
@@ -197,7 +190,7 @@ loop()
       ndnph::ndncert::Client::requestCertificate(ndnph::ndncert::Client::Options{
         .face = face,
         .profile = profile,
-        .challenges = { &nop },
+        .challenges = {&nop},
         .pub = pub,
         .pvt = pvt,
         .cb = ndncertCallback,

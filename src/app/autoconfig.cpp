@@ -16,8 +16,7 @@
 namespace esp8266ndn {
 
 FchResponse
-fchQuery(::WiFiClient& client, String serviceUri)
-{
+fchQuery(::WiFiClient& client, String serviceUri) {
   FchResponse res;
   HTTPClient http;
   http.begin(client, serviceUri);

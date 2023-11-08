@@ -9,38 +9,32 @@
 namespace esp8266ndn {
 namespace ndnph_port_uecc {
 
-class UeccSetRng
-{
+class UeccSetRng {
 public:
-  static void once()
-  {
+  static void once() {
     static UeccSetRng instance;
   }
 
 private:
-  UeccSetRng()
-  {
+  UeccSetRng() {
     uECC_set_rng(rng);
   }
 
-  static int rng(uint8_t* dest, unsigned size)
-  {
+  static int rng(uint8_t* dest, unsigned size) {
     return ndnph_port::RandomSource::generate(dest, size);
   }
 };
 
 namespace {
 
-enum
-{
+enum {
   ASN1_SEQUENCE = 0x30,
   ASN1_INTEGER = 0x02,
 };
 
 /** @brief Determine ASN1 length of integer at integer[0:32]. */
 inline int
-determineAsn1IntLength(const uint8_t* integer)
-{
+determineAsn1IntLength(const uint8_t* integer) {
   if ((integer[0] & 0x80) != 0x00) {
     return 33;
   }
@@ -57,8 +51,7 @@ determineAsn1IntLength(const uint8_t* integer)
 
 /** @brief Write ASN1 integer from integer[0:32] to output..retval; buffers may overlap. */
 inline uint8_t*
-writeAsn1Int(uint8_t* output, const uint8_t* integer, int length)
-{
+writeAsn1Int(uint8_t* output, const uint8_t* integer, int length) {
   *(output++) = ASN1_INTEGER;
   *(output++) = static_cast<uint8_t>(length);
 
@@ -74,8 +67,7 @@ writeAsn1Int(uint8_t* output, const uint8_t* integer, int length)
 
 /** @brief Encode 64-octet raw signature at sig[8:72] as DER at sig[0:retval]. */
 inline int
-encodeSignatureBits(uint8_t* sig)
-{
+encodeSignatureBits(uint8_t* sig) {
   const uint8_t* begin = sig;
   const uint8_t* r = sig + 8;
   const uint8_t* s = r + 32;
@@ -95,14 +87,15 @@ encodeSignatureBits(uint8_t* sig)
  * @return pointer past end of ASN1 integer, or nullptr if failure.
  */
 inline const uint8_t*
-readAsn1Int(const uint8_t* input, const uint8_t* end, uint8_t* output)
-{
-  if (input == end || *(input++) != ASN1_INTEGER)
+readAsn1Int(const uint8_t* input, const uint8_t* end, uint8_t* output) {
+  if (input == end || *(input++) != ASN1_INTEGER) {
     return nullptr;
+  }
 
   uint8_t length = (input == end) ? 0 : *(input++);
-  if (length == 0 || input + length > end)
+  if (length == 0 || input + length > end) {
     return nullptr;
+  }
 
   if (length == 33) {
     --length;
@@ -114,18 +107,20 @@ readAsn1Int(const uint8_t* input, const uint8_t* end, uint8_t* output)
 
 /** @brief Decode DER-encoded ECDSA signature into 64-octet raw signature. */
 inline bool
-decodeSignatureBits(const uint8_t* input, size_t len, uint8_t* decoded)
-{
+decodeSignatureBits(const uint8_t* input, size_t len, uint8_t* decoded) {
   memset(decoded, 0, uECC_BYTES * 2);
   const uint8_t* end = input + len;
 
-  if (input == end || *(input++) != ASN1_SEQUENCE)
+  if (input == end || *(input++) != ASN1_SEQUENCE) {
     return false;
-  if (input == end)
+  }
+  if (input == end) {
     return false;
+  }
   uint8_t seqLength = *(input++);
-  if (input + seqLength != end)
+  if (input + seqLength != end) {
     return false;
+  }
 
   input = readAsn1Int(input, end, decoded + 0);
   input = readAsn1Int(input, end, decoded + 32);
@@ -135,15 +130,13 @@ decodeSignatureBits(const uint8_t* input, size_t len, uint8_t* decoded)
 } // anonymous namespace
 
 bool
-Ec::PrivateKey::import(const uint8_t key[Curve::PubLen::value])
-{
+Ec::PrivateKey::import(const uint8_t key[Curve::PubLen::value]) {
   std::copy_n(key, sizeof(m_key), m_key);
   return true;
 }
 
 ssize_t
-Ec::PrivateKey::sign(const uint8_t digest[uECC_BYTES], uint8_t sig[Curve::MaxSigLen::value]) const
-{
+Ec::PrivateKey::sign(const uint8_t digest[uECC_BYTES], uint8_t sig[Curve::MaxSigLen::value]) const {
   UeccSetRng::once();
   bool ok = uECC_sign(m_key, digest, &sig[8]);
   if (!ok) {
@@ -153,8 +146,7 @@ Ec::PrivateKey::sign(const uint8_t digest[uECC_BYTES], uint8_t sig[Curve::MaxSig
 }
 
 bool
-Ec::PublicKey::import(const uint8_t key[Curve::PubLen::value])
-{
+Ec::PublicKey::import(const uint8_t key[Curve::PubLen::value]) {
   if (key[0] != 0x04) {
     return false;
   }
@@ -163,8 +155,7 @@ Ec::PublicKey::import(const uint8_t key[Curve::PubLen::value])
 }
 
 bool
-Ec::PublicKey::verify(const uint8_t digest[uECC_BYTES], const uint8_t* sig, size_t sigLen) const
-{
+Ec::PublicKey::verify(const uint8_t digest[uECC_BYTES], const uint8_t* sig, size_t sigLen) const {
   uint8_t rawSig[uECC_BYTES * 2];
   if (!decodeSignatureBits(sig, sigLen, rawSig)) {
     return false;
@@ -173,8 +164,7 @@ Ec::PublicKey::verify(const uint8_t digest[uECC_BYTES], const uint8_t* sig, size
 }
 
 bool
-Ec::generateKey(uint8_t pvt[Curve::PvtLen::value], uint8_t pub[Curve::PubLen::value])
-{
+Ec::generateKey(uint8_t pvt[Curve::PvtLen::value], uint8_t pub[Curve::PubLen::value]) {
   UeccSetRng::once();
   pub[0] = 0x04;
   return uECC_make_key(&pub[1], pvt);

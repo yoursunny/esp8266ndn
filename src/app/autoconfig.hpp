@@ -10,8 +10,7 @@ class WiFiClient;
 
 namespace esp8266ndn {
 
-struct FchResponse
-{
+struct FchResponse {
   bool ok = false;
   IPAddress ip;
 };
