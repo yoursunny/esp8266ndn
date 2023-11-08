@@ -42,7 +42,7 @@ test(InterestData)
   assertFalse(!interest);
   interest.setName(
     data.getName().append(region, ndnph::convention::ImplicitDigest(), implicitDigest));
-  assertTrue(interest.match(data));
+  assertTrue(data.canSatisfy(interest));
 }
 
 // Interest signing, ECDSA, KeyChain
