@@ -15,7 +15,7 @@
 Packet encoding and decoding
 
 * Interest and Data
-  * [v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/) format only
+  * [v0.3](https://docs.named-data.net/NDN-packet-spec/0.3/) format only
   * TLV evolvability: yes
   * forwarding hint: yes, limited to one name
 * [NDNLPv2](https://redmine.named-data.net/projects/nfd/wiki/NDNLPv2)
@@ -24,7 +24,7 @@ Packet encoding and decoding
   * PIT token: yes
   * congestion mark: no
   * link layer reliability: no
-* Signed Interest: [v0.3 format](https://named-data.net/doc/NDN-packet-spec/0.3/signed-interest.html)
+* Signed Interest: [v0.3 format](https://docs.named-data.net/NDN-packet-spec/0.3/signed-interest.html)
 * Naming Convention: [rev3 format](https://named-data.net/publications/techreports/ndn-tr-22-3-ndn-memo-naming-conventions/)
 
 Transports
@@ -32,7 +32,7 @@ Transports
 * Ethernet: unicast and multicast on ESP8266 and ESP32
 * UDP/IPv4: unicast and multicast on ESP8266 and ESP32
 * UDP/IPv6: unicast on ESP8266
-* [Bluetooth Low Energy](https://github.com/yoursunny/NDNts/tree/main/packages/web-bluetooth-transport): server/peripheral only on ESP32 and nRF52
+* [Bluetooth Low Energy](https://github.com/yoursunny/NDNts/tree/main/pkg/web-bluetooth-transport): server/peripheral only on ESP32 and nRF52
 
 KeyChain
 
@@ -43,7 +43,7 @@ KeyChain
   * RSA: no
   * Ed25519: no
   * Null: yes
-* [NDN certificates](https://named-data.net/doc/ndn-cxx/0.8.0/specs/certificate.html): basic support
+* [NDN certificates](https://docs.named-data.net/NDN-packet-spec/0.3/certificate.html): basic support
 * Persistent key and certificate storage: binary files
   * ESP8266: using LittleFS
   * ESP32: using FFat (in Arduino *Tools* menu select "Partition Scheme: with FAT")
