@@ -3,7 +3,7 @@
 #if defined(ARDUINO_ARCH_ESP8266)
 #include <Arduino.h>
 #elif defined(ARDUINO_ARCH_ESP32)
-#include <esp_system.h>
+#include <esp_random.h>
 #elif defined(ARDUINO_ARCH_NRF52)
 #include <Arduino.h>
 #include <algorithm>

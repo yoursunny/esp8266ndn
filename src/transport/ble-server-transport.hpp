@@ -69,7 +69,7 @@ public:
 
   /** @brief Retrieve BLE address and address type. */
   String getAddr() const {
-    return String(::BLEDevice::getAddress().toString().data()) + " (addr-type=public)";
+    return String(::BLEDevice::getAddress().toString().c_str()) + " (addr-type=public)";
   }
 
 private:
@@ -102,8 +102,8 @@ private:
       if (chr != m_transport.m_cs) {
         return;
       }
-      std::string value = chr->getValue();
-      m_transport.handleReceive(reinterpret_cast<const uint8_t*>(value.data()), value.size(), 0);
+      auto value = chr->getValue();
+      m_transport.handleReceive(reinterpret_cast<const uint8_t*>(value.c_str()), value.length(), 0);
     }
 
   private:

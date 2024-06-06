@@ -12,25 +12,24 @@ jobs:
         include:
           - chip: ESP8266
             core-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
+            core: esp8266:esp8266
             fqbn: esp8266:esp8266:nodemcuv2
           - chip: ESP32
             core-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
-            core-version: '@2.0.17'
-            fqbn: esp32:esp32:esp32wrover
-            build-args: --build-property=build.partitions=default_ffat
+            core: esp32:esp32
+            fqbn: esp32:esp32:esp32wrover:PartitionScheme=noota_ffat
             arduino-libs: NimBLE-Arduino
           - chip: ESP32S2
             core-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
-            core-version: '@2.0.17'
-            fqbn: esp32:esp32:adafruit_magtag29_esp32s2
-            build-args: --build-property=build.partitions=default_ffat
+            core: esp32:esp32@2.0.17
+            fqbn: esp32:esp32:adafruit_magtag29_esp32s2:PartitionScheme=noota_ffat
           - chip: ESP32C3
             core-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
-            core-version: '@2.0.17'
-            fqbn: esp32:esp32:esp32c3
-            build-args: --build-property=build.partitions=default_ffat
+            core: esp32:esp32
+            fqbn: esp32:esp32:esp32c3:PartitionScheme=noota_ffat
             arduino-libs: NimBLE-Arduino
           - chip: nRF52
+            core: adafruit:nrf52
             fqbn: adafruit:nrf52:feather52832
             core-url: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
             pip-deps: adafruit-nrfutil
@@ -55,9 +54,7 @@ jobs:
           key: cores-${{ steps.cores.outputs.d }}
       - name: Install Arduino cores
         run: |
-          FQBN=${{ matrix.fqbn }}
-          COREVER=${{ matrix.core-version }}
-          arduino-cli core install ${FQBN%:*}$COREVER --additional-urls "${{ matrix.core-url }}"
+          arduino-cli core install ${{ matrix.core }} --additional-urls "${{ matrix.core-url }}"
           echo ${{ matrix.pip-deps }} | xargs -r pip install
           echo ArduinoUnit ${{ matrix.arduino-libs }} | xargs -rn1 arduino-cli lib install
       - uses: actions/checkout@v4
@@ -73,7 +70,7 @@ jobs:
           NDNPH_VERSION: develop
       - name: Compile examples
         run: |
-          mk/ci-list.sh ${{ matrix.chip }} ${{ matrix.fqbn }} "${{ matrix.build-args }}" | bash
+          mk/ci-list.sh ${{ matrix.chip }} ${{ matrix.fqbn }} | bash
   publish:
     needs: [build]
     runs-on: ubuntu-22.04
