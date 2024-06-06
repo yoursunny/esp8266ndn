@@ -15,15 +15,18 @@ jobs:
             fqbn: esp8266:esp8266:nodemcuv2
           - chip: ESP32
             core-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+            core-version: '@2.0.17'
             fqbn: esp32:esp32:esp32wrover
             build-args: --build-property=build.partitions=default_ffat
             arduino-libs: NimBLE-Arduino
           - chip: ESP32S2
             core-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+            core-version: '@2.0.17'
             fqbn: esp32:esp32:adafruit_magtag29_esp32s2
             build-args: --build-property=build.partitions=default_ffat
           - chip: ESP32C3
             core-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+            core-version: '@2.0.17'
             fqbn: esp32:esp32:esp32c3
             build-args: --build-property=build.partitions=default_ffat
             arduino-libs: NimBLE-Arduino
@@ -34,7 +37,7 @@ jobs:
       fail-fast: false
     name: ${{ matrix.chip }}
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
         if: ${{ matrix.pip-deps }}
@@ -53,7 +56,8 @@ jobs:
       - name: Install Arduino cores
         run: |
           FQBN=${{ matrix.fqbn }}
-          arduino-cli core install ${FQBN%:*} --additional-urls "${{ matrix.core-url }}"
+          COREVER=${{ matrix.core-version }}
+          arduino-cli core install ${FQBN%:*}$COREVER --additional-urls "${{ matrix.core-url }}"
           echo ${{ matrix.pip-deps }} | xargs -r pip install
           echo ArduinoUnit ${{ matrix.arduino-libs }} | xargs -rn1 arduino-cli lib install
       - uses: actions/checkout@v4
@@ -92,7 +96,7 @@ jobs:
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs
-        uses: nwtgck/actions-netlify@v2.1
+        uses: nwtgck/actions-netlify@v3
         with:
           publish-dir: ./docs/html/
           production-deploy: true

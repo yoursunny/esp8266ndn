@@ -4,6 +4,8 @@
 
 **esp8266ndn** library enables [Named Data Networking](https://named-data.net/) application development in Arduino environment. It supports [ESP8266](https://github.com/esp8266/Arduino), [ESP32, ESP32-S2, ESP32-C3](https://github.com/espressif/arduino-esp32), and [Adafruit nRF52](https://github.com/adafruit/Adafruit_nRF52_Arduino) microcontrollers.
 
+Note: currently NDNph and esp8266ndn are compatible with ESP32 Arduino core v2.x; it is incompatible with ESP32 Arduino core v3.x at the moment.
+
 * [Doxygen documentation](https://esp8266ndn.ndn.today/)
 * [#esp8266ndn on Twitter](https://twitter.com/hashtag/esp8266ndn) for announcements
 * [GitHub Issues](https://github.com/yoursunny/esp8266ndn) for bug reports and best-effort support
