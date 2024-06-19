@@ -4,7 +4,6 @@
     "",
     "--build-property=build.defines=-DDEMO_BLEPINGSERVER_DISABLE_NIMBLE=1"
   ],
-  "ESP32S2": [],
   "ESP32C3": [
     "",
     "--build-property=build.defines=-DDEMO_BLEPINGSERVER_DISABLE_NIMBLE=1"

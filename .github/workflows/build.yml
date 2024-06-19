@@ -19,10 +19,6 @@ jobs:
             core: esp32:esp32
             fqbn: esp32:esp32:esp32wrover:PartitionScheme=noota_ffat
             arduino-libs: NimBLE-Arduino
-          - chip: ESP32S2
-            core-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
-            core: esp32:esp32@2.0.17
-            fqbn: esp32:esp32:adafruit_magtag29_esp32s2:PartitionScheme=noota_ffat
           - chip: ESP32C3
             core-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
             core: esp32:esp32
@@ -38,7 +34,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
         if: ${{ matrix.pip-deps }}
       - uses: arduino/setup-arduino-cli@v1
       - id: cores
@@ -48,7 +44,7 @@ jobs:
           arduino-cli update --additional-urls "${{ matrix.core-url }}"
           echo d=$(sha256sum ~/.arduino15/package_*index.json | sha256sum | cut -d' ' -f1) >> $GITHUB_OUTPUT
       - name: Cache Arduino cores
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.arduino15/staging/packages
           key: cores-${{ steps.cores.outputs.d }}
