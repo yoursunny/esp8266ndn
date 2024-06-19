@@ -31,7 +31,7 @@ Transports
 
 * Ethernet: unicast and multicast on ESP8266 and ESP32
 * UDP/IPv4: unicast and multicast on ESP8266 and ESP32
-* UDP/IPv6: unicast on ESP8266
+* UDP/IPv6: unicast on ESP8266 and ESP32
 * [Bluetooth Low Energy](https://github.com/yoursunny/NDNts/tree/main/pkg/web-bluetooth-transport): server/peripheral only on ESP32 and nRF52
 
 KeyChain

@@ -43,17 +43,15 @@ public:
    * @param localPort local port.
    * @param localIp local interface address (ESP32 only).
    *
-   * IPv6 is supported on ESP8266 only. Up to four simultaneous IPv6 EndpointIds can be tracked.
+   * Up to four simultaneous IPv6 EndpointIds can be tracked.
    */
-  bool beginListen(uint16_t localPort = 6363, IPAddress localIp = IPAddress(0, 0, 0, 0));
+  bool beginListen(uint16_t localPort = 6363, IPAddress localIp = IPAddress());
 
   /**
    * @brief Establish a UDP tunnel to a remote endpoint.
    * @param remoteIp remote host address.
    * @param remotePort remote port.
    * @param localPort local port.
-   *
-   * IPv6 is supported on ESP8266 only.
    */
   bool beginTunnel(IPAddress remoteIp, uint16_t remotePort = 6363, uint16_t localPort = 6363);
 
@@ -62,7 +60,7 @@ public:
    * @param localIp local interface address (ESP8266 only).
    * @param groupPort group port.
    */
-  bool beginMulticast(IPAddress localIp = IPAddress(0, 0, 0, 0), uint16_t groupPort = 56363);
+  bool beginMulticast(IPAddress localIp = IPAddress(), uint16_t groupPort = 56363);
 
   /** @brief Disable the transport. */
   void end();
@@ -96,7 +94,7 @@ private:
   std::unique_ptr<uint8_t[]> m_ownBuf;
 
   WiFiUDP m_udp;
-#if defined(ARDUINO_ARCH_ESP8266) && LWIP_IPV6
+#if LWIP_IPV6
   using EndpointIdHelper = ndnph::port_transport_socket::Ipv6EndpointIdHelper<4>;
 #else
   using EndpointIdHelper = ndnph::port_transport_socket::Ipv6EndpointIdHelper<1>;

@@ -31,7 +31,9 @@ UdpTransport::beginListen(uint16_t localPort, IPAddress localIp) {
   bool ok = m_udp.begin(localPort);
 #elif defined(ARDUINO_ARCH_ESP32)
   LOG(F("listening on ") << localIp << ':' << _DEC(localPort));
-  bool ok = m_udp.begin(localIp, localPort);
+  bool ok = localIp.type() == IPType::IPv4 && uint32_t(localIp) == 0
+              ? m_udp.begin(localPort)
+              : m_udp.begin(localIp, localPort);
 #endif
   if (ok) {
     m_mode = Mode::LISTEN;
@@ -43,7 +45,11 @@ bool
 UdpTransport::beginTunnel(IPAddress remoteIp, uint16_t remotePort, uint16_t localPort) {
   end();
   LOG(F("connecting to ") << remoteIp << ':' << remotePort << F(" from :") << _DEC(localPort));
-  bool ok = m_udp.begin(localPort);
+  bool ok =
+#if defined(ARDUINO_ARCH_ESP32) && LWIP_IPV6
+    remoteIp.type() == IPType::IPv6 ? m_udp.begin(IN6ADDR_ANY, localPort) :
+#endif
+                                    m_udp.begin(localPort);
   if (ok) {
     m_mode = Mode::TUNNEL;
     m_ip = remoteIp;
@@ -98,10 +104,20 @@ UdpTransport::doLoop() {
     } else {
       IPAddress ip = m_udp.remoteIP();
       uint16_t port = m_udp.remotePort();
-#if defined(ARDUINO_ARCH_ESP8266) && LWIP_IPV6
+#if LWIP_IPV6
+#if defined(ARDUINO_ARCH_ESP8266)
       if (ip.isV6()) {
         endpointId = m_endpoints.encode(reinterpret_cast<const uint8_t*>(ip.raw6()), 16, port);
       } else
+#elif defined(ARDUINO_ARCH_ESP32)
+      if (ip.type() == IPType::IPv6) {
+        uint8_t addr[16];
+        for (int i = 0; i < 16; ++i) {
+          addr[i] = ip[i];
+        }
+        endpointId = m_endpoints.encode(addr, 16, port);
+      } else
+#endif
 #endif
       {
         uint32_t ip4 = ip;
@@ -155,9 +171,13 @@ UdpTransport::doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) {
       case 4:
         ip = addr;
         break;
-#if defined(ARDUINO_ARCH_ESP8266) && LWIP_IPV6
+#if LWIP_IPV6
       case 16:
+#if defined(ARDUINO_ARCH_ESP8266)
         std::copy_n(addr, addrLen, reinterpret_cast<uint8_t*>(ip.raw6()));
+#elif defined(ARDUINO_ARCH_ESP32)
+        ip = IPAddress(IPType::IPv6, addr);
+#endif
         break;
 #endif
       default:
