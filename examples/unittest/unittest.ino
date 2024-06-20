@@ -94,22 +94,30 @@ test(Hmac) {
   assertTrue(key.import(buffer.data(), 20));
   buffer.fill(0xDD);
 
-  uint8_t sig[NDNPH_SHA256_LEN];
+  std::array<uint8_t, NDNPH_SHA256_LEN> sig;
   assertEqual(key.sign({ndnph::tlv::Value(buffer.data(), 20), ndnph::tlv::Value(buffer.data(), 15),
                         ndnph::tlv::Value(buffer.data(), 15)},
-                       sig),
-              static_cast<ssize_t>(sizeof(sig)));
+                       sig.data()),
+              static_cast<ssize_t>(sig.size()));
+
+  std::array<uint8_t, NDNPH_SHA256_LEN> expectedSig{
+    0x77, 0x3E, 0xA9, 0x1E, 0x36, 0x80, 0x0E, 0x46, 0x85, 0x4D, 0xB8, 0xEB, 0xD0, 0x91, 0x81, 0xA7,
+    0x29, 0x59, 0x09, 0x8B, 0x3E, 0xF8, 0xC1, 0x22, 0xD9, 0x63, 0x55, 0x14, 0xCE, 0xD5, 0x65, 0xFE};
+  for (size_t i = 0; i < expectedSig.size(); ++i) {
+    assertEqual(sig[i], expectedSig[i], i);
+  }
+
   assertTrue(key.verify({ndnph::tlv::Value(buffer.data(), 10), ndnph::tlv::Value(buffer.data(), 20),
                          ndnph::tlv::Value(buffer.data(), 20)},
-                        sig, sizeof(sig)));
+                        sig.data(), sig.size()));
 
-  assertFalse(key.verify({ndnph::tlv::Value(buffer.data(), 17)}, sig, sizeof(sig)));
+  assertFalse(key.verify({ndnph::tlv::Value(buffer.data(), 17)}, sig.data(), sig.size()));
 
   sig[15] ^= 0x01;
   assertFalse(
     key.verify({ndnph::tlv::Value(buffer.data(), 10), ndnph::tlv::Value(buffer.data(), 20),
                 ndnph::tlv::Value(buffer.data(), 20)},
-               sig, sizeof(sig)));
+               sig.data(), sig.size()));
 }
 
 void
