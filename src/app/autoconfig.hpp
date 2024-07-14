@@ -6,7 +6,15 @@
 #include <IPAddress.h>
 #include <WString.h>
 
-class WiFiClient;
+#if defined(ARDUINO_ARCH_ESP8266)
+#define ESP8266NDN_Network WiFi
+#define ESP8266NDN_NetworkClient WiFiClient
+#elif defined(ARDUINO_ARCH_ESP32)
+#define ESP8266NDN_Network Network
+#define ESP8266NDN_NetworkClient NetworkClient
+#endif
+
+class ESP8266NDN_NetworkClient;
 
 namespace esp8266ndn {
 
@@ -17,11 +25,12 @@ struct FchResponse {
 
 /**
  * @brief Query NDN-FCH service to find a nearby NDN router.
- * @param client @c WiFiClient or @c WiFiClientSecure instance.
+ * @param client @c WiFiClient or @c WiFiClientSecure instance on ESP8266;
+ *               @c NetworkClient or @c NetworkClientSecure instance on ESP32.
  * @param serviceUri NDN-FCH service base URI.
  */
 FchResponse
-fchQuery(::WiFiClient& client, String serviceUri = "https://fch.ndn.today/");
+fchQuery(ESP8266NDN_NetworkClient& client, String serviceUri = "https://fch.ndn.today/");
 
 } // namespace esp8266ndn
 

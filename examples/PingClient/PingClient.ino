@@ -2,8 +2,8 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecureBearSSL.h>
 #elif defined(ARDUINO_ARCH_ESP32)
+#include <NetworkClientSecure.h>
 #include <WiFi.h>
-#include <WiFiClientSecure.h>
 #endif
 #include <esp8266ndn.h>
 
@@ -42,7 +42,7 @@ setup() {
   BearSSL::WiFiClientSecure fchSocketClient;
   fchSocketClient.setInsecure();
 #elif defined(ARDUINO_ARCH_ESP32)
-  WiFiClientSecure fchSocketClient;
+  NetworkClientSecure fchSocketClient;
   fchSocketClient.setInsecure();
 #endif
   auto fchResponse = esp8266ndn::fchQuery(fchSocketClient);

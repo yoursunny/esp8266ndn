@@ -8,8 +8,12 @@
 #if defined(ARDUINO_ARCH_ESP8266)
 // cause WiFiUdp.h to use ESP8266WiFi instead of Arduino WiFi library
 #include <ESP8266WiFi.h>
-#endif
 #include <WiFiUdp.h>
+#define ESP8266NDN_NetworkUDP WiFiUDP
+#elif defined(ARDUINO_ARCH_ESP32)
+#include <NetworkUdp.h>
+#define ESP8266NDN_NetworkUDP NetworkUDP
+#endif
 
 namespace esp8266ndn {
 
@@ -93,7 +97,7 @@ private:
   size_t m_bufcap = 0;
   std::unique_ptr<uint8_t[]> m_ownBuf;
 
-  WiFiUDP m_udp;
+  ESP8266NDN_NetworkUDP m_udp;
 #if LWIP_IPV6
   using EndpointIdHelper = ndnph::port_transport_socket::Ipv6EndpointIdHelper<4>;
 #else

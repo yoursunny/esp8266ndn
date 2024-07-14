@@ -16,7 +16,7 @@
 namespace esp8266ndn {
 
 FchResponse
-fchQuery(::WiFiClient& client, String serviceUri) {
+fchQuery(ESP8266NDN_NetworkClient& client, String serviceUri) {
   FchResponse res;
   HTTPClient http;
   http.begin(client, serviceUri);
@@ -31,7 +31,7 @@ fchQuery(::WiFiClient& client, String serviceUri) {
   body.trim();
   LOG(serviceUri << F(" body: ") << body);
 
-  if (!WiFi.hostByName(body.c_str(), res.ip)) {
+  if (!ESP8266NDN_Network.hostByName(body.c_str(), res.ip)) {
     LOG(F("DNS error"));
     return res;
   }
