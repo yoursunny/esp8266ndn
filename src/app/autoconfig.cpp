@@ -1,4 +1,4 @@
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2040)
 
 #include "autoconfig.hpp"
 #include "../core/logger.hpp"
@@ -6,7 +6,7 @@
 #if defined(ARDUINO_ARCH_ESP8266)
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
-#elif defined(ARDUINO_ARCH_ESP32)
+#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2040)
 #include <HTTPClient.h>
 #include <WiFi.h>
 #endif

@@ -48,6 +48,13 @@ jobs:
             sketches: |
               - examples/BlePingServer
               - examples/unittest
+          - chip: RP2040
+            fqbn: rp2040:rp2040:rpipicow
+            platforms: |
+              - name: rp2040:rp2040
+                source-url: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+            sketches: |
+              - examples/PingClient
       fail-fast: false
     name: ${{ matrix.chip }}
     runs-on: ubuntu-22.04

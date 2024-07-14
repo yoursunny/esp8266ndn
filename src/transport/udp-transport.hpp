@@ -1,13 +1,11 @@
 #ifndef ESP8266NDN_TRANSPORT_UDP_TRANSPORT_HPP
 #define ESP8266NDN_TRANSPORT_UDP_TRANSPORT_HPP
 
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2040)
 
 #include "../port/port.hpp"
 
-#if defined(ARDUINO_ARCH_ESP8266)
-// cause WiFiUdp.h to use ESP8266WiFi instead of Arduino WiFi library
-#include <ESP8266WiFi.h>
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_RP2040)
 #include <WiFiUdp.h>
 #define ESP8266NDN_NetworkUDP WiFiUDP
 #elif defined(ARDUINO_ARCH_ESP32)

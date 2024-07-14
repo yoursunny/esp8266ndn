@@ -1,7 +1,8 @@
 #include "fs.hpp"
 #include <algorithm>
+#include <cstring>
 
-#if defined(ARDUINO_ARCH_ESP8266)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_RP2040)
 #include <LittleFS.h>
 #define FSPORT_FILESYSTEM (::LittleFS)
 #define FSPORT_READ ("r")

@@ -1,9 +1,15 @@
 #if defined(ARDUINO_ARCH_ESP8266)
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecureBearSSL.h>
+#define CHIP ESP
 #elif defined(ARDUINO_ARCH_ESP32)
 #include <NetworkClientSecure.h>
 #include <WiFi.h>
+#define CHIP ESP
+#elif defined(ARDUINO_ARCH_RP2040)
+#include <WiFi.h>
+#include <WiFiClientSecureBearSSL.h>
+#define CHIP rp2040
 #endif
 #include <esp8266ndn.h>
 
@@ -30,15 +36,17 @@ setup() {
 
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
   WiFi.setSleep(false);
+#endif
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   if (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println(F("WiFi connect failed"));
-    ESP.restart();
+    CHIP.restart();
   }
   delay(1000);
 
-#if defined(ARDUINO_ARCH_ESP8266)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_RP2040)
   BearSSL::WiFiClientSecure fchSocketClient;
   fchSocketClient.setInsecure();
 #elif defined(ARDUINO_ARCH_ESP32)
@@ -47,7 +55,7 @@ setup() {
 #endif
   auto fchResponse = esp8266ndn::fchQuery(fchSocketClient);
   if (!fchResponse.ok) {
-    ESP.restart();
+    CHIP.restart();
   }
   transport.beginTunnel(fchResponse.ip);
 }

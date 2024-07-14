@@ -1,4 +1,4 @@
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2040)
 
 #include "udp-transport.hpp"
 #include "../core/logger.hpp"
@@ -22,7 +22,7 @@ UdpTransport::UdpTransport(uint8_t* buffer, size_t capacity)
 bool
 UdpTransport::beginListen(uint16_t localPort, IPAddress localIp) {
   end();
-#if defined(ARDUINO_ARCH_ESP8266)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_RP2040)
 #if LWIP_IPV6
   LOG(F("listening on [::]:") << _DEC(localPort));
 #else
@@ -61,7 +61,7 @@ UdpTransport::beginTunnel(IPAddress remoteIp, uint16_t remotePort, uint16_t loca
 bool
 UdpTransport::beginMulticast(IPAddress localIp, uint16_t groupPort) {
   end();
-#if defined(ARDUINO_ARCH_ESP8266)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_RP2040)
   LOG(F("joining group ") << MulticastGroup << ':' << _DEC(groupPort) << F(" on ") << localIp);
   bool ok = m_udp.beginMulticast(localIp, MulticastGroup, groupPort);
 #elif defined(ARDUINO_ARCH_ESP32)

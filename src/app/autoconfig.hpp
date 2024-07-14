@@ -1,12 +1,12 @@
 #ifndef ESP8266NDN_APP_AUTOCONFIG_HPP
 #define ESP8266NDN_APP_AUTOCONFIG_HPP
 
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_RP2040)
 
 #include <IPAddress.h>
 #include <WString.h>
 
-#if defined(ARDUINO_ARCH_ESP8266)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_RP2040)
 #define ESP8266NDN_Network WiFi
 #define ESP8266NDN_NetworkClient WiFiClient
 #elif defined(ARDUINO_ARCH_ESP32)
@@ -15,6 +15,11 @@
 #endif
 
 class ESP8266NDN_NetworkClient;
+
+#if defined(ARDUINO_ARCH_RP2040)
+using arduino::IPAddress;
+using arduino::String;
+#endif
 
 namespace esp8266ndn {
 
