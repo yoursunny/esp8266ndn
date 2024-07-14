@@ -4,69 +4,69 @@ on:
   pull_request:
   workflow_dispatch:
 permissions: {}
+env:
+  NDNPH_VERSION: develop
+  esp32platforms: |
+    - name: esp32:esp32
+      source-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+  esp32sketches: |
+    - examples/BlePingServer
+    - examples/NdncertClient
+    - examples/PingClient
+    - examples/PingServer
+    - examples/unittest
+    - examples/UnixTime
 jobs:
   build:
-    runs-on: ubuntu-22.04
     strategy:
       matrix:
         include:
           - chip: ESP8266
-            core-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
-            core: esp8266:esp8266
             fqbn: esp8266:esp8266:nodemcuv2
+            platforms: |
+              - name: esp8266:esp8266
+                source-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
+            sketches: |
+              - examples/PingClient
+              - examples/PingServer
+              - examples/unittest
+              - examples/UnixTime
           - chip: ESP32
-            core-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
-            core: esp32:esp32
             fqbn: esp32:esp32:esp32wrover:PartitionScheme=noota_ffat
-            arduino-libs: NimBLE-Arduino
+            libraries: |
+              - name: NimBLE-Arduino
           - chip: ESP32C3
-            core-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
-            core: esp32:esp32
             fqbn: esp32:esp32:esp32c3:PartitionScheme=noota_ffat
-            arduino-libs: NimBLE-Arduino
+            cli-compile-flags: |
+              - --build-property=build.defines=-DDEMO_BLEPINGSERVER_DISABLE_NIMBLE=1
           - chip: nRF52
-            core: adafruit:nrf52
             fqbn: adafruit:nrf52:feather52832
-            core-url: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+            platforms: |
+              - name: adafruit:nrf52
+                source-url: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
             pip-deps: adafruit-nrfutil
+            sketches: |
+              - examples/BlePingServer
+              - examples/unittest
       fail-fast: false
     name: ${{ matrix.chip }}
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+      - run: pip install --user ${{ matrix.pip-deps }}
         if: ${{ matrix.pip-deps }}
-      - uses: arduino/setup-arduino-cli@v1
-      - id: cores
-        name: Refresh Arduino cores
-        run: |
-          arduino-cli version
-          arduino-cli update --additional-urls "${{ matrix.core-url }}"
-          echo d=$(sha256sum ~/.arduino15/package_*index.json | sha256sum | cut -d' ' -f1) >> $GITHUB_OUTPUT
-      - name: Cache Arduino cores
-        uses: actions/cache@v4
-        with:
-          path: ~/.arduino15/staging/packages
-          key: cores-${{ steps.cores.outputs.d }}
-      - name: Install Arduino cores
-        run: |
-          arduino-cli core install ${{ matrix.core }} --additional-urls "${{ matrix.core-url }}"
-          echo ${{ matrix.pip-deps }} | xargs -r pip install
-          echo ArduinoUnit ${{ matrix.arduino-libs }} | xargs -rn1 arduino-cli lib install
       - uses: actions/checkout@v4
-      - name: Prepare Arduino libraries
-        run: |
-          mkdir -p $HOME/Arduino/libraries
-          cd $HOME/Arduino/libraries
-          ln -s $GITHUB_WORKSPACE esp8266ndn
-          mkdir NDNph
-          curl -fsLS https://github.com/yoursunny/NDNph/archive/${NDNPH_VERSION}.tar.gz | tar -C NDNph -xz --strip-components=1
-          ln -s $HOME/Arduino/libraries/NDNph $GITHUB_WORKSPACE/../NDNph # for Doxygen
-        env:
-          NDNPH_VERSION: develop
-      - name: Compile examples
-        run: |
-          mk/ci-list.sh ${{ matrix.chip }} ${{ matrix.fqbn }} | bash
+      - uses: arduino/compile-sketches@v1
+        with:
+          fqbn: ${{ matrix.fqbn }}
+          platforms: ${{ matrix.platforms || env.esp32platforms }}
+          libraries: |
+            - source-path: ./
+            - source-url: https://github.com/yoursunny/NDNph.git
+              version: ${{ env.NDNPH_VERSION }}
+            - name: ArduinoUnit
+            ${{ matrix.libraries }}
+          sketch-paths: ${{ matrix.sketches || env.esp32sketches }}
+          cli-compile-flags: ${{ matrix.cli-compile-flags }}
   publish:
     needs: [build]
     runs-on: ubuntu-22.04
