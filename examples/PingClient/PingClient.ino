@@ -34,10 +34,12 @@ setup() {
   Serial.println();
   esp8266ndn::setLogOutput(Serial);
 
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
   WiFi.setSleep(false);
+#elif defined(ARDUINO_ARCH_RP2040)
+  WiFi.noLowPowerMode();
 #endif
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   if (WiFi.waitForConnectResult() != WL_CONNECTED) {
