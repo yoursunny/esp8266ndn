@@ -6,8 +6,14 @@
 #include <cstdlib>
 #include <tuple>
 
+#if defined(ARDUINO_ARCH_RP2040)
+#include <Arduino.h> // https://github.com/earlephilhower/arduino-pico/issues/2287
+#include <FreeRTOS.h>
+#include <queue.h>
+#else
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
+#endif
 
 namespace esp8266ndn {
 namespace ndnph_port_freertos {
