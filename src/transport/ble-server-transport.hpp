@@ -4,7 +4,7 @@
 #include "../port/port.hpp"
 #include "ble-uuid.hpp"
 
-#if defined(ARDUINO_ARCH_ESP32) && !defined(MAIN_NIMBLEDEVICE_H_)
+#if defined(ARDUINO_ARCH_ESP32) && !defined(CONFIG_BT_NIMBLE_ENABLED)
 #include <BLEDevice.h>
 #elif defined(ARDUINO_ARCH_NRF52)
 #include <bluefruit.h>
@@ -25,7 +25,7 @@ private:
 };
 
 #if defined(ARDUINO_ARCH_ESP32) &&                                                                 \
-  (defined(MAIN_NIMBLEDEVICE_H_) || defined(CONFIG_BT_BLUEDROID_ENABLED))
+  (defined(CONFIG_BT_NIMBLE_ENABLED) || defined(CONFIG_BT_BLUEDROID_ENABLED))
 #define ESP8266NDN_HAVE_ESP32BLE
 
 /** @brief A transport that acts as a BLE server/peripheral. */
@@ -44,7 +44,7 @@ public:
     ::BLEDevice::init(deviceName);
     ::BLEDevice::setMTU(517);
 
-#ifdef MAIN_NIMBLEDEVICE_H_
+#ifdef CONFIG_BT_NIMBLE_ENABLED
 #define BLEPROP(prop) NIMBLE_PROPERTY::prop
 #else
 #define BLEPROP(prop) ::BLECharacteristic::PROPERTY_##prop
@@ -93,7 +93,7 @@ private:
   }
 
 private:
-  class CsCallbacks : public BLECharacteristicCallbacks {
+  class CsCallbacks : public ::BLECharacteristicCallbacks {
   public:
     explicit CsCallbacks(BleServerTransport& transport)
       : m_transport(transport) {}

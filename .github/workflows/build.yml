@@ -34,7 +34,7 @@ jobs:
           - chip: ESP32
             fqbn: esp32:esp32:esp32wrover:PartitionScheme=noota_ffat
             libraries: |
-              - name: NimBLE-Arduino
+              - name: NimBLE-Arduino@1.4.3
           - chip: ESP32C3
             fqbn: esp32:esp32:esp32c3:PartitionScheme=noota_ffat
             cli-compile-flags: |
