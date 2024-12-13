@@ -55,6 +55,7 @@ jobs:
                 source-url: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
             sketches: |
               - examples/PingClient
+              - examples/UnixTime
       fail-fast: false
     name: ${{ matrix.chip }}
     runs-on: ubuntu-22.04
@@ -89,10 +90,8 @@ jobs:
       - name: Prepare Arduino libraries
         run: |
           NDNPH_DIR=$GITHUB_WORKSPACE/../NDNph
-          mkdir $NDNPH_DIR
+          mkdir -p $NDNPH_DIR
           curl -fsLS https://github.com/yoursunny/NDNph/archive/${NDNPH_VERSION}.tar.gz | tar -C $NDNPH_DIR -xz --strip-components=1
-        env:
-          NDNPH_VERSION: develop
       - name: Build docs
         run: docs/build.sh
       - name: Deploy docs

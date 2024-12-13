@@ -155,6 +155,8 @@ UdpTransport::doSend(const uint8_t* pkt, size_t pktLen, uint64_t endpointId) {
         ok = m_udp.beginPacketMulticast(MulticastGroup, m_port, m_ip);
 #elif defined(ARDUINO_ARCH_ESP32)
         ok = m_udp.beginMulticastPacket();
+#elif defined(ARDUINO_ARCH_RP2040)
+        ok = m_udp.beginPacketMulticast(MulticastGroup, m_port, m_ip);
 #endif
         break;
       case Mode::NONE:

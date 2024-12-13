@@ -8,6 +8,8 @@
 #include <Arduino.h>
 #include <algorithm>
 #include <nrf_soc.h>
+#elif defined(ARDUINO_ARCH_RP2040)
+#include <Arduino.h>
 #endif
 
 namespace esp8266ndn {
@@ -41,6 +43,11 @@ RandomSource::generate(uint8_t* output, size_t count) {
     }
     output += nRead;
     count -= nRead;
+  }
+  return true;
+#elif defined(ARDUINO_ARCH_RP2040)
+  for (size_t i = 0; i < count; ++i) {
+    output[i] = rp2040.hwrand32();
   }
   return true;
 #else

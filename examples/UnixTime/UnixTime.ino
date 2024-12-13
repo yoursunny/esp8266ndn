@@ -1,7 +1,12 @@
 #if defined(ARDUINO_ARCH_ESP8266)
 #include <ESP8266WiFi.h>
+#define CHIP ESP
 #elif defined(ARDUINO_ARCH_ESP32)
 #include <WiFi.h>
+#define CHIP ESP
+#elif defined(ARDUINO_ARCH_RP2040)
+#include <WiFi.h>
+#define CHIP rp2040
 #endif
 #include <esp8266ndn.h>
 
@@ -32,20 +37,24 @@ setup() {
   Serial.println();
   esp8266ndn::setLogOutput(Serial);
 
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(false);
+#elif defined(ARDUINO_ARCH_RP2040)
+  WiFi.noLowPowerMode();
+#endif
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   if (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println(F("WiFi connect failed"));
-    ESP.restart();
+    CHIP.restart();
   }
   delay(1000);
 
   bool ok = transport.beginMulticast(WiFi.localIP());
   if (!ok) {
     Serial.println(F("UDP multicast initialization failed"));
-    ESP.restart();
+    CHIP.restart();
   }
 
   unixTime.begin(5000);
