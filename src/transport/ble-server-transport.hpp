@@ -62,7 +62,9 @@ public:
 
     auto adv = ::BLEDevice::getAdvertising();
     adv->addServiceUUID(makeUuid(BLE_UUID_SVC));
+#ifndef CONFIG_BT_NIMBLE_ENABLED
     adv->setScanResponse(true);
+#endif
     adv->start();
     return true;
   }
@@ -74,7 +76,11 @@ public:
 
 private:
   static ::BLEUUID makeUuid(const uint8_t a[16]) {
+#ifdef CONFIG_BT_NIMBLE_ENABLED
+    return ::BLEUUID(a, 16);
+#else
     return ::BLEUUID(const_cast<uint8_t*>(a), 16, false);
+#endif
   }
 
   static void warnBluedroid();
@@ -98,7 +104,13 @@ private:
     explicit CsCallbacks(BleServerTransport& transport)
       : m_transport(transport) {}
 
-    void onWrite(::BLECharacteristic* chr) final {
+    void onWrite(::BLECharacteristic* chr,
+#ifdef CONFIG_BT_NIMBLE_ENABLED
+                 ::NimBLEConnInfo&
+#else
+                 esp_ble_gatts_cb_param_t*
+#endif
+                 ) final {
       if (chr != m_transport.m_cs) {
         return;
       }

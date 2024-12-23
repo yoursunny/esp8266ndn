@@ -98,7 +98,11 @@ UdpTransport::doLoop() {
     uint64_t endpointId = 0;
     if (m_mode == Mode::TUNNEL) {
       if (m_udp.remoteIP() != m_ip || m_udp.remotePort() != m_port) {
+#if defined(ARDUINO_ARCH_ESP8266)
         m_udp.flush();
+#elif defined(ARDUINO_ARCH_ESP32)
+        m_udp.clear();
+#endif
         continue;
       }
     } else {

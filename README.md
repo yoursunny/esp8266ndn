@@ -46,9 +46,8 @@ Transports
 KeyChain
 
 * Crypto
-  * SHA256: yes (using BearSSL on ESP8266, Mbed TLS on ESP32, Cryptosuite on nRF52)
-  * ECDSA: P-256 curve only (using Mbed TLS on ESP32, micro-ecc on ESP8266 and nRF52)
-  * HMAC-SHA256: yes (using BearSSL on ESP8266, Mbed TLS on ESP32, Cryptosuite on nRF52)
+  * SHA256 and HMAC-SHA256: yes (using BearSSL on ESP8266 and RP2040, Mbed TLS on ESP32, Cryptosuite on nRF52)
+  * ECDSA: P-256 curve only (using Mbed TLS on ESP32, micro-ecc on ESP8266 and nRF52 and RP2040)
   * RSA: no
   * Ed25519: no
   * Null: yes
@@ -68,7 +67,7 @@ Application layer services
   * ESP32 only
   * supported challenges: "nop" and "possession"
 * [NDN-FCH](https://github.com/11th-ndn-hackathon/ndn-fch) client for connecting to the global NDN testbed and other connected networks
-  * ESP8266 and ESP32 only
+  * ESP8266 and ESP32 and RP2040 only
 * [UnixTime](https://github.com/yoursunny/ndn6-tools/blob/main/unix-time-service.md) client for time synchronization
 
 ## Installation
