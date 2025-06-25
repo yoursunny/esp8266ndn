@@ -1,7 +1,7 @@
 #ifndef ESP8266NDN_LOGGING_HPP
 #define ESP8266NDN_LOGGING_HPP
 
-#include <Print.h>
+#include <Arduino.h>
 
 namespace esp8266ndn {
 
