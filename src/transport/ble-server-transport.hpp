@@ -4,8 +4,8 @@
 #include "../port/port.hpp"
 #include "ble-uuid.hpp"
 
-#if defined(ARDUINO_ARCH_ESP32) && !defined(CONFIG_BT_NIMBLE_ENABLED)
-#include <BLEDevice.h>
+#if defined(ARDUINO_ARCH_ESP32) && __has_include(<NimBLEDevice.h>)
+#include <NimBLEDevice.h>
 #elif defined(ARDUINO_ARCH_NRF52)
 #include <bluefruit.h>
 #endif
@@ -24,9 +24,7 @@ private:
   void doLoop() override;
 };
 
-#if defined(ARDUINO_ARCH_ESP32) &&                                                                 \
-  (defined(CONFIG_BT_NIMBLE_ENABLED) || defined(CONFIG_BT_BLUEDROID_ENABLED))
-#define ESP8266NDN_HAVE_ESP32BLE
+#if defined(CONFIG_BT_NIMBLE_ROLE_PERIPHERAL) && CONFIG_BT_NIMBLE_ROLE_PERIPHERAL
 
 /** @brief A transport that acts as a BLE server/peripheral. */
 class BleServerTransport : public BleServerTransportBase {
@@ -41,49 +39,34 @@ public:
 
   /** @brief Initialize BLE device, service, and advertisement. */
   bool begin(const char* deviceName) {
-    ::BLEDevice::init(deviceName);
-    ::BLEDevice::setMTU(517);
+    NimBLEDevice::init(deviceName);
+    NimBLEDevice::setMTU(517);
 
-#ifdef CONFIG_BT_NIMBLE_ENABLED
-#define BLEPROP(prop) NIMBLE_PROPERTY::prop
-#else
-#define BLEPROP(prop) ::BLECharacteristic::PROPERTY_##prop
-    warnBluedroid();
-#endif
-
-    m_server = ::BLEDevice::createServer();
+    m_server = NimBLEDevice::createServer();
     m_svc = m_server->createService(makeUuid(BLE_UUID_SVC));
-    m_cs = m_svc->createCharacteristic(makeUuid(BLE_UUID_CS), BLEPROP(WRITE) | BLEPROP(NOTIFY));
+    m_cs = m_svc->createCharacteristic(makeUuid(BLE_UUID_CS),
+                                       NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY);
     m_cs->setCallbacks(&m_csCallbackHandler);
-    m_sc = m_svc->createCharacteristic(makeUuid(BLE_UUID_SC), BLEPROP(READ) | BLEPROP(NOTIFY));
+    m_sc = m_svc->createCharacteristic(makeUuid(BLE_UUID_SC),
+                                       NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
     m_svc->start();
 
-#undef BLEPROP
-
-    auto adv = ::BLEDevice::getAdvertising();
+    auto adv = NimBLEDevice::getAdvertising();
     adv->addServiceUUID(makeUuid(BLE_UUID_SVC));
-#ifndef CONFIG_BT_NIMBLE_ENABLED
-    adv->setScanResponse(true);
-#endif
+    adv->enableScanResponse(true);
     adv->start();
     return true;
   }
 
   /** @brief Retrieve BLE address and address type. */
   String getAddr() const {
-    return String(::BLEDevice::getAddress().toString().c_str()) + " (addr-type=public)";
+    return String(NimBLEDevice::getAddress().toString().c_str()) + " (addr-type=public)";
   }
 
 private:
   static ::BLEUUID makeUuid(const uint8_t a[16]) {
-#ifdef CONFIG_BT_NIMBLE_ENABLED
     return ::BLEUUID(a, 16);
-#else
-    return ::BLEUUID(const_cast<uint8_t*>(a), 16, false);
-#endif
   }
-
-  static void warnBluedroid();
 
   bool doIsUp() const final {
     return m_server != nullptr && m_server->getConnectedCount() > 0;
@@ -99,18 +82,12 @@ private:
   }
 
 private:
-  class CsCallbacks : public ::BLECharacteristicCallbacks {
+  class CsCallbacks : public NimBLECharacteristicCallbacks {
   public:
     explicit CsCallbacks(BleServerTransport& transport)
       : m_transport(transport) {}
 
-    void onWrite(::BLECharacteristic* chr,
-#ifdef CONFIG_BT_NIMBLE_ENABLED
-                 ::NimBLEConnInfo&
-#else
-                 esp_ble_gatts_cb_param_t*
-#endif
-                 ) final {
+    void onWrite(NimBLECharacteristic* chr, NimBLEConnInfo&) final {
       if (chr != m_transport.m_cs) {
         return;
       }
@@ -123,10 +100,10 @@ private:
   };
   CsCallbacks m_csCallbackHandler;
 
-  ::BLEServer* m_server = nullptr;
-  ::BLEService* m_svc = nullptr;
-  ::BLECharacteristic* m_cs = nullptr;
-  ::BLECharacteristic* m_sc = nullptr;
+  NimBLEServer* m_server = nullptr;
+  NimBLEService* m_svc = nullptr;
+  NimBLECharacteristic* m_cs = nullptr;
+  NimBLECharacteristic* m_sc = nullptr;
 };
 
 #elif defined(ARDUINO_ARCH_NRF52)

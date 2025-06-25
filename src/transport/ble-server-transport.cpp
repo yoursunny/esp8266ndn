@@ -31,12 +31,4 @@ BleServerTransportBase::doLoop() {
   loopRxQueue();
 }
 
-#ifdef ESP8266NDN_HAVE_ESP32BLE
-void
-BleServerTransport::warnBluedroid() {
-  LOG(F("using ESP32 Bluedroid stack that has limited compatibility; "
-        "it's recommended to switch to NimBLE stack"));
-}
-#endif
-
 } // namespace esp8266ndn
