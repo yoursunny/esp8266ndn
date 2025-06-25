@@ -1,10 +1,11 @@
 import asyncio as aio
 import struct
 from concurrent.futures import ThreadPoolExecutor
+from typing import cast
 
 from bluepy import btle
 from ndn.encoding import parse_tl_num
-from ndn.transport.stream_socket import Face
+from ndn.transport.face import Face
 
 UUID_SVC = '099577e3-0788-412a-8824-395084d97391'
 UUID_CS = 'cc5abb89-a541-46d8-a351-2f95a6a81f49'
@@ -34,9 +35,9 @@ class BleClientFace(Face):
         self.delegate = BleClientFace.MyDelegate()
         self.p.setDelegate(self.delegate)
 
-        service = self.p.getServiceByUUID(UUID_SVC)
-        self.cs, = service.getCharacteristics(UUID_CS)
-        self.sc, = service.getCharacteristics(UUID_SC)
+        service: btle.Service = self.p.getServiceByUUID(UUID_SVC)
+        self.cs: btle.Characteristic = service.getCharacteristics(UUID_CS)[0]
+        self.sc: btle.Characteristic = service.getCharacteristics(UUID_SC)[0]
         self.p.writeCharacteristic(
             self.sc.getHandle() + 1, struct.pack('<bb', 0x01, 0x00))
         self.delegate.scHandle = self.sc.getHandle()
@@ -74,3 +75,6 @@ class BleClientFace(Face):
             tlvType, sizeofTlvType = parse_tl_num(wire)
             aio.ensure_future(self.callback(tlvType, wire), loop=self.loop)
         self.delegate.rxQueue.clear()
+
+    def isLocalFace(self):
+        return False

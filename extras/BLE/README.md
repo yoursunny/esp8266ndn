@@ -13,15 +13,15 @@ The protocol is summarized in NDNts [@ndn/web-bluetooth-transport](https://githu
 1. Install system-wide dependencies in a sudoer user:
 
     ```bash
-    sudo apt install --no-install-recommends python3-dev python3-venv libglib2.0-dev
-    curl -fsLS https://bootstrap.pypa.io/get-pip.py | sudo python3
-    sudo pip install -U pip pipenv
+    sudo apt install --no-install-recommends python3.11-dev python3.11-venv libglib2.0-dev
     ```
 
 2. Install local dependencies:
 
     ```bash
-    pipenv install
+    python3.11 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
     ```
 
 3. Upload [BlePingServer](../../examples/BlePingServer) sketch to an ESP32 or nRF52 microcontroller.
@@ -30,8 +30,8 @@ The protocol is summarized in NDNts [@ndn/web-bluetooth-transport](https://githu
 4. Run the ping client with the displayed address and address type:
 
     ```bash
-    pipenv run python BlePingClient.py --addr 02:00:00:00:00:00 --addr-type public
-    pipenv run python BlePingClient.py --addr 02:00:00:00:00:00 --addr-type random
+    python BlePingClient.py --addr 02:00:00:00:00:00 --addr-type public
+    python BlePingClient.py --addr 02:00:00:00:00:00 --addr-type random
     ```
 
 ## BLE-UDP Bridge
@@ -42,7 +42,7 @@ It listens on a UDP port and connects to a BLE peripheral.
 1. Start the bridge program:
 
     ```bash
-    pipenv run python BleUdpBridge.py --addr 02:00:00:00:00:00 --addr-type public
+    python BleUdpBridge.py --addr 02:00:00:00:00:00 --addr-type public
     ```
 
 2. In NFD, create a UDP face with NDNLPv2 fragmentation:
