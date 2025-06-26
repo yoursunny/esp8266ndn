@@ -135,7 +135,11 @@ UdpTransport::doLoop() {
     }
 
     int len = m_udp.read(m_buf, pktLen);
+#if defined(ARDUINO_ARCH_ESP8266)
     m_udp.flush();
+#elif defined(ARDUINO_ARCH_ESP32)
+    m_udp.clear();
+#endif
     if (len <= 0) {
       continue;
     }
