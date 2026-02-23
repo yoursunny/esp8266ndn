@@ -1,9 +1,9 @@
 /**
- * @mainpage esp8266ndn
+ * @mainpage NDNph and esp8266ndn API Documentation
  *
- * https://github.com/yoursunny/NDNph
+ * <a href="https://github.com/yoursunny/NDNph" rel="nofollow">https://github.com/yoursunny/NDNph</a>
  *
- * https://github.com/yoursunny/esp8266ndn
+ * <a href="https://github.com/yoursunny/esp8266ndn" rel="nofollow">https://github.com/yoursunny/esp8266ndn</a>
  */
 #ifndef ESP8266NDN_H
 #define ESP8266NDN_H

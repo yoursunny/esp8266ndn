@@ -63,7 +63,7 @@ jobs:
     steps:
       - run: pip install --user ${{ matrix.pip-deps }}
         if: ${{ matrix.pip-deps }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: arduino/compile-sketches@v1
         with:
           fqbn: ${{ matrix.fqbn }}
@@ -83,7 +83,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install -y --no-install-recommends clang-format-15 doxygen
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Check code style
         run: |
           mk/format-code.sh
