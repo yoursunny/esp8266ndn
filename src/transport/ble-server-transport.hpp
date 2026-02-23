@@ -6,8 +6,10 @@
 
 #if defined(ARDUINO_ARCH_ESP32) && __has_include(<NimBLEDevice.h>)
 #include <NimBLEDevice.h>
+#define ESP8266NDN_BLE_NIMBLE
 #elif defined(ARDUINO_ARCH_NRF52)
 #include <bluefruit.h>
+#define ESP8266NDN_BLE_BLUEFRUIT
 #endif
 
 namespace esp8266ndn {
@@ -24,7 +26,7 @@ private:
   void doLoop() override;
 };
 
-#if defined(CONFIG_BT_NIMBLE_ROLE_PERIPHERAL) && CONFIG_BT_NIMBLE_ROLE_PERIPHERAL
+#if defined(ESP8266NDN_BLE_NIMBLE)
 
 /** @brief A transport that acts as a BLE server/peripheral. */
 class BleServerTransport : public BleServerTransportBase {
@@ -64,8 +66,8 @@ public:
   }
 
 private:
-  static ::BLEUUID makeUuid(const uint8_t a[16]) {
-    return ::BLEUUID(a, 16);
+  static NimBLEUUID makeUuid(const uint8_t a[16]) {
+    return NimBLEUUID(a, 16);
   }
 
   bool doIsUp() const final {
@@ -106,7 +108,7 @@ private:
   NimBLECharacteristic* m_sc = nullptr;
 };
 
-#elif defined(ARDUINO_ARCH_NRF52)
+#elif defined(ESP8266NDN_BLE_BLUEFRUIT)
 
 /**
  * @brief A transport that acts as a BLE server/peripheral.

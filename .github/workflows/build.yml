@@ -8,6 +8,7 @@ env:
   NDNPH_VERSION: develop
   esp32platforms: |
     - name: esp32:esp32
+      version: 3.3.6
       source-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
   esp32sketches: |
     - examples/BlePingServer
