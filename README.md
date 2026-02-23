@@ -9,7 +9,7 @@ It supports these microcontrollers:
 * [ESP8266](https://github.com/esp8266/Arduino)
 * [ESP32 series](https://github.com/espressif/arduino-esp32) (3.x core)
 * [nRF52](https://github.com/adafruit/Adafruit_nRF52_Arduino)
-* [RP2040](https://github.com/earlephilhower/arduino-pico)
+* [RP2040](https://github.com/earlephilhower/arduino-pico) (5.x core)
 
 Related links:
 
